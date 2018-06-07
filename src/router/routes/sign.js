@@ -133,7 +133,7 @@ const handleJob = async (job, clean = true) => {
 
 /* eslint-disable */
 /**
- * @api {POST} /album/:albumId Add a image to an album
+ * @api {POST} /sign/ Submit an job for processing
  * @apiVersion 0.0.1
  * @apiName SubmitJob
  * @apiGroup Sign
@@ -212,7 +212,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
 
 /* eslint-disable */
 /**
- * @api {GET} /status/:jobId Check the status of a job
+ * @api {GET} /:jobId/status Check the status of a job
  * @apiVersion  0.0.1
  * @apiName     JobStatus
  * @apiGroup    Sign
@@ -226,7 +226,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
  * @apiError   (500) InternalError    The server encountered an internal error. Please retry the request.
  *
  * @apiExample {curl} Example
- *    curl -X GET http://localhost:8000/v1/status/d7995710
+ *    curl -X GET http://localhost:8000/v1/sign/d7995710/status
  *
  * @apiSuccessExample Success-Response
  *    HTTP/1.1 202 Accepted
@@ -235,7 +235,8 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
  *    HTTP/1.1 200 OK
  *    {
  *      "id": "d7995710",
- *      "url": "http://localhost:8000/v1/download/48dj2ncx.zip"
+ *      "url": "https://localhost:8000/v1/sign/d7995710/download"
+ *      "durationInSeconds" 123.4
  *     }
  *
  * @apiErrorExample {json} Error-Response
@@ -276,6 +277,31 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
   }
 }));
 
+/* eslint-disable */
+/**
+ * @api {GET} /:jobId/download Download the artifact of a successful job
+ * @apiVersion  0.0.1
+ * @apiName     JobArtifactDownload
+ * @apiGroup    Sign
+ *
+ * @apiParam {String} jobId           The `jobId` provided by the call to `sign`
+ *
+ * @apiSuccess (200) {Object}         The binary representation of the job artifact
+ * 
+ * @apiError   (401) Unauthorized     Authentication required.
+ * @apiError   (500) InternalError    The server encountered an internal error. Please retry the request.
+ *
+ * @apiExample {curl} Example
+ *    curl -X GET http://localhost:8000/v1/sign/d7995710/download
+ *
+ * @apiSuccessExample Success-Response
+ *    HTTP/1.1 200 OK
+ *
+ * @apiErrorExample {json} Error-Response
+ *    HTTP/1.1 401 Unauthorized
+ *
+ */
+ /* eslint-enable */
 router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
   const { jobId } = req.params;
   const expirationInDays = config.get('expirationInDays');
