@@ -18,8 +18,6 @@
 // Created by Jason Leach on 2018-01-15.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import * as minio from 'minio';

@@ -18,15 +18,13 @@
 // Created by Jason Leach on 2018-01-10.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import cors from 'cors';
 import config from '../config';
-import album from './routes/sign';
 import auth from './routes/auth';
 import ehlo from './routes/ehlo';
+import album from './routes/sign';
 
 const corsOptions = {
   origin: config.get('appUrl'),

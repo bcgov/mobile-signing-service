@@ -18,7 +18,6 @@
 // Created by Jason Leach on 2018-01-10.
 //
 
-/* eslint-env es6 */
 /* eslint-disable no-console */
 
 'use strict';
@@ -53,7 +52,7 @@ export const logger = new (winston.Logger)(options);
  * @param {String} port The port the server is running on
  */
 export const started = (port) => {
-  console.log(`${chalk.cyan('\Secure Sign')} API started ${chalk.green('✓')}`);
+  console.log(`${chalk.cyan('Secure Sign')} API started ${chalk.green('✓')}`);
   console.log(`${chalk.bold('\nAccess URLs:')}${divider}
                \nLocalhost: ${chalk.magenta(`http://localhost:${port}`)}
                \r      LAN: ${chalk.magenta(`http://${ip.address()}:${port}`)}

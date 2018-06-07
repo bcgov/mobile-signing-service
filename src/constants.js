@@ -18,8 +18,6 @@
 // Created by Jason Leach on 2018-01-10.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 // eslint-disable-next-line import/prefer-default-export

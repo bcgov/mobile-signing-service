@@ -18,8 +18,6 @@
 // Created by Jason Leach on 2018-01-18.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import { Router } from 'express';

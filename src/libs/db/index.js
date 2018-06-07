@@ -8,8 +8,6 @@
 // license agreement you entered into with Fullboar Creative, Corp.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import knex from 'knex';

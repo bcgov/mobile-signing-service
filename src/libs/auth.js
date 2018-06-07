@@ -18,8 +18,6 @@
 // Created by Jason Leach on 2018-02-01.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import jwt from 'jsonwebtoken';

@@ -18,8 +18,6 @@
 // Created by Jason Leach on 2018-06-10.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import cp from 'child_process';

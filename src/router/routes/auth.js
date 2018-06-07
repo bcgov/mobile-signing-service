@@ -18,19 +18,16 @@
 // Created by Jason Leach on 2018-01-10.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
 import { Router } from 'express';
 import passport from 'passport';
-import url from 'url';
-import config from '../../config';
-import { logger } from '../../libs/logger';
+// import url from 'url';
+// import config from '../../config';
+// import { logger } from '../../libs/logger';
 import { asyncMiddleware } from '../../libs/utils';
 
 const router = new Router();
-
 
 /* eslint-disable */
 /**
@@ -57,18 +54,18 @@ router.get('/login', passport.authenticate('oauth2'));
 router.get('/callback', passport.authenticate('oauth2', {
   failureRedirect: '/failed.html',
 }), asyncMiddleware(async (req, res) => {
-  const redirectTo = req.session.redirect_to;
-  const baseUrl = config.get('appUrl');
+  // const redirectTo = req.session.redirect_to;
+  // const baseUrl = config.get('appUrl');
   try {
-    const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
-    console.log('u=', url.resolve(baseUrl, redirectTo));
-    const html = await compile(buffer, {
-      download_url: url.resolve(baseUrl, redirectTo),
-    });
+    // const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
+    // console.log('u=', url.resolve(baseUrl, redirectTo));
+    // const html = await compile(buffer, {
+    //   download_url: url.resolve(baseUrl, redirectTo),
+    // });
 
-    res.send(html);
+    res.send('Hello World');
   } catch (error) {
-    logger.error(`Unable to build download template: ${TEMPLATES.DOWNLOAD}`);
+    // logger.error(`Unable to build download template: ${TEMPLATES.DOWNLOAD}`);
     res.send(500);
   }
 }));
