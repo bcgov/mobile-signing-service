@@ -39,6 +39,7 @@ const exec = util.promisify(cp.exec);
 export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
   try {
     const apath = path.join(workspace, shortid.generate());
+    const outputDir = 'signed';
 
     await exec(`
       mkdir -p ${apath} && \
@@ -55,7 +56,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
         xcodebuild \
         -exportArchive \
         -archivePath ${element} \
-        -exportPath ${path.join(apath, 'signed', path.basename(element).split('.')[0])}  \
+        -exportPath ${path.join(apath, outputDir, path.basename(element).split('.')[0])}  \
         -exportOptionsPlist ${path.join(apath, 'options.plist')} 
       `));
 
@@ -75,9 +76,10 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       }
     });
 
-    const deliveryFile = path.join(apath, `${shortid.generate()}.zip`);
+    const fileName = `${shortid.generate()}.zip`;
     const zipResult = await exec(`
-      zip -6rq -n 'ipa' ${deliveryFile} ${items} && \
+      cd ${path.join(apath, outputDir)} && \
+      zip -6rq -n 'ipa' ${fileName} ${items.map(i => path.basename(i)).join(' ')} && \
       echo 'OK' || echo 'FAIL'
     `);
 
@@ -85,7 +87,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to create delivery package');
     }
 
-    return Promise.resolve(deliveryFile);
+    return Promise.resolve(path.join(apath, outputDir, fileName));
   } catch (error) {
     console.log(error.message);
   }
