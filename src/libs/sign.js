@@ -130,3 +130,15 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
 export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
   throw new Error('Not Implemented');
 };
+
+/**
+ * Sign an xcode ipa file.
+ *
+ * @param {string} archiveFilePath The path to the ipa file
+ * @param {string} [workspace='/tmp/'] The workspace to use
+ * @returns A `string` containing the path to the newly minted archive
+ */
+// eslint-disable-next-line no-unused-vars
+export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
+  throw new Error('Not Implemented');
+};
