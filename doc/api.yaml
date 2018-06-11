@@ -1,0 +1,84 @@
+info:
+  title: Code Signing
+  version: 1.0.0
+  description: All things code signing related
+host: '10.0.1.12:8000'
+basePath: /v1
+schemes:
+  - http
+openapi: 3.0.0
+paths:
+  /ehlo:
+    get:
+      summary: Check if the server is alive and well
+      description: Returns HTTP 200 if the server is alive and well
+      tags:
+        - health
+      responses:
+        '200':
+          description: The server is OK.
+  /sign:
+    post:
+      summary: Submit an signing job for processing
+      description: Returns HTTP 200 if the server is alive and well
+      tags:
+        - sign
+      parameters:
+        - in: query
+          description: The platform used to sign the submitted archive
+          name: platform
+          type: string
+          required: true
+          enum:
+            - ios
+            - android
+      responses:
+        '200':
+          description: The archive was accepted for signing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+  '/sign/{jobId}/status':
+    get:
+      summary: Check the status of a job
+      description: 'When a job is submitted for signing it may take several minutes for processing to complete. This endpoint can be used to check the status of the job, determine run time for the job, and get the delivery URL onces processing completes.'
+      tags:
+        - sign
+      parameters:
+        - in: path
+          description: The job id to check on
+          name: jobId
+          type: string
+          required: true
+      responses:
+        '200':
+          description: The job has completed processing
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              url:
+                type: string
+              durationInSeconds:
+                type: number
+                format: float
+        '202':
+          description: The job queued or processing
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+definitions: {}
+responses: {}
+parameters: {}
+securityDefinitions: {}
+tags: []
