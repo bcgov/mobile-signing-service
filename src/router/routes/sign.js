@@ -34,7 +34,7 @@ import {
   asyncMiddleware,
   errorWithCode,
 } from '../../libs/utils';
-import { signxcarchive } from '../../libs/sign';
+import { signipaarchive } from '../../libs/sign';
 import {
   putObject,
   createBucketIfRequired,
@@ -91,7 +91,8 @@ const handleJob = async (job, clean = true) => {
     let deliveryFile;
     switch (job.platform) {
       case 'ios':
-        deliveryFile = await signxcarchive(job.archivePath);
+        // deliveryFile = await signxcarchive(job.archivePath);
+        deliveryFile = await signipaarchive(job.archivePath);
         break;
       case 'android':
         // deliveryFile = await signapkarchive(apath);
@@ -131,35 +132,6 @@ const handleJob = async (job, clean = true) => {
   }
 };
 
-/* eslint-disable */
-/**
- * @api {POST} /sign/ Submit an job for processing
- * @apiVersion 0.0.1
- * @apiName SubmitJob
- * @apiGroup Sign
- *
- * @apiParam {String} file            The `Body` of the request must contain a multi-part mime encoded file object
- * @apiParam {String} platform        The platform your job is meat to be signed on (ios or android).
-
- * @apiSuccess (200) {String} id      The unique job ID of your request. To be used for other requests.
- *
- * @apiError   (401) Unauthorized     Authenticaiton required.
- * @apiError   (500) InternalError    The server encountered an internal error. Please retry the request.
- *
- * @apiExample {curl} Example
- *    curl -X POST -v -F file=@MyArchive-20180531.zip http://localhost:8000/v1/sign
- *
- * @apiSuccessExample Success-Response
- *    HTTP/1.1 200 OK
- *    {
- *      "id": "9f1785b9c"
- *    }
- *
- * @apiErrorExample {json} Error-Response
- *    HTTP/1.1 401 Unauthorized
- *
- */
- /* eslint-enable */
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
 
@@ -210,40 +182,6 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   return null;
 }));
 
-/* eslint-disable */
-/**
- * @api {GET} /:jobId/status Check the status of a job
- * @apiVersion  0.0.1
- * @apiName     JobStatus
- * @apiGroup    Sign
- *
- * @apiParam {String} jobId           The `jobId` provided by the call to `sign`
- *
- * @apiSuccess (202)                  The query was accepted but job is not completed
- * @apiSuccess (200) {Object}         The job is completed and the artifact is available for retrieval
- * 
- * @apiError   (401) Unauthorized     Authentication required.
- * @apiError   (500) InternalError    The server encountered an internal error. Please retry the request.
- *
- * @apiExample {curl} Example
- *    curl -X GET http://localhost:8000/v1/sign/d7995710/status
- *
- * @apiSuccessExample Success-Response
- *    HTTP/1.1 202 Accepted
- * 
- * @apiSuccessExample Success-Response
- *    HTTP/1.1 200 OK
- *    {
- *      "id": "d7995710",
- *      "url": "https://localhost:8000/v1/sign/d7995710/download"
- *      "durationInSeconds" 123.4
- *     }
- *
- * @apiErrorExample {json} Error-Response
- *    HTTP/1.1 401 Unauthorized
- *
- */
- /* eslint-enable */
 router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
   const {
     jobId,
@@ -277,31 +215,6 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
   }
 }));
 
-/* eslint-disable */
-/**
- * @api {GET} /:jobId/download Download the artifact of a successful job
- * @apiVersion  0.0.1
- * @apiName     JobArtifactDownload
- * @apiGroup    Sign
- *
- * @apiParam {String} jobId           The `jobId` provided by the call to `sign`
- *
- * @apiSuccess (200) {Object}         The binary representation of the job artifact
- * 
- * @apiError   (401) Unauthorized     Authentication required.
- * @apiError   (500) InternalError    The server encountered an internal error. Please retry the request.
- *
- * @apiExample {curl} Example
- *    curl -X GET http://localhost:8000/v1/sign/d7995710/download
- *
- * @apiSuccessExample Success-Response
- *    HTTP/1.1 200 OK
- *
- * @apiErrorExample {json} Error-Response
- *    HTTP/1.1 401 Unauthorized
- *
- */
- /* eslint-enable */
 router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
   const { jobId } = req.params;
   const expirationInDays = config.get('expirationInDays');
