@@ -27,6 +27,42 @@ import shortid from 'shortid';
 
 const exec = util.promisify(cp.exec);
 
+const currentValidSigningIdentities = async () => {
+  const { stdout } = await exec(`
+    security find-identity -p codesigning -v
+  `);
+
+  const items = stdout
+    .split('\n')
+    .slice(0, -2)
+    .map(item => item.trim().substr(3));
+
+  return items;
+};
+
+const extractCurrentSigningIdentifier = async (apath) => {
+  const { stdout } = await exec(`
+    cd "${apath}" && \
+    codesign -d --verbose=4 Payload/*.app 2>&1 | \
+    grep 'Authority' | \
+    head -1 | \
+    awk -F '=' '{ print $2 }'
+  `);
+
+  await currentValidSigningIdentities();
+  return stdout.trim();
+};
+
+const uniqueSigningIdentifierForValue = async (value) => {
+  const cids = await currentValidSigningIdentities();
+  const matches = await cids.find(item => item.includes(value));
+  if (matches.length === 0) {
+    return undefined;
+  }
+
+  return matches.split(' ')[0].trim();
+};
+
 /**
  * Package a signed artifact for delivery into a ZIP.
  *
@@ -128,5 +164,52 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line no-unused-vars
 export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  throw new Error('Not Implemented');
+  const outputDir = 'signed';
+  const items = [];
+  const apath = await extractArchiveContents(archiveFilePath, workspace);
+  const outBasePath = path.join(apath, outputDir);
+
+  const findResult = await exec(`find ${apath} -iname '*.ipa'`);
+  if (findResult.stderr !== '') {
+    throw new Error('Unable to find xcarchive(s) in package');
+  }
+
+  const results = findResult.stdout
+    .split('\n')
+    .filter(item => item && !item.includes('__MACOSX'));
+  for (let index = 0; index < results.length; index += 1) {
+    const value = results[index];
+    const out = path.join(outBasePath, `${index}`);
+    const outFileName = path.basename(value.trim());
+    items.push(outFileName);
+
+    /* eslint-disable no-await-in-loop */
+
+    // extract the IPA (really just a ZIP) contents so we have access
+    // to the `.app` file.
+    await exec(`
+      mkdir -p "${out}" && \
+      unzip -q "${value.trim()}" -d "${out}"
+    `);
+
+    // Try and figure out what the current signing identifier is
+    const certIdentifier = await extractCurrentSigningIdentifier(out);
+    const signingIdentifier = await uniqueSigningIdentifierForValue(certIdentifier);
+    if (!signingIdentifier) {
+      throw new Error('No match to current signing identity');
+    }
+
+    // Force re-sign the .app and package it back into an IPA.
+    await exec(`
+      cd "${out}" && \
+      rm -rf Payload/*.app/_CodeSignature && \
+      codesign -f -s "${signingIdentifier}" Payload/*.app && \
+      zip -qr "${outFileName}" * && \
+      mv "${outFileName}" "${apath}"
+    `);
+
+    /* eslint-enable no-await-in-loop */
+  }
+
+  return packageForDelivery(apath, items);
 };
