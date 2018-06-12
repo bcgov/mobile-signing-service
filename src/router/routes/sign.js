@@ -34,7 +34,7 @@ import {
   asyncMiddleware,
   errorWithCode,
 } from '../../libs/utils';
-import { signipaarchive } from '../../libs/sign';
+import { signipaarchive, signxcarchive } from '../../libs/sign';
 import {
   putObject,
   createBucketIfRequired,
@@ -91,9 +91,17 @@ const handleJob = async (job, clean = true) => {
     let deliveryFile;
     switch (job.platform) {
       case 'ios':
-        // deliveryFile = await signxcarchive(job.archivePath);
-        deliveryFile = await signipaarchive(job.archivePath);
+      {
+        const oname = job.originalName;
+        if (path.extname(oname).includes('ipa')) {
+          deliveryFile = await signipaarchive(job.archivePath);
+        } else {
+          // this is expected to be a zip file because an xcarchive is a
+          // form of package on macOS
+          deliveryFile = await signxcarchive(job.archivePath);
+        }
         break;
+      }
       case 'android':
         // deliveryFile = await signapkarchive(apath);
         break;
@@ -117,7 +125,7 @@ const handleJob = async (job, clean = true) => {
       logger.info(`${message}, etag = ${etag}`);
     }
 
-    await Job.update(db, { id: job.id }, { delivery_file: filename });
+    await Job.update(db, { id: job.id }, { etag, delivery_file: filename });
 
     if (clean) {
       const basePath = path.dirname(deliveryFile);
@@ -156,8 +164,8 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   }
   */
 
-  const xcapath = req.file.path;
-  fs.access(xcapath, fs.constants.R_OK, (err) => {
+  const fpath = req.file.path;
+  fs.access(fpath, fs.constants.R_OK, (err) => {
     if (err) {
       const message = 'Unable to access uploaded package';
       logger.error(message);
@@ -170,8 +178,9 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const id = shortid.generate();
   const job = await Job.create(db, {
     id,
+    original_name: req.file.originalname,
     platform: platform.toLocaleLowerCase(),
-    archive_path: xcapath,
+    archive_path: fpath,
   });
   logger.info(`Created job with ID ${job.id}`);
 

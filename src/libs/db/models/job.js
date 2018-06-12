@@ -25,7 +25,7 @@ import Model from './model';
 export default class Job extends Model {
   static get fields() {
     // primary key *must* be first!
-    return ['id', 'platform', 'archive_path', 'etag', 'delivery_file',
+    return ['id', 'platform', 'original_name', 'archive_path', 'etag', 'delivery_file',
       'created_at', 'updated_at']
       .map(field => `${this.table}.${field}`);
   }
