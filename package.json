@@ -67,6 +67,7 @@
     "build": "NODE_ENV=production gulp",
     "build:doc": "spectacle doc/api.yaml -t doc/api",
     "test": "NODE_ENV=test jest test/",
+    "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=test jest test/*_spec.js --watch",
     "test:security": "nsp check",
     "test:lint": "eslint --env node --ext .js src"
