@@ -1,23 +1,32 @@
 
 ## About
 
-This is the API component to the Secure Image application suite. Secure Image is designed to provide a simple yet secure way for people to take sensitive photographs (or image related documentation) and store it outside of the device's camera roll. It also provides a convenient way to extract the images by providing a secure URL to download an album.
+This is the Agent component to the BCDevX Mobile App Signing Service. The Signing
+Service is designed to be a selfe-serve system that enables development teams to
+sign and deploy build artifacts in a secure environment.
+
+The Agent is meant to run on a macOS system and run signing jobs; these can be
+for iOS, macOS, or Android. When a signing job is completed the artifacts are
+made available for a short period of time.
 
 Additional component can be fond in these repos:
 
-[iOS Application](https://github.com/bcgov/secure-image-ios)
+[Public API](https://github.com/bcdevx/mobile-cicd-api)
 
-[Android Application](https://github.com/bcgov/secure-image-android)
+[Public Web](https://github.com/bcdevx/mobile-cicd-web)
 
 ## Usage
 
-As part of the build process API documentation is automatically built via `apidoc` and packaged with the output image. Once deployed the documentation can be viewed at the following URL; update the protocol and host according to your own deployment.
+The API documentation can be built with the following command; the result of building the documentaiton can be found in the `doc/` directory / folder.
 
-`https://api-devex-mpf-secure-test.pathfinder.gov.bc.ca/docs/`
+```console
+npm run build:doc
+```
 
 ## Build
 
-Use the OpenShift `build.json` template in this repo with the following (sample) command.
+Use the OpenShift `build.json` template in this repo with the following (sample) command. The build is meant to be a CI
+process to confirm that a build can happen without error, that no code quality, security or test errors occur.
 
 ```console
 oc process -f openshift/templates/build.json \
@@ -36,26 +45,7 @@ oc create -f -
 
 ## Deployment
 
-Use the OpenShift `deploy.json` template in this repo with the following (sample) command.
-
-```console
- oc process -f openshift/templates/deploy.json \
- -p NODE_ENV="development" \
- -p SSO_CLIENT_SECRET="abc123" \
- -p MINIO_VOLUME_CAPACITY=3Gi \
- -p ENV_NAMESPACE="devex-mpf-secure-test" \
- -p IMAGE_TAG="test" | \
-oc create -f -
-```
-
-| Parameter          | Optional      | Description   |
-| ------------------ | ------------- | ------------- |
-| NODE_ENV           | NO            | The node environment name |
-| SSO_CLIENT_SECRET  | NO            | Client secret provided by SSO |
-| ENV_NAMESPACE      | NO            | The environment namespace your deploying to |
-| IMAGE_TAG          | NO            | The image tag you wish to deploy |
-
-* See the `deploy.json` template for other *optional* parameters.
+TBD
 
 ## Local Installation for Development
 
@@ -91,9 +81,9 @@ npm run dev
 
 ## Project Status / Goals / Roadmap
 
-This project is completed. 
+This project is **active**. 
 
-Progress to date, known issues, or new features will be documented on our publicly available Trello board [here](https://trello.com/b/UYJpEzrT/secure-image-app).
+Progress to date, known issues, or new features will be documented on our publicly available Trello board [here](https://trello.com/b/HGJpxQdS/mobile-pathfinder).
 
 ## Getting Help or Reporting an Issue
 
@@ -116,7 +106,7 @@ The default license For code repositories is: Apache 2.0
 
 Here is the boiler-plate you should put into the comments header of every source code file as well as the bottom of your README.md:
 
-    Copyright 2015 Province of British Columbia
+    Copyright 2018 Province of British Columbia
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

@@ -28,6 +28,7 @@ exports.up = async knex =>
   knex.schema.createTable(table, async (t) => {
     t.string('id', 16).index().primary();
     t.string('platform', 8).notNull();
+    t.string('original_name', 128).notNull();
     t.string('archive_path', 64).notNull();
     t.string('etag', 33);
     t.string('delivery_file', 64);
