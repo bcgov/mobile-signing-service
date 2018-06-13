@@ -27,6 +27,42 @@ import shortid from 'shortid';
 
 const exec = util.promisify(cp.exec);
 
+const currentValidSigningIdentities = async () => {
+  const { stdout } = await exec(`
+    security find-identity -p codesigning -v
+  `);
+
+  const items = stdout
+    .split('\n')
+    .slice(0, -2)
+    .map(item => item.trim().substr(3));
+
+  return items;
+};
+
+const extractCurrentSigningIdentifier = async (apath) => {
+  const { stdout } = await exec(`
+    cd "${apath}" && \
+    codesign -d --verbose=4 Payload/*.app 2>&1 | \
+    grep 'Authority' | \
+    head -1 | \
+    awk -F '=' '{ print $2 }'
+  `);
+
+  await currentValidSigningIdentities();
+  return stdout.trim();
+};
+
+const uniqueSigningIdentifierForValue = async (value) => {
+  const cids = await currentValidSigningIdentities();
+  const matches = await cids.find(item => item.includes(value));
+  if (matches.length === 0) {
+    return undefined;
+  }
+
+  return matches.split(' ')[0].trim();
+};
+
 /**
  * Package a signed artifact for delivery into a ZIP.
  *
@@ -84,14 +120,17 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) in package');
     }
 
-    const promises = findResult.stdout.trim().split('\n').map(async element =>
-      exec(`
+    const promises = findResult.stdout.trim().split('\n').map(async (element) => {
+      const exppath = `${path.join(apath, outputDir, path.basename(element).split('.')[0])}`
+        .replace(/ /g, '_');
+      return exec(`
         xcodebuild \
         -exportArchive \
-        -archivePath ${element} \
-        -exportPath ${path.join(apath, outputDir, path.basename(element).split('.')[0])}  \
+        -archivePath "${element}" \
+        -exportPath "${exppath}"  \
         -exportOptionsPlist ${path.join(apath, 'options.plist')} 
-      `));
+      `);
+    });
 
     const response = await Promise.all(promises);
 
@@ -100,8 +139,8 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       const { stdout } = value;
       if (stdout.includes('EXPORT SUCCEEDED')) {
         const lines = stdout.trim().split('\n');
-        const components = lines[0].split(' ');
-        if (components.length !== 4) {
+        const components = lines[0].split('to:').map(item => item.trim());
+        if (components.length !== 2) {
           throw new Error('Unexpected response from archive export');
         }
 
@@ -109,9 +148,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       }
     });
 
-    const deliveryFile = packageForDelivery(path.join(apath, outputDir), items);
-
-    return deliveryFile;
+    return packageForDelivery(path.join(apath, outputDir), items);
   } catch (error) {
     console.log(error.message);
   }
@@ -128,5 +165,38 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line no-unused-vars
 export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  throw new Error('Not Implemented');
+  const outputDir = 'tmp';
+  const apath = path.join(workspace, shortid.generate());
+  const outBasePath = path.join(apath, outputDir);
+  const ipaPath = `${path.join(apath, shortid.generate())}.ipa`;
+  const outFileName = `${path.join(apath, shortid.generate())}.ipa`;
+
+  await exec(`
+    mkdir -p "${apath}" && \
+    cp -a "${archiveFilePath}" "${ipaPath}"
+  `);
+
+  // extract the IPA (really just a ZIP) contents so we have access
+  // to the `.app` file.
+  await exec(`
+    mkdir -p "${outBasePath}" && \
+    unzip -q "${ipaPath}" -d "${outBasePath}"
+  `);
+
+  // Try and figure out what the current signing identifier is
+  const certIdentifier = await extractCurrentSigningIdentifier(outBasePath);
+  const signingIdentifier = await uniqueSigningIdentifierForValue(certIdentifier);
+  if (!signingIdentifier) {
+    throw new Error('No match to current signing identity');
+  }
+
+  // Force re-sign the .app and package it back into an IPA.
+  await exec(`
+    cd "${outBasePath}" && \
+    rm -rf Payload/*.app/_CodeSignature && \
+    codesign -f -s "${signingIdentifier}" Payload/*.app && \
+    zip -qr "${outFileName}" *
+  `);
+
+  return outFileName;
 };

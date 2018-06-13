@@ -23,8 +23,6 @@
 const gulp = require('gulp');
 const babel = require('gulp-babel');
 const clean = require('gulp-clean');
-const apidoc = require('gulp-apidoc');
-
 
 gulp.task('clean', () => gulp.src('build', { read: false })
   .pipe(clean({
@@ -57,16 +55,6 @@ gulp.task('copy-public', ['clean'], () =>
   gulp.src('public/**')
     .pipe(gulp.dest('build/public')));
 
-gulp.task('apidoc', ['clean', 'transpile-src', 'copy-node-config'], done => apidoc({
-  src: 'build/',
-  dest: 'build/public/doc/api',
-  encoding: 'utf8',
-  silent: true,
-  debug: false,
-  includeFilters: ['src/.*\\.js$'],
-}, done));
-
 gulp.task('default', ['clean', 'transpile-src', 'transpile-scripts',
   'copy-config', 'copy-node-config', 'copy-templates', 'copy-public',
-  'apidoc',
 ]);

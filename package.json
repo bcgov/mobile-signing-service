@@ -37,7 +37,6 @@
     "winston": "^2.4.2"
   },
   "devDependencies": {
-    "apidoc": "^0.17.6",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.3",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
@@ -46,6 +45,8 @@
     "babel-preset-airbnb": "^2.4.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-2": "^6.24.1",
+    "bootprint": "^1.0.2",
+    "bootprint-openapi": "^1.1.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-config-defaults": "^9.0.0",
@@ -58,14 +59,16 @@
     "jest": "^22.4.3",
     "nodemon": "^1.17.5",
     "nsp": "^3.2.1",
-    "sinon": "^5.1.0"
+    "sinon": "^5.1.0",
+    "swagger-cli": "^2.0.0"
   },
   "scripts": {
     "start": "node build/src",
     "dev": "NODE_ENV=development nodemon src --exec babel-node --inspect",
     "build": "NODE_ENV=production gulp",
-    "build:doc": "apidoc -i src/ -o doc/api",
+    "build:doc": "bootprint openapi doc/api.yaml doc/api",
     "test": "NODE_ENV=test jest test/",
+    "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=test jest test/*_spec.js --watch",
     "test:security": "nsp check",
     "test:lint": "eslint --env node --ext .js src"
@@ -76,12 +79,5 @@
   },
   "author": "Jason C. Leach <jason.leach@fullboar.ca>",
   "license": "Apache-2.0",
-  "homepage": "https://github.com:bcgov/code-sign-api#readme",
-  "apidoc": {
-    "name": "Code Signing API",
-    "version": "0.0.1",
-    "description": "RESTfull API for Secure Code Signing",
-    "title": "Secure Code Signing API Docummentation",
-    "url": "http://localhost:8080/v1"
-  }
+  "homepage": "https://github.com:bcgov/code-sign-api#readme"
 }
