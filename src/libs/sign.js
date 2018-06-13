@@ -24,8 +24,6 @@ import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
-// Q: get rid:
-import { logger } from './logger';
 
 const exec = util.promisify(cp.exec);
 
