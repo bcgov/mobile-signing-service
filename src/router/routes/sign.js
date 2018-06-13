@@ -34,7 +34,7 @@ import {
   asyncMiddleware,
   errorWithCode,
 } from '../../libs/utils';
-import { signxcarchive } from '../../libs/sign';
+import { signxcarchive, signapkarchive } from '../../libs/sign';
 import {
   putObject,
   createBucketIfRequired,
@@ -94,7 +94,7 @@ const handleJob = async (job, clean = true) => {
         deliveryFile = await signxcarchive(job.archivePath);
         break;
       case 'android':
-        // deliveryFile = await signapkarchive(apath);
+        deliveryFile = await signapkarchive(job.archivePath);
         break;
       default:
         throw new Error('Unsupported platform');
@@ -148,7 +148,7 @@ const handleJob = async (job, clean = true) => {
  *
  * @apiExample {curl} Example
  *    curl -X POST -v -F file=@MyArchive-20180531.zip http://localhost:8000/v1/sign
- *
+ * 
  * @apiSuccessExample Success-Response
  *    HTTP/1.1 200 OK
  *    {

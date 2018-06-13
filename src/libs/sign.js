@@ -24,6 +24,8 @@ import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
+// Q: get rid:
+import { logger } from './logger';
 
 const exec = util.promisify(cp.exec);
 
@@ -132,13 +134,61 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
 };
 
 /**
- * Sign an xcode ipa file.
+ * Sign an Android apk file.
  *
- * @param {string} archiveFilePath The path to the ipa file
+ * @param {string} archiveFilePath The path to the apk file
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns A `string` containing the path to the newly minted archive
+ * 
  */
 // eslint-disable-next-line no-unused-vars
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  throw new Error('Not Implemented');
+  const outputDir = 'tmp';
+  const apath = path.join(workspace, shortid.generate());
+  const outBasePath = path.join(apath, outputDir);
+  const packagePath = `${path.join(apath, shortid.generate())}`;
+  const outFileName = `${path.join(apath, shortid.generate())}.apk`;
+// Hardcoded key credential:
+  const keyPassword = '';
+  const keyAlias = '';
+
+  await exec(`
+    mkdir -p "${apath}" && \
+    cp -a "${archiveFilePath}" "${packagePath}"
+  `);
+
+  // Extract the package that contains both apk and key:
+  await exec(`
+    mkdir -p "${outBasePath}" && \
+    unzip -q "${packagePath}" -d "${outBasePath}"
+  `);
+
+  // Find apk and signing key:
+  const apkPath = await exec(`find ${outBasePath} -iname '*.apk'`);
+  const keyPath = await exec(`find ${outBasePath} -iname '*.keystore'`);
+  if (keyPath.stderr || apkPath.stderr) {
+    throw new Error('Cannot find apk or signing key.');
+  }
+
+  // Sign the apk:
+  const response = await exec(`
+    apksigner sign \
+    -v \
+    --ks ${keyPath.stdout.trim().split('\n')} \
+    --ks-key-alias ${keyAlias} \
+    --ks-pass pass:${keyPassword} \
+    --key-pass pass:${keyPassword} \
+    --out ${outFileName} \
+    ${apkPath.stdout.trim().split('\n')}`);
+
+  // Zip signed apk:
+  if (response.stdout.includes('Signed')) {
+    await exec(`
+    cd "${path.dirname(outFileName)}" && \
+    zip -qr "${path.basename(outFileName)}" *`);
+    return outFileName;
+  } else {
+    console.log(response.stderr);
+  }
+  return outFileName;
 };
