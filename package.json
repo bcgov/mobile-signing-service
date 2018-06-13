@@ -66,7 +66,7 @@
     "start": "node build/src",
     "dev": "NODE_ENV=development nodemon src --exec babel-node --inspect",
     "build": "NODE_ENV=production gulp",
-    "build:doc": "bootprint openapi doc/api.yaml doc/api",
+    "build:doc": "bootprint openapi doc/api.yaml public/doc/api",
     "test": "NODE_ENV=test jest test/",
     "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=test jest test/*_spec.js --watch",
