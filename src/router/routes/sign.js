@@ -61,6 +61,11 @@ try {
   logger.error(`Problem creating bucket ${bucket}`);
 }
 
+/**
+ * Cealnup artifacts left over from the signing process
+ *
+ * @param {*} apath The locaton of the artifacts
+ */
 const cleanup = async (apath) => {
   const rm = util.promisify(fs.remove);
   try {
@@ -84,6 +89,12 @@ const cleanup = async (apath) => {
   }
 };
 
+/**
+ * Start processing a signing `Job`
+ *
+ * @param {Job} job The `Job` to process
+ * @param {boolean} [clean=true] Cleanup after processing is done
+ */
 const handleJob = async (job, clean = true) => {
   logger.info(`Processing job with ID ${job.id}`);
 
