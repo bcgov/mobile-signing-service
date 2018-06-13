@@ -27,6 +27,11 @@ import shortid from 'shortid';
 
 const exec = util.promisify(cp.exec);
 
+/**
+ * Fetch all the currently available signing identities for iOS
+ *
+ * @returns
+ */
 const currentValidSigningIdentities = async () => {
   const { stdout } = await exec(`
     security find-identity -p codesigning -v
@@ -40,6 +45,12 @@ const currentValidSigningIdentities = async () => {
   return items;
 };
 
+/**
+ * Retrieve the identifier used to sign an iOS app
+ *
+ * @param {string} apath
+ * @returns
+ */
 const extractCurrentSigningIdentifier = async (apath) => {
   const { stdout } = await exec(`
     cd "${apath}" && \
@@ -49,10 +60,15 @@ const extractCurrentSigningIdentifier = async (apath) => {
     awk -F '=' '{ print $2 }'
   `);
 
-  await currentValidSigningIdentities();
   return stdout.trim();
 };
 
+/**
+ * Return the matching UUID for a given text based identifier
+ *
+ * @param {string} value
+ * @returns
+ */
 const uniqueSigningIdentifierForValue = async (value) => {
   const cids = await currentValidSigningIdentities();
   const matches = await cids.find(item => item.includes(value));
