@@ -46,14 +46,14 @@ import {
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
 
-const bucket = config.get('minio:bucket');
-const upload = multer({ dest: config.get('temporaryUploadPath') });
 const router = new Router();
 const dm = new DataManager();
 const {
   db,
   Job,
 } = dm;
+const upload = multer({ dest: config.get('temporaryUploadPath') });
+const bucket = config.get('minio:bucket');
 const client = new minio.Client({
   endPoint: config.get('minio:endPoint'),
   port: config.get('minio:port'),
