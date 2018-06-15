@@ -20,57 +20,16 @@
 
 'use strict';
 
-import * as minio from 'minio';
+import util from 'util';
 import config from '../config';
 import { logger } from './logger';
-
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
-
-/**
- * Get the status of an object
- *
- * @param {String} bucket The name of the bucket
- * @param {String} name The name of the object to retrieve
- */
-export const statObject = (bucket, name) => new Promise((resolve, reject) => {
-  client.statObject(bucket, name, (err, stat) => {
-    if (err) {
-      return reject(err);
-    }
-
-    return resolve(stat);
-  });
-});
-
-/**
- * Crete a new bucket
- *
- * @param {String} bucket The name of the bucket
- */
-export const makeBucket = bucket => new Promise((resolve, reject) => {
-  client.makeBucket(bucket, config.get('minio:region'), (err) => {
-    if (err) {
-      reject(err);
-      return;
-    }
-
-    resolve();
-  });
-});
 
 /**
  * Check if a bucket exists
  *
  * @param {String} bucket The name of the bucket
  */
-export const bucketExists = bucket => new Promise((resolve, reject) => {
+export const bucketExists = (client, bucket) => new Promise((resolve, reject) => {
   // The API for `bucketExists` does not seem to match the documentaiton. In
   // returns an error with code 'NoSuchBucket' if a bucket does *not* exists;
   // the docs say no error should be retunred and success should equal false.
@@ -100,7 +59,7 @@ export const bucketExists = bucket => new Promise((resolve, reject) => {
  * @param {String} bucket The name of the bucket.
  * @param {String} [prefix=''] Prefix to filter the contents on.
  */
-export const listBucket = (bucket, prefix = '') => new Promise((resolve, reject) => {
+export const listBucket = (client, bucket, prefix = '') => new Promise((resolve, reject) => {
   const stream = client.listObjectsV2(bucket, prefix, false);
   const objects = [];
 
@@ -118,29 +77,12 @@ export const listBucket = (bucket, prefix = '') => new Promise((resolve, reject)
 });
 
 /**
- * Add an object to a bucket
- *
- * @param {String} bucket The name of the bucket
- * @param {String} name The name the object will have in the bucket
- * @param {Buffer} data The object data `Stream` or `Buffer`
- */
-export const putObject = (bucket, name, data) => new Promise((resolve, reject) => {
-  client.putObject(bucket, name, data, (error, etag) => {
-    if (error) {
-      reject(error);
-    }
-
-    resolve(etag);
-  });
-});
-
-/**
  * Fetch an object from an existing bucket
  *
  * @param {String} bucket The name of the bucket
  * @param {String} name The name of the object to retrieve
  */
-export const getObject = (bucket, name) => new Promise((resolve, reject) => {
+export const getObject = (client, bucket, name) => new Promise((resolve, reject) => {
   let size = 0;
   const data = [];
 
@@ -166,12 +108,29 @@ export const getObject = (bucket, name) => new Promise((resolve, reject) => {
 });
 
 /**
+ * Add an object to a bucket
+ *
+ * @param {String} bucket The name of the bucket
+ * @param {String} name The name the object will have in the bucket
+ * @param {Buffer} data The object data `Stream` or `Buffer`
+ */
+export const putObject = (client, bucket, name, data) => new Promise((resolve, reject) => {
+  client.putObject(bucket, name, data, (error, etag) => {
+    if (error) {
+      reject(error);
+    }
+
+    resolve(etag);
+  });
+});
+
+/**
  * Get a resigned URL for an object
  *
  * @param {String} bucket The name of the bucket
  * @param {String} name The name of the object
  */
-export const getPresignedUrl = (bucket, name) => new Promise((resolve, reject) => {
+export const getPresignedUrl = (client, bucket, name) => new Promise((resolve, reject) => {
   const expiryInSeconds = config.get('minio:expiry');
 
   client.presignedUrl('GET', bucket, name, expiryInSeconds, (error, presignedUrl) => {
@@ -180,22 +139,6 @@ export const getPresignedUrl = (bucket, name) => new Promise((resolve, reject) =
     }
 
     resolve(presignedUrl);
-  });
-});
-
-/**
- * Remove an object from a bucket
- *
- * @param {String} bucket The name of the bucket
- * @param {String} name The name of the object
- */
-export const removeObject = (bucket, name) => new Promise((resolve, reject) => {
-  client.removeObject(bucket, name, (error) => {
-    if (error) {
-      reject(error);
-    }
-
-    resolve();
   });
 });
 
@@ -211,11 +154,12 @@ export const isExpired = (object, days) => {
   return deltaAsDays > days;
 };
 
-export const createBucketIfRequired = async (bucket) => {
+export const createBucketIfRequired = async (client, bucket) => {
   try {
     const exists = await bucketExists(bucket);
 
     if (!exists) {
+      const makeBucket = util.promisify(client.makeBucket);
       await makeBucket(bucket);
     }
   } catch (err) {
@@ -224,12 +168,14 @@ export const createBucketIfRequired = async (bucket) => {
   }
 };
 
-export const expiredTopLevelObjects = async (bucket, prefix = '', days = 90) => {
+export const expiredTopLevelObjects = async (client, bucket, prefix = '', days = 90) => {
   try {
     const topLevelObjects = await listBucket(bucket, prefix);
     const promises = topLevelObjects.map(async (e) => {
       // container objects have a prefix property
       if (typeof (e.prefix) !== 'undefined') {
+        const statObject = util.promify(client.statObject);
+
         return [await statObject(bucket, e.prefix), { prefix: e.prefix }];
       }
 

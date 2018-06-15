@@ -22,6 +22,7 @@
 
 'use strict';
 
+import * as minio from 'minio';
 import util from 'util';
 import shortid from 'shortid';
 import { Router } from 'express';
@@ -36,11 +37,10 @@ import {
 } from '../../libs/utils';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
 import {
-  putObject,
   createBucketIfRequired,
   bucketExists,
-  statObject,
   getObject,
+  putObject,
   isExpired,
 } from '../../libs/bucket';
 import DataManager from '../../libs/db';
@@ -54,9 +54,17 @@ const {
   db,
   Job,
 } = dm;
+const client = new minio.Client({
+  endPoint: config.get('minio:endPoint'),
+  port: config.get('minio:port'),
+  secure: config.get('minio:secure'),
+  accessKey: config.get('minio:accessKey'),
+  secretKey: config.get('minio:secretKey'),
+  region: config.get('minio:region'),
+});
 
 try {
-  createBucketIfRequired(bucket);
+  createBucketIfRequired(client, bucket);
 } catch (err) {
   logger.error(`Problem creating bucket ${bucket}`);
 }
@@ -127,9 +135,9 @@ const handleJob = async (job, clean = true) => {
       });
     }
 
-    const stream = fs.createReadStream(deliveryFile);
+    const readStream = fs.createReadStream(deliveryFile);
     const filename = path.basename(deliveryFile);
-    const etag = await putObject(bucket, filename, stream);
+    const etag = await putObject(client, bucket, filename, readStream, undefined);
 
     if (etag) {
       const message = 'Uploaded file for delivery';
@@ -158,7 +166,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     return res.status(400).json({ message: 'Unable to process attached form.' });
   }
 
-  if (!bucketExists(bucket)) {
+  if (!bucketExists(client, bucket)) {
     return res.status(500).json({ message: 'Unable to store attached file.' });
   }
 
@@ -241,13 +249,14 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
 
   try {
     const job = await Job.findById(db, jobId);
+    const statObject = util.promisify(client.statObject);
     const stat = await statObject(bucket, `${job.deliveryFile}`);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    const buffer = await getObject(bucket, job.deliveryFile);
+    const buffer = await getObject(client, bucket, job.deliveryFile);
 
     if (!buffer) {
       throw errorWithCode('Unable to fetch archive.', 500);
