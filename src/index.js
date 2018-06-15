@@ -21,25 +21,18 @@
 'use strict';
 
 // import cluster from 'cluster';
-import path from 'path';
-import fs from 'fs';
-import express from 'express';
-import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
-import {
-  logger,
-  started,
-} from './libs/logger';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import config from './config';
 import authmw from './libs/authmware';
-
-const env = config.get('environment');
-
-// Middlewares
+import { logger, started } from './libs/logger';
 
 // Config
-const isDev = env !== 'production';
+const env = config.get('environment');
 const port = config.get('port');
 const app = express();
 const options = {
@@ -100,7 +93,7 @@ app.listen(port, '0.0.0.0', (err) => {
   if (err) {
     return logger.error(`There was a problem starting the server, ${err.message}`);
   }
-  if (isDev) {
+  if (env !== 'production') {
     return started(port);
   }
   return logger.info(`Production server running on port: ${port}`);
