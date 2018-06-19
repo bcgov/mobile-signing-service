@@ -23,6 +23,7 @@
 'use strict';
 
 import * as minio from 'minio';
+import url from 'url';
 import fs from 'fs';
 import util from 'util';
 import request from 'request-promise-native';
@@ -120,8 +121,8 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     const options = {
       headers: { 'content-type': 'application/json' },
       method: 'POST',
-      uri: 'http://localhost:3000/v1/job/sign',
-      body: { ...job, ...{ ref: `http://localhost:8000/v1/job/${job.id}` } },
+      uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
+      body: { ...job, ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` } },
       json: true,
     };
     const status = await request(options);
