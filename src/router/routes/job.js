@@ -55,7 +55,7 @@ try {
 }
 
 /**
- * Cealnup artifacts left over from the signing process
+ * Cleanup artifacts left over from the signing process
  *
  * @param {*} apath The locaton of the artifacts
  */
