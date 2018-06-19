@@ -20,12 +20,28 @@
 
 'use strict';
 
+import * as minio from 'minio';
+import fs from 'fs';
 import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
+import config from '../config';
+import { getObject } from './bucket';
+import { logger } from './logger';
 
 const exec = util.promisify(cp.exec);
+const writeFile = util.promisify(fs.writeFile);
+
+const bucket = config.get('minio:bucket');
+const client = new minio.Client({
+  endPoint: config.get('minio:endPoint'),
+  port: config.get('minio:port'),
+  secure: config.get('minio:secure'),
+  accessKey: config.get('minio:accessKey'),
+  secretKey: config.get('minio:secretKey'),
+  region: config.get('minio:region'),
+});
 
 /**
  * Fetch all the currently available signing identities for iOS
@@ -79,6 +95,18 @@ const uniqueSigningIdentifierForValue = async (value) => {
   return matches.split(' ')[0].trim();
 };
 
+const fetchFileFromStorage = async (archiveFilePath, workspace) => {
+  const outFileName = shortid.generate();
+  const apath = path.join(workspace, shortid.generate());
+  const outFilePath = path.join(apath, outFileName);
+  const buffer = await getObject(client, bucket, archiveFilePath);
+
+  await exec(`mkdir -p ${apath}`);
+  await writeFile(outFilePath, buffer, 'utf8');
+
+  return outFilePath;
+};
+
 /**
  * Package a signed artifact for delivery into a ZIP.
  *
@@ -87,14 +115,19 @@ const uniqueSigningIdentifierForValue = async (value) => {
  * @returns A `string` containing the path to extracted contents
  */
 const extractArchiveContents = async (archiveFilePath, workspace) => {
-  const apath = path.join(workspace, shortid.generate());
+  try {
+    const inFilePath = await fetchFileFromStorage(archiveFilePath, workspace);
+    const outpath = path.dirname(inFilePath);
 
-  await exec(`
-    mkdir -p ${apath} && \
-    unzip -q ${archiveFilePath} -d ${apath}
-  `);
+    await exec(`unzip -q ${inFilePath} -d ${outpath}`);
 
-  return apath;
+    return outpath;
+  } catch (error) {
+    const message = `Unable to write file to workspace, error = ${error.message}`;
+    logger.error(message);
+
+    throw new Error(message);
+  }
 };
 
 /**
@@ -232,7 +265,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   const outBasePath = path.join(apath, outputDir);
   const packagePath = `${path.join(apath, shortid.generate())}`;
   const outFileName = `${path.join(apath, shortid.generate())}.apk`;
-// Hardcoded key credential:
+  // Hardcoded key credential:
   const keyPassword = '';
   const keyAlias = '';
 
