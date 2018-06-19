@@ -22,7 +22,6 @@
 
 import cors from 'cors';
 import config from '../config';
-import auth from './routes/auth';
 import ehlo from './routes/ehlo';
 import job from './routes/job';
 
@@ -35,6 +34,5 @@ const corsOptions = {
 module.exports = (app) => {
   app.use(cors(corsOptions));
   app.use('/ehlo', ehlo); // probes
-  app.use('/v1/auth', auth);
   app.use('/v1/job', job);
 };
