@@ -11,7 +11,11 @@
 	"session": {
 		"maxAge": 604800000,
 		"expires": 604800000
-  },
+	},
+	"agent": {
+		"hostUrl": "http://localhost:3000",
+		"signPath": "/v1/job/sign"
+	},
   "sso": {
 		"clientId": "secode-sign-api",
 		"callback": "/v1/auth/callback",
