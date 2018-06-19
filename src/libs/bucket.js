@@ -156,7 +156,7 @@ export const isExpired = (object, days) => {
 
 export const createBucketIfRequired = async (client, bucket) => {
   try {
-    const exists = await bucketExists(bucket);
+    const exists = await bucketExists(client, bucket);
 
     if (!exists) {
       const makeBucket = util.promisify(client.makeBucket);
