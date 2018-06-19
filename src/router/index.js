@@ -24,7 +24,7 @@ import cors from 'cors';
 import config from '../config';
 import auth from './routes/auth';
 import ehlo from './routes/ehlo';
-import album from './routes/sign';
+import job from './routes/job';
 
 const corsOptions = {
   origin: config.get('appUrl'),
@@ -36,5 +36,5 @@ module.exports = (app) => {
   app.use(cors(corsOptions));
   app.use('/ehlo', ehlo); // probes
   app.use('/v1/auth', auth);
-  app.use('/v1/sign', album);
+  app.use('/v1/job', job);
 };

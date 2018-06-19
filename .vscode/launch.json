@@ -8,7 +8,7 @@
             "processId": "${command:PickProcess}",
             "restart": true,
             "protocol": "inspector",
-            "port": 9229,
+            "port": 9228,
             "sourceMaps": true,
         },
         {
