@@ -42,10 +42,10 @@ def notifySlack(text, channel, url, attachments, icon) {
 }
 
 // See https://github.com/jenkinsci/kubernetes-plugin
-podTemplate(label: 'secureimg-api-node-build', name: 'secureimg-api-node-build', serviceAccount: 'jenkins', cloud: 'openshift', containers: [
+podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAccount: 'jenkins', cloud: 'openshift', containers: [
   containerTemplate(
     name: 'jnlp',
-    image: 'docker-registry.default.svc:5000/devex-mpf-secure-tools/jenkins-slave-node6:latest',
+    image: 'docker-registry.default.svc:5000/openshift/jenkins-slave-nodejs6:latest',
     resourceRequestCpu: '500m',
     resourceLimitCpu: '1000m',
     resourceRequestMemory: '1Gi',
@@ -59,7 +59,7 @@ podTemplate(label: 'secureimg-api-node-build', name: 'secureimg-api-node-build',
     //   ]
   )
 ]) {
-   node('secureimg-api-node-build') {
+   node('cicd-api-node-build') {
 
     SLACK_TOKEN = sh (
       script: """oc get secret/slack -o template --template="{{.data.token}}" | base64 --decode""",
