@@ -21,7 +21,7 @@
 import groovy.json.JsonOutput
 
 def APP_NAME = 'cicd-api'
-def BUILD_CONFIG_BASE_NAME = 'api'
+def BUILD_CONFIG_BASE_NAME = 'cicd-api'
 def IMAGESTREAM_NAME = APP_NAME
 def TAG_NAMES = ['dev', 'test', 'prod']
 def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-icon.png'
