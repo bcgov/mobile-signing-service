@@ -20,7 +20,7 @@
 
 import groovy.json.JsonOutput
 
-def APP_NAME = 'secure-image-api'
+def APP_NAME = 'cicd-api'
 def BUILD_CONFIG_BASE_NAME = 'api'
 def IMAGESTREAM_NAME = APP_NAME
 def TAG_NAMES = ['dev', 'test', 'prod']
