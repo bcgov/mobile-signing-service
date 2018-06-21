@@ -45,6 +45,20 @@
       "type": "Opaque",
       "apiVersion": "v1",
       "metadata": {
+        "name": "${SESSION_SECRET_NAME}",
+        "labels": {
+          "app": "${API_NAME}"
+        }
+      },
+      "stringData": {
+        "secret": "${SESSION_SECRET_VALUE}"
+      }
+    },
+    {
+      "kind": "Secret",
+      "type": "Opaque",
+      "apiVersion": "v1",
+      "metadata": {
         "name": "${SSO_SECRET_NAME}",
         "labels": {
           "app": "${API_NAME}"
@@ -354,6 +368,15 @@
                   }
                 },
                 {
+                  "name": "SESSION_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "secret",
+                      "name": "${SESSION_SECRET_NAME}"
+                    }
+                  }
+                },
+                {
                   "name": "PORT",
                   "value": "${PORT}"
                 },
@@ -615,6 +638,20 @@
       "name": "SSO_SECRET_VALUE",
       "displayName": "SSO secret name",
       "description": "The secret name of sso-credentials.",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}",
+      "required": true
+    },
+    {
+      "name": "SESSION_SECRET_NAME",
+      "displayName": "API session name",
+      "description": "The secret name for the API.",
+      "value": "cicd-api"
+    },
+    {
+      "name": "SESSION_SECRET_VALUE",
+      "displayName": "SSO secret",
+      "description": "The secret of for the API.",
       "generate": "expression",
       "from": "[a-zA-Z0-9]{16}",
       "required": true
