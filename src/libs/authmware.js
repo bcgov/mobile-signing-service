@@ -55,6 +55,9 @@ const authmware = (app) => {
   // We don't use the credentials for anything, just the isAuthenticated() in
   // the session object to confifm authentication.
 
+  console.log(config.get('apiUrl'));
+  console.log(config.get('sso:callback'));
+
   const oAuth2Strategy = new OAuth2Strategy(
     {
       authorizationURL: config.get('sso:authUrl'),
