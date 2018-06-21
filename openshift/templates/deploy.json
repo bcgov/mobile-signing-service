@@ -139,6 +139,29 @@
       }
     },
     {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${MINIO_DEPLOYMENT_NAME}",
+        "labels": {
+          "app": "${API_NAME}"
+        }
+      },
+      "spec": {
+        "port": {
+          "targetPort": "8080-tcp"
+        },
+        "to": {
+          "kind": "Service",
+          "name": "${MINIO_DEPLOYMENT_NAME}",
+          "weight": 100
+        },  
+        "tls": {
+          "termination": "edge"
+        }
+      }
+    },
+    {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
