@@ -41,7 +41,7 @@ gulp.task('transpile-scripts', ['clean'], () =>
 
 gulp.task('copy-config', ['clean'], () =>
   gulp.src('src/config/*.json')
-    .pipe(gulp.dest('build/scr/config')));
+    .pipe(gulp.dest('build/src/config')));
 
 gulp.task('copy-node-config', ['clean'], () =>
   gulp.src(['apidoc.json', 'package.json', 'package-lock.json'])
