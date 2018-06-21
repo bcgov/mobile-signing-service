@@ -31,10 +31,10 @@
     "passport": "^0.4.0",
     "passport-oauth2": "^1.4.0",
     "pg": "^7.4.3",
+    "request": "^2.87.0",
     "request-promise-native": "^1.0.5",
     "rsa-pem-from-mod-exp": "^0.8.4",
     "shortid": "^2.2.8",
-    "sqlite3": "^4.0.0",
     "winston": "^2.4.2"
   },
   "devDependencies": {
@@ -60,7 +60,6 @@
     "jest": "^22.4.3",
     "nodemon": "^1.17.5",
     "nsp": "^3.2.1",
-    "request": "^2.87.0",
     "sinon": "^5.1.0",
     "swagger-cli": "^2.0.0"
   },
