@@ -25,6 +25,22 @@ import config from '../config';
 import { logger } from './logger';
 
 /**
+ * Crete a new bucket
+ *
+ * @param {String} bucket The name of the bucket
+ */
+export const makeBucket = (client, bucket) => new Promise((resolve, reject) => {
+  client.makeBucket(bucket, config.get('minio:region'), (err) => {
+    if (err) {
+      reject(err);
+      return;
+    }
+
+    resolve();
+  });
+});
+
+/**
  * Check if a bucket exists
  *
  * @param {String} bucket The name of the bucket
@@ -157,10 +173,8 @@ export const isExpired = (object, days) => {
 export const createBucketIfRequired = async (client, bucket) => {
   try {
     const exists = await bucketExists(client, bucket);
-
     if (!exists) {
-      const makeBucket = util.promisify(client.makeBucket);
-      await makeBucket(bucket);
+      await makeBucket(client, bucket);
     }
   } catch (err) {
     logger.error(`Unable to create bucket: ${bucket}, error = ${err}`);

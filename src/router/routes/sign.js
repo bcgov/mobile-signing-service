@@ -63,11 +63,11 @@ const client = new minio.Client({
   region: config.get('minio:region'),
 });
 
-try {
-  createBucketIfRequired(client, bucket);
-} catch (err) {
-  logger.error(`Problem creating bucket ${bucket}`);
-}
+createBucketIfRequired(client, bucket)
+  .then(() => logger.info(`Created bucket ${bucket}`))
+  .catch((error) => {
+    logger.error(error.message);
+  });
 
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
