@@ -51,7 +51,6 @@ nconf.overrides({
   db: {
     user: process.env.POSTGRESQL_USER,
     password: process.env.POSTGRESQL_PASSWORD,
-    database: process.env.POSTGRESQL_DATABASE,
     host: process.env.POSTGRESQL_HOST,
   },
   sso: {
@@ -70,7 +69,7 @@ nconf.argv()
 // if nothing else is set, use defaults. This will be set if
 // they do not exist in overrides or the config file.
 nconf.defaults({
-  appUrl: process.env.APP_URL || `http://localhost:${process.env.PORT}`,
+  appUrl: process.env.API_URL || `http://localhost:${process.env.PORT}`,
 });
 
 export default nconf;

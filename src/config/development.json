@@ -16,6 +16,9 @@
 		"hostUrl": "http://localhost:3000",
 		"signPath": "/v1/job/sign"
 	},
+	"db": {
+		"database": "cicd"
+	},
   "sso": {
 		"clientId": "secode-sign-api",
 		"callback": "/v1/auth/callback",
