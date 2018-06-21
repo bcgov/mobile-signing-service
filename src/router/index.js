@@ -28,7 +28,7 @@ import job from './routes/job';
 import sign from './routes/sign';
 
 const corsOptions = {
-  origin: config.get('appUrl'),
+  origin: config.get('apiUrl'),
   credentials: true,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };

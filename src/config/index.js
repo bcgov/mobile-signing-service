@@ -69,7 +69,7 @@ nconf.argv()
 // if nothing else is set, use defaults. This will be set if
 // they do not exist in overrides or the config file.
 nconf.defaults({
-  appUrl: process.env.API_URL || `http://localhost:${process.env.PORT}`,
+  apiUrl: process.env.API_URL || `http://localhost:${process.env.PORT}`,
 });
 
 export default nconf;
