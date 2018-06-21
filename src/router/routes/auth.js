@@ -55,7 +55,7 @@ router.get('/callback', passport.authenticate('oauth2', {
   failureRedirect: '/failed.html',
 }), asyncMiddleware(async (req, res) => {
   // const redirectTo = req.session.redirect_to;
-  // const baseUrl = config.get('appUrl');
+  // const baseUrl = config.get('apiUrl');
   try {
     // const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
     // console.log('u=', url.resolve(baseUrl, redirectTo));
