@@ -105,7 +105,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
         //   attachment.color = '#FFA500' // Orange
         //   attachment.text = "There are security warnings related to your packages.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
 
-        //   notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], PIRATE_ICO)
+        //   notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], PIRATE_ICO)
         // }
 
         try {
@@ -119,7 +119,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
           attachment.text = "There are issues with the code quality.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
         }
 
         try {
@@ -133,7 +133,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
           attachment.text = "There are issues with the unit tests.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
           sh "exit 1001"
         }
       }
@@ -170,11 +170,11 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
         }
         attachment.text = message
 
-        notifySlack("${env.JOB_NAME}", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        notifySlack("${env.JOB_NAME}", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
 
         if( "master" == GIT_BRANCH_NAME.toLowerCase() ) {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[2], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
           echo "Applying tag ${TAG_NAMES[2]} to image ${IMAGE_HASH}"
         } else {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[0], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
@@ -189,7 +189,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
         attachment.color = '#CD0000' // Red
         attachment.text = "There are issues with OpenShift build.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
 
-        notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
         sh "exit 1002"
       }
     }
@@ -202,7 +202,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
       node ('master') {
         stage('Promotion') {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[1], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "#bcdevops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+          notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "#devops-experience", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
         }
       }  
     }
