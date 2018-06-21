@@ -2,9 +2,9 @@
   "name": "cosi-api",
   "version": "0.0.1",
   "description": "",
-  "engine": "node 6.1.0",
+  "engine": "node 8.4.0",
   "engines": {
-    "node": "6.1.0"
+    "node": "8.4.0"
   },
   "main": "index.js",
   "dependencies": {
