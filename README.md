@@ -70,13 +70,25 @@ MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
 MINIO_ENDPOINT="localhost"
 SSO_CLIENT_SECRET="00000000-aaaa-aaaa-aaaa-000000000000"
 SESSION_SECRET="abc123"
-APP_URL="http://localhost:8000"
+API_URL="http://localhost:8000"
 ```
 
 Run the node application with the following command:
 
 ```console
 npm run dev
+```
+
+3. PostgreSQL
+
+TODO: Fill in this section on how to create / run postgresql
+
+```sql
+DROP DATABASE cicd;
+CREATE DATABASE cicd;
+CREATE USER app_dv_cicd WITH PASSWORD 'PASSWD_HERE';
+GRANT ALL PRIVILEGES ON DATABASE cicd TO app_dv_cicd;
+ALTER DATABASE cicd OWNER TO app_dv_cicd;
 ```
 
 ## Project Status / Goals / Roadmap
