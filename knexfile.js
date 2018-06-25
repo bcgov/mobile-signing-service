@@ -14,7 +14,7 @@ module.exports = {
     client: 'postgresql',
     connection: {
       host: process.env.POSTGRESQL_HOST,
-      database: process.env.POSTGRESQL_DATABASE,
+      database: 'cicd',
       user: process.env.POSTGRESQL_USER,
       password: process.env.POSTGRESQL_PASSWORD,
     },
