@@ -128,6 +128,7 @@
         "port": {
           "targetPort": "8080-tcp"
         },
+        "path": "/api",
         "to": {
           "kind": "Service",
           "name": "${API_NAME}",
