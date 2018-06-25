@@ -509,7 +509,7 @@
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "openshift",
-                "name": "postgresql:lates"
+                "name": "postgresql:latest"
               }
             }
           },
