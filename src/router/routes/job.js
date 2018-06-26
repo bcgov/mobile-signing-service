@@ -158,6 +158,42 @@ const handleJob = async (job, clean = true) => {
   }
 };
 
+/**
+ * Start processing a deployment `Job`
+ *
+ * @param {Job} job The `Job` to process
+ * @param {boolean} [clean=true] Cleanup after processing is done
+ */
+const handleDeploymentJob = async (job) => {
+  logger.info(`Processing job with ID ${job.id}`);
+
+  try {
+    let deploymentResult;
+    switch (job.platform) {
+      case 'ios':
+      {
+        throw new Error('Temploray not supported');
+        break;
+      }
+      case 'android':
+      // Sharing the same job from signing work:
+      // - the originalFileName should be the signed app for deployment Job
+      // - leave the rest fields empty
+        deploymentResult = await deployApk(job.originalFileName);
+        break;
+      default:
+        throw new Error('Unsupported platform');
+    }
+    await reportJobStatus({ ...job });
+  } catch (error) {
+    const message = 'Unable to deploy app';
+    logger.error(`${message}, err = ${error.message}`);
+
+    throw new Error(`${message}, err = ${error.message}`);
+  }
+};
+
+
 // create a new job
 router.post('/sign', asyncMiddleware(async (req, res) => {
   const job = req.body;
@@ -169,6 +205,19 @@ router.post('/sign', asyncMiddleware(async (req, res) => {
   res.sendStatus(200).end();
 
   await handleJob(job);
+}));
+
+// create a new job for Deployment:
+router.post('/deploy', asyncMiddleware(async (req, res) => {
+  const job = req.body;
+
+  if (!job) {
+    throw errorWithCode('No such job exists', 400);
+  }
+
+  res.sendStatus(200).end();
+
+  await handleDeploymentJob(job);
 }));
 
 module.exports = router;
