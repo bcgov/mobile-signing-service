@@ -122,7 +122,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
       headers: { 'content-type': 'application/json' },
       method: 'POST',
       uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-      body: { ...job, ...{ ref: `${config.get('apiUrl')}/v1/job/${job.id}` } },
+      body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
       json: true,
     };
 
