@@ -125,6 +125,8 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
       body: { ...job, ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` } },
       json: true,
     };
+    console.log(options);
+    console.log(options.uri);
     const status = await request(options);
     if (status !== 'OK') {
       throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
