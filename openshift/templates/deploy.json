@@ -568,7 +568,7 @@
                   },
                   {
                     "name": "POSTGRESQL_DATABASE",
-                    "value":"myra"
+                    "value":"${POSTGRESQL_DATABASE}"
                   }
                 ],
                 "volumeMounts": [
@@ -581,7 +581,7 @@
                   "timeoutSeconds": 1,
                   "initialDelaySeconds": 5,
                   "exec": {
-                    "command": [ "/bin/sh", "-i", "-c", "psql -h 127.0.0.1 -U ${POSTGRESQL_USER} -q -d ${POSTGRESQL_DATABASE} -c 'SELECT 1'"]
+                    "command": [ "/bin/sh", "-i", "-c", "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"]
                   }
                 },
                 "livenessProbe": {
@@ -711,6 +711,12 @@
       "generate": "expression",
       "from": "[a-zA-Z0-9]{16}",
       "required": true
+    },
+    {
+      "name": "POSTGRESQL_DATABASE",
+      "displayName": "The PostgreSQL database for the health check probe",
+      "required": true,
+      "value": "cicd"
     },
     {
       "name": "POSTGRES_VOLUME_NAME",
