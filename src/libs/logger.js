@@ -32,7 +32,19 @@ const options = {};
 // When testing log to a file for further analysis.
 if (process.env.NODE_ENV === 'test') {
   options.transports = [
-    new (winston.transports.File)({ filename: 'test_run.log' }),
+    new winston.transports.File({
+      format: winston.format.simple(),
+      filename: 'test.log',
+      level: 'info',
+    }),
+  ];
+} else if (process.env.NODE_ENV === 'production') {
+  options.transports = [
+    new winston.transports.File({
+      format: winston.format.simple(),
+      filename: 'error.log',
+      level: 'error',
+    }),
   ];
 } else {
   options.transports = [new winston.transports.Console({
