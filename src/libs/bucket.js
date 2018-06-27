@@ -146,9 +146,8 @@ export const putObject = (client, bucket, name, data) => new Promise((resolve, r
  * @param {String} bucket The name of the bucket
  * @param {String} name The name of the object
  */
-export const getPresignedUrl = (client, bucket, name) => new Promise((resolve, reject) => {
-  const expiryInSeconds = config.get('minio:expiry');
-
+export const getPresignedUrl = (client, bucket,
+  name, expiryInSeconds = 604800) => new Promise((resolve, reject) => {
   client.presignedUrl('GET', bucket, name, expiryInSeconds, (error, presignedUrl) => {
     if (error) {
       reject(error);
