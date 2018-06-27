@@ -39,9 +39,9 @@ import {
 import {
   createBucketIfRequired,
   bucketExists,
-  getObject,
   putObject,
   isExpired,
+  getPresignedUrl,
 } from '../../libs/bucket';
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
@@ -187,17 +187,8 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    const buffer = await getObject(client, bucket, job.deliveryFile);
-
-    if (!buffer) {
-      throw errorWithCode('Unable to fetch archive.', 500);
-    }
-
-    res.contentType(stat.contentType);
-
-    logger.info(`Download album ZIP archive from bucket ${bucket}, object ${job.deliveryFile}`);
-
-    res.end(buffer, 'binary');
+    const link = await getPresignedUrl(client, bucket, job.deliveryFile);
+    res.redirect(link);
   } catch (error) {
     const message = 'Unable to retrieve archive';
     logger.error(`${message}, err = ${error.message}`);
