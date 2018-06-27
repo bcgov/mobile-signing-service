@@ -114,7 +114,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
         } catch (error) {
           def attachment = [:]
           attachment.fallback = 'See build log for more details'
-          attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :fox4:"
+          attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :facepalm:"
           attachment.color = '#FFA500' // Orange
           attachment.text = "There are issues with the code quality.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
