@@ -35,16 +35,16 @@ if (process.env.NODE_ENV === 'test') {
     new (winston.transports.File)({ filename: 'test_run.log' }),
   ];
 } else {
-  options.transports = [
-    new (winston.transports.Console)(),
-  ];
+  options.transports = [new winston.transports.Console({
+    format: winston.format.simple(),
+  })];
 }
 
 /**
  * Re-export logger object
  *
  */
-export const logger = new (winston.Logger)(options);
+export const logger = winston.createLogger(options);
 
 /**
  * Print canned message when the server starts
