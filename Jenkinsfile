@@ -94,7 +94,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
       echo "Testing: ${BUILD_ID}"
 
       script {
-        Run a security check on our packages
+        // Run a security check on our packages
         try {
           sh "./node_modules/.bin/nsp check"
         } catch (error) {
