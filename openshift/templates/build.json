@@ -143,13 +143,6 @@
       "value": "api"
     },
     {
-      "name": "SOURCE_IMAGE_NAMESPACE",
-      "displayName": "Build Project",
-      "description": "The openshift project where builds and target images are stored.",
-      "required": true,
-      "value": "openshift"
-    },
-    {
       "name": "GIT_REPO_URL",
       "displayName": "Git Repo URL",
       "description": "The URL to your GIT repo, don't use the this default unless your just experimenting.",
@@ -169,6 +162,13 @@
       "description": "The source context directory.",
       "required": false,
       "value": ""
+    },
+    {
+      "name": "SOURCE_IMAGE_NAMESPACE",
+      "displayName": "Build Project",
+      "description": "The openshift project where builds and target images are stored.",
+      "required": true,
+      "value": "openshift"
     },
     {
       "name": "SOURCE_IMAGE_NAME",
