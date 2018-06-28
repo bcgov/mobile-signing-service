@@ -25,7 +25,6 @@
 import * as minio from 'minio';
 import url from 'url';
 import fs from 'fs';
-import util from 'util';
 import request from 'request-promise-native';
 import { Router } from 'express';
 import multer from 'multer';
@@ -41,7 +40,8 @@ import {
   bucketExists,
   putObject,
   isExpired,
-  getPresignedUrl,
+  presignedGetObject,
+  statObject,
 } from '../../libs/bucket';
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
@@ -131,7 +131,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
       throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
     }
 
-    res.send(202).json({ id: job.id }); // Accepted
+    res.status(202).json({ id: job.id }); // Accepted
 
     return null;
   } catch (error) {
@@ -162,7 +162,7 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       status: JOB_STATUS.COMPLETED,
       url: `http://localhost:8000/v1/job/${job.id}/download`,
       durationInSeconds: job.duration,
@@ -180,18 +180,18 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
 
   try {
     const job = await Job.findById(db, jobId);
-    const statObject = util.promisify(client.statObject);
-    const stat = await statObject(bucket, `${job.deliveryFile}`);
+    const stat = await statObject(client, bucket, job.deliveryFileName);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    const link = await getPresignedUrl(client, bucket, job.deliveryFile);
+    const link = await presignedGetObject(client, bucket, job.deliveryFileName, 3);
     res.redirect(link);
   } catch (error) {
-    const message = 'Unable to retrieve archive';
+    const message = `Unable to retrieve arcive for job with ID ${jobId}`;
     logger.error(`${message}, err = ${error.message}`);
+    throw errorWithCode(`${message}, err = ${error.message}`, 500);
   }
 }));
 
