@@ -41,6 +41,7 @@ const client = new minio.Client({
  * Get the signed appliaction package
  *
  * @param {String} appPath The path to the signed app
+ * @returns The data stream of the signed app package
  */
 const fetchFileFromStorage = async (signedAppPath) => {
   try {
@@ -55,51 +56,6 @@ const fetchFileFromStorage = async (signedAppPath) => {
     logger.error(`${message}, err = ${error.message}`);
     throw error;
   }
-};
-
-/**
- * Google Play Store Deployment
- *
- * @param {*} signedAppPath The path to the signed app
- * @returns The status of the deployment
- */
-// eslint-disable-next-line import/prefer-default-export
-export const deployApk = async (signedAppPath) => {
-  const signedAPK = await fetchFileFromStorage(signedAppPath);
-  // ---- Setup the Google OAuth and JWT for the Android Publisher, get from agent ----
-  const key = require('../path/to/key.json');
-  const apkName = 'the app bundle ID';
-  const trackType = 'alpha';
-  // ----
-  const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
-  const editID = String(new Date().getTime()); // unique id using timestamp
-  const oauth2Client = new google.auth.OAuth2();
-  const jwtClient = new google.auth.JWT(
-    key.client_email,
-    null,
-    key.private_key,
-    scopes,
-    null,
-  );
-  const publisher = google.androidpublisher({
-    version: 'v3',
-    auth: oauth2Client,
-    params: {
-      packageName: apkName,
-    },
-  });
-
-  try {
-    const token = await jwtClient.authorize();
-    await oauth2Client.setCredentials(token);
-
-    return googleDeployEdit(publisher, editID, signedAPK, trackType);
-  } catch (error) {
-    const message = 'Unable to deploy';
-    logger.error(`${message}, err = ${error.message}`);
-  }
-
-  return Promise.reject();
 };
 
 /**
@@ -146,8 +102,58 @@ const googleDeployEdit = async (publisher, editID, signedAPK, trackType) => {
     const commitEdit = await publisher.edits.commit({
       editId: newEditID,
     });
-    return Promise.resolve(commitEdit.status);
+    return commitEdit.status;
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 };
+
+/**
+ * Google Play Store Deployment
+ *
+ * @param {String} signedAppPath The path to the signed app
+ * @returns The status of the deployment
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const deployApk = async (signedAppPath) => {
+  try {
+    const signedAPK = await fetchFileFromStorage(signedAppPath);
+  } catch (error) {
+    throw new Error(`Unable to fetch file ${signedAppPath} from storage`);
+  }
+  // ---- TO BE UPDATED: Setup the Google OAuth and JWT for the Android Publisher, get from agent ----
+  const key = require('../path/to/key.json');
+  const apkName = 'the app bundle ID';
+  const trackType = 'alpha';
+  // ----
+  const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
+  const editID = String(new Date().getTime()); // unique id using timestamp
+  const oauth2Client = new google.auth.OAuth2();
+  const jwtClient = new google.auth.JWT(
+    key.client_email,
+    null,
+    key.private_key,
+    scopes,
+    null,
+  );
+  const publisher = google.androidpublisher({
+    version: 'v3',
+    auth: oauth2Client,
+    params: {
+      packageName: apkName,
+    },
+  });
+
+  try {
+    const token = await jwtClient.authorize();
+    await oauth2Client.setCredentials(token);
+
+    return googleDeployEdit(publisher, editID, signedAPK, trackType);
+  } catch (error) {
+    const message = 'Unable to deploy';
+    logger.error(`${message}, err = ${error.message}`);
+  }
+
+  return Promise.reject();
+};
+
