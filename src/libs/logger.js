@@ -26,17 +26,42 @@ import chalk from 'chalk';
 import ip from 'ip';
 import winston from 'winston';
 
-const divider = chalk.gray('\n-----------------------------------');
 const options = {};
+const { combine, timestamp, printf } = winston.format;
+const divider = chalk.gray('\n-----------------------------------');
+const myFormat = printf(info => `${info.timestamp} ${info.level}: ${info.message}`);
 
 // When testing log to a file for further analysis.
 if (process.env.NODE_ENV === 'test') {
   options.transports = [
-    new (winston.transports.File)({ filename: 'test_run.log' }),
+    new winston.transports.File({
+      format: combine(
+        timestamp(),
+        myFormat,
+      ),
+      filename: 'test.log',
+      level: 'info',
+    }),
+  ];
+} else if (process.env.NODE_ENV === 'production') {
+  options.transports = [
+    new winston.transports.File({
+      format: combine(
+        timestamp(),
+        myFormat,
+      ),
+      filename: 'error.log',
+      level: 'error',
+    }),
   ];
 } else {
   options.transports = [
-    new (winston.transports.Console)(),
+    new winston.transports.Console({
+      format: combine(
+        timestamp(),
+        myFormat,
+      ),
+    }),
   ];
 }
 
@@ -44,7 +69,7 @@ if (process.env.NODE_ENV === 'test') {
  * Re-export logger object
  *
  */
-export const logger = new (winston.Logger)(options);
+export const logger = winston.createLogger(options);
 
 /**
  * Print canned message when the server starts
