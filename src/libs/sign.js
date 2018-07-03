@@ -98,7 +98,7 @@ const uniqueSigningIdentifierForValue = async (value) => {
 const fetchFileFromStorage = async (archiveFilePath, workspace) => {
   const outFileName = shortid.generate();
   const apath = path.join(workspace, shortid.generate());
-  const outFilePath = path.join(apath, outFileName);// Shelly Question: /tmp/111/111
+  const outFilePath = path.join(apath, outFileName);
   const buffer = await getObject(client, bucket, archiveFilePath);
 
   await exec(`mkdir -p ${apath}`);
@@ -278,6 +278,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   if (keyPath.stderr || apkPath.stderr) {
     throw new Error('Cannot find apk or signing key.');
   }
+  // Extract the path of apk and key:
   const apkPath = apkPathFull.stdout.trim().split('\n');
   const keyPath = keyPathFull.stdout.trim().split('\n');
 
