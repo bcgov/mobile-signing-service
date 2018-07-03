@@ -98,7 +98,7 @@ const uniqueSigningIdentifierForValue = async (value) => {
 const fetchFileFromStorage = async (archiveFilePath, workspace) => {
   const outFileName = shortid.generate();
   const apath = path.join(workspace, shortid.generate());
-  const outFilePath = path.join(apath, outFileName);
+  const outFilePath = path.join(apath, outFileName);// Shelly Question: /tmp/111/111
   const buffer = await getObject(client, bucket, archiveFilePath);
 
   await exec(`mkdir -p ${apath}`);
@@ -260,52 +260,42 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line no-unused-vars
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  const outputDir = 'tmp';
-  const apath = path.join(workspace, shortid.generate());
-  const outBasePath = path.join(apath, outputDir);
-  const packagePath = `${path.join(apath, shortid.generate())}`;
-  const outFileName = `${path.join(apath, shortid.generate())}.apk`;
+  const packagePath = path.join(workspace, shortid.generate());
+  const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
   // Hardcoded key credential:
   const keyPassword = '';
   const keyAlias = '';
 
-  await exec(`
-    mkdir -p "${apath}" && \
-    cp -a "${archiveFilePath}" "${packagePath}"
-  `);
-
   // Extract the package that contains both apk and key:
   await exec(`
-    mkdir -p "${outBasePath}" && \
-    unzip -q "${packagePath}" -d "${outBasePath}"
+    mkdir -p "${packagePath}" && \
+    unzip -q "${archiveFilePath}" -d "${packagePath}"
   `);
 
   // Find apk and signing key:
-  const apkPath = await exec(`find ${outBasePath} -iname '*.apk'`);
-  const keyPath = await exec(`find ${outBasePath} -iname '*.keystore'`);
+  const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
+  const keyPathFull = await exec(`find ${packagePath} -iname '*.keystore'`);
   if (keyPath.stderr || apkPath.stderr) {
     throw new Error('Cannot find apk or signing key.');
   }
+  const apkPath = apkPathFull.stdout.trim().split('\n');
+  const keyPath = keyPathFull.stdout.trim().split('\n');
 
   // Sign the apk:
   const response = await exec(`
     apksigner sign \
     -v \
-    --ks ${keyPath.stdout.trim().split('\n')} \
+    --ks ${keyPath} \
     --ks-key-alias ${keyAlias} \
     --ks-pass pass:${keyPassword} \
     --key-pass pass:${keyPassword} \
     --out ${outFileName} \
-    ${apkPath.stdout.trim().split('\n')}`);
+    ${apkPath}`);
 
   // Zip signed apk:
-  if (response.stdout.includes('Signed')) {
-    await exec(`
-    cd "${path.dirname(outFileName)}" && \
-    zip -qr "${path.basename(outFileName)}" *`);
-    return outFileName;
-  } else {
+  if (!response.stdout.includes('Signed')) {
     console.log(response.stderr);
   }
+
   return outFileName;
 };
