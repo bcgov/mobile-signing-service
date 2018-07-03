@@ -17,6 +17,8 @@ The API documentation can be built with the following command; the result of bui
 npm run build:doc
 ```
 
+![alt text][export-xcarchive]
+
 ## Build
 
 Use the OpenShift `build.json` template in this repo with the following (sample) command. The build is meant to be a CI
@@ -120,7 +122,6 @@ Run the node application with the following command:
 npm run dev
 ```
 
-
 ## Project Status / Goals / Roadmap
 
 This project is **active**. 
@@ -174,3 +175,6 @@ and the code for the cc 4.0 footer looks like this:
     xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">the Province of Britich Columbia
     </span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
     Creative Commons Attribution 4.0 International License</a>.
+
+
+[export-xcarchive]: https://github.com/bcdevops/mobile-cicd-api/raw/develop/doc/images/export-xcarchive.gif "Prepare & Export xcarchive"
