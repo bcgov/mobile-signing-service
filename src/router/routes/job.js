@@ -164,11 +164,11 @@ const handleJob = async (job, clean = true) => {
  * @param {Job} job The `Job` to process
  * @param {boolean} [clean=true] Cleanup after processing is done
  */
-const handleDeploymentJob = async (job) => {
+const handleDeploymentJob = async (job, clean = true) => {
   logger.info(`Processing job with ID ${job.id}`);
 
   try {
-    let deploymentResult;
+    let deployedAppPath;
     switch (job.platform) {
       case 'ios':
       {
@@ -179,11 +179,21 @@ const handleDeploymentJob = async (job) => {
       // Sharing the same job from signing work:
       // - the originalFileName should be the signed app for deployment Job
       // - leave the rest fields empty
-        deploymentResult = await deployApk(job.originalFileName);
+        deployedAppPath = await deployApk(job.originalFileName);
         break;
       default:
         throw new Error('Unsupported platform');
     }
+
+    if (clean) {
+      const basePath = path.dirname(deployedAppPath);
+      const workSpace = path.dirname(basePath);
+      const message = 'Cleaned working directory';
+      logger.info(`${message}, path = ${workSpace}`);
+
+      cleanup(workSpace);
+    }
+    
     await reportJobStatus({ ...job });
   } catch (error) {
     const message = 'Unable to deploy app';
