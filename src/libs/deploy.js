@@ -40,17 +40,22 @@ const client = new minio.Client({
 /**
  * Get the signed appliaction package
  *
- * @param {String} appPath The path to the signed app
+ * @param {String} signedApp The name of the signed app
+ * @param {String} workspace The workspace to use
  * @returns The data stream of the signed app package
  */
-const fetchFileFromStorage = async (signedAppPath) => {
+const fetchFileFromStorage = async (signedApp, workspace) => {
+  const apath = path.join(workspace, shortid.generate());
+  const outFilePath = path.join(apath, signedApp);
   try {
-    const buffer = await getObject(client, bucket, signedAppPath);
+    const buffer = await getObject(client, bucket, signedApp);
     if (!buffer) {
       throw errorWithCode('Unable to fetch archive.', 500);
     }
-    logger.info(`Get the bucket ${bucket} `);
-    return buffer;
+    await exec(`mkdir -p ${apath}`);
+    await writeFile(outFilePath, buffer, 'utf8');
+
+    return outFilePath;
   } catch (error) {
     const message = 'Unable to retrieve archive';
     logger.error(`${message}, err = ${error.message}`);
@@ -58,16 +63,30 @@ const fetchFileFromStorage = async (signedAppPath) => {
   }
 };
 
+const getApkBundleID = async (signedAPK) => {
+  try {
+    // Use Android Asset Packaging Tool to get package bundle ID:
+    const apkBundle = await exec(`
+    aapt dump badging ${signedAPK} | \
+    grep package: | \
+    cut -d "'" -f2
+    `);
+    // Get rid of the linebreak at the end:
+    return apkBundle.stdout.replace(/(\r\n\t|\n|\r\t)/gm, '');
+  } catch (error) {
+    throw new Error(`Unable to find package name! ${error}`);
+  }
+};
+
 /**
- * Google Edit for apk deployment
+ * Google Edit to uploading apk for deployment
  *
  * @param {*} publisher The google android publisher
  * @param {String} editID A unique timestamp as a String
  * @param {*} signedAPK The signed android apk stored in minio
- * @param {String} trackType The track could be alpha, beta, production, rollout or internal.
  * @returns The status of the committed the Edit
  */
-const googleDeployEdit = async (publisher, editID, signedAPK, trackType) => {
+const googleDeployEdit = async (publisher, editID, signedAPK) => {
   try {
     // start a new Google Edit:
     const newEdit = await publisher.edits.insert({
@@ -78,31 +97,20 @@ const googleDeployEdit = async (publisher, editID, signedAPK, trackType) => {
       },
     });
     const newEditID = newEdit.data.id;
+
     // Upload the signed apk to the current Edit:
-    const uploadedApk = await publisher.edits.apks.upload({
+    await publisher.edits.apks.upload({
       editId: newEditID,
       media: {
         mimeType: 'application/vnd.android.package-archive',
         body: signedAPK,
       },
     });
-    // Assign a track for the current Edit:
-    await publisher.edits.tracks.update({
-      editId: newEditID,
-      track: trackType,
-      body: {
-        releases: [{
-          name: 'CICD release',
-          versionCodes: [uploadedApk.data.versionCode],
-          status: 'completed',
-        }],
-      },
-    });
+
     // Commit the Edit after all actions done:
     const commitEdit = await publisher.edits.commit({
       editId: newEditID,
     });
-    return commitEdit.status;
   } catch (error) {
     throw error;
   }
@@ -111,44 +119,45 @@ const googleDeployEdit = async (publisher, editID, signedAPK, trackType) => {
 /**
  * Google Play Store Deployment
  *
- * @param {String} signedAppPath The path to the signed app
+ * @param {String} signedApp The name of the signed app
+ * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployApk = async (signedAppPath) => {
+export const deployApk = async (signedApp, workspace = '/tmp/') => {
   try {
-    const signedAPK = await fetchFileFromStorage(signedAppPath);
-  } catch (error) {
-    throw new Error(`Unable to fetch file ${signedAppPath} from storage`);
-  }
-  // ---- TO BE UPDATED: Setup the Google OAuth and JWT for the Android Publisher, get from agent ----
-  const key = require('../path/to/key.json');
-  const apkName = 'the app bundle ID';
-  const trackType = 'alpha';
-  // ----
-  const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
-  const editID = String(new Date().getTime()); // unique id using timestamp
-  const oauth2Client = new google.auth.OAuth2();
-  const jwtClient = new google.auth.JWT(
-    key.client_email,
-    null,
-    key.private_key,
-    scopes,
-    null,
-  );
-  const publisher = google.androidpublisher({
-    version: 'v3',
-    auth: oauth2Client,
-    params: {
-      packageName: apkName,
-    },
-  });
-
-  try {
+    // Get apk:
+    const signedApkPath = await fetchFileFromStorage(signedApp, workspace);
+    // Get the bundle ID for the apk:
+    const apkBundleId = await getApkBundleID(signedApkPath);
+    // Turn data stream into a package-archive file for deployment:
+    const signedAPK = require('fs').readFileSync(signedApkPath);
+    // Get the Google client-service key to deployment:
+    const key = require('../path/to/key.json');
+    // Set up Google publisher:
+    const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
+    const editID = String(new Date().getTime()); // unique id using timestamp
+    const oauth2Client = new google.auth.OAuth2();
+    const jwtClient = new google.auth.JWT(
+      key.client_email,
+      null,
+      key.private_key,
+      scopes,
+      null,
+    );
+    const publisher = google.androidpublisher({
+      version: 'v3',
+      auth: oauth2Client,
+      params: {
+        packageName: apkBundleId,
+      },
+    });
+    // Authorize client:
     const token = await jwtClient.authorize();
     await oauth2Client.setCredentials(token);
-
-    return googleDeployEdit(publisher, editID, signedAPK, trackType);
+    // Start Google Edit:
+    await googleDeployEdit(publisher, editID, signedAPK);
+    return signedApkPath;
   } catch (error) {
     const message = 'Unable to deploy';
     logger.error(`${message}, err = ${error.message}`);
