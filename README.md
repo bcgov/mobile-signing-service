@@ -5,9 +5,9 @@ This is the API component to the BCDevOps Mobile Application Signing Service. Th
 
 Additional component can be fond in these repos:
 
-[Signing Agent](https://github.com/bcdevx/mobile-cicd-agent)
+[Signing Agent](https://github.com/bcdevops/mobile-cicd-agent)
 
-[Public Web](https://github.com/bcdevx/mobile-cicd-web)
+[Public Web](https://github.com/bcdevops/mobile-cicd-web)
 
 ## Usage
 
