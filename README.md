@@ -1,23 +1,17 @@
 
 ## About
 
-This is the Agent component to the BCDevX Mobile App Signing Service. The Signing
-Service is designed to be a selfe-serve system that enables development teams to
-sign and deploy build artifacts in a secure environment.
-
-The Agent is meant to run on a macOS system and run signing jobs; these can be
-for iOS, macOS, or Android. When a signing job is completed the artifacts are
-made available for a short period of time.
+This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a selfe-serve system that enables development teams to sign and deploy build artifacts in a s cure environment.
 
 Additional component can be fond in these repos:
 
-[Public API](https://github.com/bcdevx/mobile-cicd-api)
+[Signing Agent](https://github.com/bcdevx/mobile-cicd-agent)
 
 [Public Web](https://github.com/bcdevx/mobile-cicd-web)
 
 ## Usage
 
-The API documentation can be built with the following command; the result of building the documentaiton can be found in the `doc/` directory / folder.
+The API documentation can be built with the following command; the result of building the documentation can be found in the `public/doc/api` directory / folder and will be served out via the API.
 
 ```console
 npm run build:doc
@@ -40,12 +34,28 @@ oc create -f -
 | GIT_REF            | NO            | The branch to build from |
 | SLACK_SECRET       | NO            | Slack token to post to channel(s) |
 
-* See the `build.json` template for other *optional* parameters.
-** To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
+\* See the `build.json` template for other *optional* parameters.
+
+\** To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
 
 ## Deployment
 
-TBD
+Use the OpenShift `deploy.json` template in this repo with the following (sample) command to build an environment (namesapce) and deploy the code and dependencies:
+
+```console
+oc process -f openshift/templates/deploy.json \
+-p NAMESPACE=devops-devexp-dev \
+-p NODE_ENV=development \
+-p POSTGRESQL_USER=app_dv_cicd
+```
+
+| Parameter          | Optional      | Description   |
+| ------------------ | ------------- | ------------- |
+| NAMESPACE          | NO            | The environment (project) name |
+| NODE_ENV           | NO            | The node environment to build for |
+| POSTGRESQL_USER    | NO            | The PostgreSQL db user name for API access |
+
+\* See the `deploy.json` template for other *optional* parameters.
 
 ## Local Installation for Development
 
@@ -59,29 +69,25 @@ Run a local minio docker image (find them [here](https://hub.docker.com/r/minio/
 docker run -p 9000:9000 --name minio -v minio_data:/data minio/minio server /data
 ```
 
-2. API
+When you start minio it with the command above it won't detach. Copy the access key and secret key from the information minio displays to the `.env` file in step #3 below.
 
-Create a file called `.env` in the root project folder and populate it with the following environment variables; update them as needed.
+2. PostgreSQL
 
-```console
-NODE_ENV=development
-MINIO_ACCESS_KEY="XXXXXXXX"
-MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
-MINIO_ENDPOINT="localhost"
-SSO_CLIENT_SECRET="00000000-aaaa-aaaa-aaaa-000000000000"
-SESSION_SECRET="abc123"
-API_URL="http://localhost:8000"
-```
-
-Run the node application with the following command:
+Run a local PostgreSQL docker image (find them [here](https://hub.docker.com/_/postgres/)). The sample command below is using a docker volume named `pgdata` to store data; see the Docker documentation on how to do this if you're interested.
 
 ```console
-npm run dev
+docker run -it --rm -v --name pgdev \
+-e POSTGRES_PASSWORD=yourpasswd \
+pgdata:/var/lib/postgresql/data postgres
 ```
 
-3. PostgreSQL
+Onces running connect to the running container and use `psql` to run the following SQL commands to create your applicaiton user and database. The extra `-c` arguments can be skipped if needed but I prefer to adjust column and lines.
 
-TODO: Fill in this section on how to create / run postgresql
+```console
+docker exec -i -t $1 /bin/bash -c "export COLUMNS=`tput cols`; export LINES=`tput lines`; exec bash";
+```
+
+Once you're connected run the following SQL to create the database, db user, and to give the new user access to the database.
 
 ```sql
 DROP DATABASE cicd;
@@ -90,6 +96,30 @@ CREATE USER app_dv_cicd WITH PASSWORD 'PASSWD_HERE';
 GRANT ALL PRIVILEGES ON DATABASE cicd TO app_dv_cicd;
 ALTER DATABASE cicd OWNER TO app_dv_cicd;
 ```
+
+You'll use the USER and PASSWORD from the SQL above in the `.env` file you create in step 3 below.
+
+3. API
+
+Create a file called `.env` in the root project folder and populate it with the following environment variables; update them as needed.
+
+```console
+NODE_ENV=development
+POSTGRESQL_PASSWORD=
+POSTGRESQL_USER=
+POSTGRESQL_HOST=localhost
+MINIO_HOST=localhost
+SESSION_SECRET=
+API_URL="http://localhost:8089"
+PORT=8089
+```
+
+Run the node application with the following command:
+
+```console
+npm run dev
+```
+
 
 ## Project Status / Goals / Roadmap
 
