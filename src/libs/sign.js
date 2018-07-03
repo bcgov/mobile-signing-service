@@ -293,7 +293,6 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
     --out ${outFileName} \
     ${apkPath}`);
 
-  // Zip signed apk:
   if (!response.stdout.includes('Signed')) {
     console.log(response.stderr);
   }
