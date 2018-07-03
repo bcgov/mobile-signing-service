@@ -169,17 +169,22 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) in package');
     }
 
-    const promises = findResult.stdout.trim().split('\n').map(async (element) => {
-      const exppath = `${path.join(apath, outputDir, path.basename(element).split('.')[0])}`
-        .replace(/ /g, '_');
-      return exec(`
-        xcodebuild \
-        -exportArchive \
-        -archivePath "${element}" \
-        -exportPath "${exppath}"  \
-        -exportOptionsPlist ${path.join(apath, 'options.plist')} 
-      `);
-    });
+    const promises = findResult
+      .stdout
+      .trim()
+      .split('\n')
+      .filter(item => !item.includes('__MACOSX'))
+      .map(async (element) => {
+        const exppath = `${path.join(apath, outputDir, path.basename(element).split('.')[0])}`
+          .replace(/ /g, '_');
+        return exec(`
+          xcodebuild \
+          -exportArchive \
+          -archivePath "${element}" \
+          -exportPath "${exppath}"  \
+          -exportOptionsPlist ${path.join(path.dirname(element), 'options.plist')} 
+        `);
+      });
 
     const response = await Promise.all(promises);
 
@@ -198,11 +203,10 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
     });
 
     return packageForDelivery(path.join(apath, outputDir), items);
-  } catch (error) {
-    console.log(error.message);
+  } catch (err) {
+    console.log(err.message);
+    throw err;
   }
-
-  return Promise.reject();
 };
 
 /**
@@ -256,7 +260,7 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
  * @param {string} archiveFilePath The path to the apk file
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns A `string` containing the path to the newly minted archive
- * 
+ *
  */
 // eslint-disable-next-line no-unused-vars
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {

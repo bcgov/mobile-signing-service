@@ -48,11 +48,11 @@ const client = new minio.Client({
   region: config.get('minio:region'),
 });
 
-try {
-  createBucketIfRequired(client, bucket);
-} catch (err) {
-  logger.error(`Problem creating bucket ${bucket}`);
-}
+createBucketIfRequired(client, bucket)
+  .then(() => logger.info(`Created bucket ${bucket}`))
+  .catch((error) => {
+    logger.error(error.message);
+  });
 
 /**
  * Cleanup artifacts left over from the signing process
@@ -91,13 +91,22 @@ const reportJobStatus = async (job) => {
     json: true,
   };
 
-  const status = await request(options);
-  if (status !== 'OK') {
-    logger.error(`Unable to report job ${job.id} status`);
-    return;
-  }
+  try {
+    const status = await request(options);
+    if (status !== 'OK') {
+      logger.error(`Unable to report job ${job.id} status`);
+      return;
+    }
 
-  logger.info(`Updated status for job ${job.id}`);
+    logger.info(`Updated status for job ${job.id}`);
+  } catch (err) {
+    const message = `Unable to report job ${job.id} status`;
+    if (err.code === 'ETIMEDOUT') {
+      throw new Error(`${message}, err = ${err.message}`);
+    }
+
+    throw err;
+  }
 };
 
 /**

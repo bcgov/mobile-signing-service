@@ -20,14 +20,30 @@
 
 'use strict';
 
-import util from 'util';
 import config from '../config';
 import { logger } from './logger';
+
+/**
+ * Crete a new bucket
+ *
+ * @param {String} bucket The name of the bucket
+ */
+export const makeBucket = (client, bucket) => new Promise((resolve, reject) => {
+  client.makeBucket(bucket, config.get('minio:region'), (err) => {
+    if (err) {
+      reject(err);
+      return;
+    }
+
+    resolve();
+  });
+});
 
 /**
  * Check if a bucket exists
  *
  * @param {String} bucket The name of the bucket
+ * @returns {Promise} Returns a promise with the error or boolean
  */
 export const bucketExists = (client, bucket) => new Promise((resolve, reject) => {
   // The API for `bucketExists` does not seem to match the documentaiton. In
@@ -58,6 +74,7 @@ export const bucketExists = (client, bucket) => new Promise((resolve, reject) =>
  *
  * @param {String} bucket The name of the bucket.
  * @param {String} [prefix=''] Prefix to filter the contents on.
+ * @returns {Promise} Returns a promise with the error or array of objects
  */
 export const listBucket = (client, bucket, prefix = '') => new Promise((resolve, reject) => {
   const stream = client.listObjectsV2(bucket, prefix, false);
@@ -81,6 +98,7 @@ export const listBucket = (client, bucket, prefix = '') => new Promise((resolve,
  *
  * @param {String} bucket The name of the bucket
  * @param {String} name The name of the object to retrieve
+ * @returns {Promise} Returns a promise with the error or Buffer
  */
 export const getObject = (client, bucket, name) => new Promise((resolve, reject) => {
   let size = 0;
@@ -113,6 +131,7 @@ export const getObject = (client, bucket, name) => new Promise((resolve, reject)
  * @param {String} bucket The name of the bucket
  * @param {String} name The name the object will have in the bucket
  * @param {Buffer} data The object data `Stream` or `Buffer`
+ * @returns {Promise} Returns a promise with the error or etag
  */
 export const putObject = (client, bucket, name, data) => new Promise((resolve, reject) => {
   client.putObject(bucket, name, data, (error, etag) => {
@@ -129,16 +148,36 @@ export const putObject = (client, bucket, name, data) => new Promise((resolve, r
  *
  * @param {String} bucket The name of the bucket
  * @param {String} name The name of the object
+ * @returns {Promise} Returns a promise with the error or presigned-url
  */
-export const getPresignedUrl = (client, bucket, name) => new Promise((resolve, reject) => {
-  const expiryInSeconds = config.get('minio:expiry');
+// eslint-disable-next-line arrow-body-style
+export const presignedGetObject = (client, bucket, name, expiryInSeconds = 604800) => {
+  return new Promise((resolve, reject) => {
+    client.presignedGetObject(bucket, name, expiryInSeconds, (error, presignedUrl) => {
+      if (error) {
+        reject(error);
+      }
 
-  client.presignedUrl('GET', bucket, name, expiryInSeconds, (error, presignedUrl) => {
-    if (error) {
-      reject(error);
+      resolve(presignedUrl);
+    });
+  });
+};
+
+/**
+ * Fetch the stats of a given object
+ *
+ * @param {Object} client The minio client
+ * @param {String} bucket The name of the bucket
+ * @param {String} fileName The name of the file to fetch the stats for
+ * @returns {Promise} Returns a promise with the error or statistics
+ */
+export const statObject = (client, bucket, fileName) => new Promise((resolve, reject) => {
+  client.statObject(bucket, fileName, (err, stat) => {
+    if (err) {
+      reject(err);
     }
 
-    resolve(presignedUrl);
+    resolve(stat);
   });
 });
 
@@ -157,10 +196,8 @@ export const isExpired = (object, days) => {
 export const createBucketIfRequired = async (client, bucket) => {
   try {
     const exists = await bucketExists(client, bucket);
-
     if (!exists) {
-      const makeBucket = util.promisify(client.makeBucket);
-      await makeBucket(bucket);
+      await makeBucket(client, bucket);
     }
   } catch (err) {
     logger.error(`Unable to create bucket: ${bucket}, error = ${err}`);
@@ -174,8 +211,6 @@ export const expiredTopLevelObjects = async (client, bucket, prefix = '', days =
     const promises = topLevelObjects.map(async (e) => {
       // container objects have a prefix property
       if (typeof (e.prefix) !== 'undefined') {
-        const statObject = util.promify(client.statObject);
-
         return [await statObject(bucket, e.prefix), { prefix: e.prefix }];
       }
 
