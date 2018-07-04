@@ -64,13 +64,13 @@ Once you have your package created use the following cURL commands to submit, ch
 __Submit for Signing__
 
 ```console
-curl -F file=@"myarchive-20180629.zip" "http://localhost:8080/api/v1/sign?platform=ios"
+curl -F -X POST file=@"myarchive-20180629.zip" http://localhost:8080/api/v1/sign?platform=ios
 ```
 
 __Check Status__
 
 ```console
-curl -v "http://localhost:8080/api/v1/job/73/status"
+curl -v http://localhost:8080/api/v1/job/73/status
 ```
 
 __Retrieve Signed Artifact__
