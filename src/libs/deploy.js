@@ -63,11 +63,17 @@ const fetchFileFromStorage = async (signedApp, workspace) => {
   }
 };
 
-const getApkBundleID = async (signedAPK) => {
+/**
+ * Get the bundle ID of the app package
+ *
+ * @param {String} apkPackage The name of the signed app
+ * @returns The bundle ID
+ */
+const getApkBundleID = async (apkPackage) => {
   try {
     // Use Android Asset Packaging Tool to get package bundle ID:
     const apkBundle = await exec(`
-    aapt dump badging ${signedAPK} | \
+    aapt dump badging ${apkPackage} | \
     grep package: | \
     cut -d "'" -f2
     `);
