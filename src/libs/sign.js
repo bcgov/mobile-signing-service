@@ -153,6 +153,27 @@ const packageForDelivery = async (apath, items) => {
 };
 
 /**
+ * Get the bundle ID of the app package
+ *
+ * @param {String} apkPackage The name of the signed app
+ * @returns The bundle ID
+ */
+const getApkBundleID = async (apkPackage) => {
+  try {
+    // Use Android Asset Packaging Tool to get package bundle ID:
+    const apkBundle = await exec(`
+    aapt dump badging ${apkPackage} | \
+    grep package: | \
+    cut -d "'" -f2
+    `);
+    // Get rid of the linebreak at the end:
+    return apkBundle.stdout.replace(/(\r\n\t|\n|\r\t)/gm, '');
+  } catch (error) {
+    throw new Error(`Unable to find package name! ${error}`);
+  }
+};
+
+/**
  * Sign an xcode xcarchive file.
  *
  * @param {string} archiveFilePath The path to the xcarchive file
@@ -266,9 +287,14 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   const packagePath = path.join(workspace, shortid.generate());
   const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
-  // Hardcoded key credential:
-  const keyPassword = '';
-  const keyAlias = '';
+
+  // Fetch signing key's alias and password from keyChain:
+  const apkBundleID = await getApkBundleID(signedApkPath);
+  const keyPasswordFull = await exec(`security find-generic-password -w -s keyPassword -a ${apkBundleID}`);
+  const keyAliasFull = await exec(`security find-generic-password -w -s keyAlias -a ${apkBundleID}`);
+
+  const keyPassword = keyPasswordFull.stdout.trim().split('\n');
+  const keyAlias = keyAliasFull.stdout.trim().split('\n');
 
   // Extract the package that contains both apk and key:
   await exec(`
