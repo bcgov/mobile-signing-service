@@ -11,13 +11,29 @@ Additional component can be fond in these repos:
 
 ## Usage
 
+# API Usage & Documentation
+
 The API documentation can be built with the following command; the result of building the documentation can be found in the `public/doc/api` directory / folder and will be served out via the API.
 
 ```console
 npm run build:doc
 ```
 
+# From the Desktop
+
+For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
+
+*xcarchive*
+
+To package up an xcarchive to submit for signing you need to:
+1. Create a folder to hold the xcarchive and options.plist
+2. Copy the xcarchive from xcode into the folder from #1.
+3. Create or copy your options.plist from #1.
+4. ZIP up the folder for submission
+
 ![alt text][export-xcarchive]
+
+The `options.plist` contain the answers to the questions xcode normally asks you when you export or upload to the app store from the organizer window. A sample can be found in the `doc` folder of this repository.
 
 ## Build
 
