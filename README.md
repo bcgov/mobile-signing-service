@@ -19,7 +19,7 @@ The API documentation can be built with the following command; the result of bui
 npm run build:doc
 ```
 
-#### From the Desktop
+### From the Desktop
 
 For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
 
