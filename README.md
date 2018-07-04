@@ -59,6 +59,25 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 
 The keys in the plist represent the questions xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
 
+Once you have your package created use the following cURL commands to submit, check the status, and download the signed artifact.
+
+__Submit for Signing__
+
+```console
+curl -F file=@"myarchive-20180629.zip" "http://localhost:8089/api/v1/sign?platform=ios"
+```
+
+__Check Status__
+
+```console
+curl -v "http://localhost:8089/api/v1/job/73/status"
+```
+
+__Retrieve Signed Artifact__
+
+```console
+curl -vL http://localhost:8089/api/v1/sign/73/download -o foo.zip
+```
 
 ## Build
 
