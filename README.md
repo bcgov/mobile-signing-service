@@ -55,9 +55,9 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 </plist>
 ```
 
-\* *options.plist* for iTunes Connect release
+\* sample *options.plist* for iTunes Connect release
 
-The keys in the plist represent the quesitons xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
+The keys in the plist represent the questions xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
 
 
 ## Build
@@ -124,7 +124,7 @@ docker run -it --rm -v --name pgdev \
 pgdata:/var/lib/postgresql/data postgres
 ```
 
-Onces running connect to the running container and use `psql` to run the following SQL commands to create your applicaiton user and database. The extra `-c` arguments can be skipped if needed but I prefer to adjust column and lines.
+Onces running connect to the running container and use `psql` to run the following SQL commands to create your application user and database. The extra `-c` arguments can be skipped if needed but I prefer to adjust column and lines.
 
 ```console
 docker exec -i -t $1 /bin/bash -c "export COLUMNS=`tput cols`; export LINES=`tput lines`; exec bash";
