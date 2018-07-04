@@ -33,7 +33,31 @@ To package up an xcarchive to submit for signing you need to:
 
 ![alt text][export-xcarchive]
 
-The `options.plist` contain the answers to the questions xcode normally asks you when you export or upload to the app store from the organizer window. A sample can be found in the `doc` folder of this repository.
+The `options.plist` contain the answers to the questions xcode normally asks you when you export or upload to the app store from the organizer window. The `doc` folder of this repository contains samples for Enterprise and iTunes Connect releases.
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>teamID</key>
+	<string>P83QAVS3C</string>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>
+```
+
+\* *options.plist* for iTunes Connect release
+
+
 
 ## Build
 
