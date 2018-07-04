@@ -57,6 +57,7 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 
 \* *options.plist* for iTunes Connect release
 
+The keys in the plist represent the quesitons xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
 
 
 ## Build
