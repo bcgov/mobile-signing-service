@@ -11,7 +11,7 @@ Additional component can be fond in these repos:
 
 ## Usage
 
-# API Usage & Documentation
+### API Usage & Documentation
 
 The API documentation can be built with the following command; the result of building the documentation can be found in the `public/doc/api` directory / folder and will be served out via the API.
 
@@ -19,7 +19,7 @@ The API documentation can be built with the following command; the result of bui
 npm run build:doc
 ```
 
-# From the Desktop
+#### From the Desktop
 
 For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
 
