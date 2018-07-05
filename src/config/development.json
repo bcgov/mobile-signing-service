@@ -13,7 +13,7 @@
 		"expires": 604800000
 	},
 	"agent": {
-		"hostUrl": "http://142.24.94.116:80",
+		"hostUrl": "http://142.24.79.163:80",
 		"signPath": "/v1/job/sign"
 	},
 	"db": {
