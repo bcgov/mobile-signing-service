@@ -161,6 +161,12 @@ ALTER DATABASE cicd OWNER TO app_dv_cicd;
 
 You'll use the USER and PASSWORD from the SQL above in the `.env` file you create in step 3 below.
 
+The final step is to run the Knex migration scripts to build the database schema; make sure you've installed all the `npm` packages with `npm install`:
+
+```console
+NODE_ENV=development ./node_modules/.bin/knex migrate:latest
+```
+
 3. API
 
 Create a file called `.env` in the root project folder and populate it with the following environment variables; update them as needed.
