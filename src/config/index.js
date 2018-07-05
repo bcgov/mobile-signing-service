@@ -64,7 +64,7 @@ nconf.overrides({
 // load other properties from file.
 nconf.argv()
   .env()
-  .file({ file: path.join(__dirname, `${env}.json`) });
+  .file({ file: path.join(__dirname, 'default.json') });
 
 // if nothing else is set, use defaults. This will be set if
 // they do not exist in overrides or the config file.
