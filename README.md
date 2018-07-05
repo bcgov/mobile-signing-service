@@ -138,9 +138,9 @@ When you start minio it with the command above it won't detach. Copy the access 
 Run a local PostgreSQL docker image (find them [here](https://hub.docker.com/_/postgres/)). The sample command below is using a docker volume named `pgdata` to store data; see the Docker documentation on how to do this if you're interested.
 
 ```console
-docker run -it --rm -v --name pgdev \
+docker run -it --rm --name pgdev \
 -e POSTGRES_PASSWORD=yourpasswd \
-pgdata:/var/lib/postgresql/data postgres
+-v pgdata:/var/lib/postgresql/data postgres
 ```
 
 Onces running connect to the running container and use `psql` to run the following SQL commands to create your application user and database. The extra `-c` arguments can be skipped if needed but I prefer to adjust column and lines.
