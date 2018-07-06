@@ -32,6 +32,7 @@ import config from '../../config';
 import { logger } from '../../libs/logger';
 import { asyncMiddleware, errorWithCode } from '../../libs/utils';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
+import { deployApk } from '../../libs/deploy';
 import {
   createBucketIfRequired,
   putObject,
@@ -182,7 +183,7 @@ const handleDeploymentJob = async (job, clean = true) => {
       case 'ios':
       {
         throw new Error('Temploray not supported');
-        break;
+        // break;
       }
       case 'android':
       // Sharing the same job from signing work:
@@ -202,7 +203,7 @@ const handleDeploymentJob = async (job, clean = true) => {
 
       cleanup(workSpace);
     }
-    
+
     await reportJobStatus({ ...job });
   } catch (error) {
     const message = 'Unable to deploy app';
