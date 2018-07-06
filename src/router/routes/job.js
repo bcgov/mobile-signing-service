@@ -22,6 +22,13 @@
 
 'use strict';
 
+import {
+  logger,
+  asyncMiddleware,
+  errorWithCode,
+  createBucketIfRequired,
+  putObject,
+} from '@bcgov/common-nodejs';
 import request from 'request-promise-native';
 import * as minio from 'minio';
 import util from 'util';
@@ -29,13 +36,7 @@ import { Router } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
 import config from '../../config';
-import { logger } from '../../libs/logger';
-import { asyncMiddleware, errorWithCode } from '../../libs/utils';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import {
-  createBucketIfRequired,
-  putObject,
-} from '../../libs/bucket';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');

@@ -20,14 +20,13 @@
 
 'use strict';
 
-// import cluster from 'cluster';
+import { logger, started } from '@bcgov/common-nodejs';
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import config from './config';
-import { logger, started } from './libs/logger';
 
 // Config
 const env = config.get('environment');
