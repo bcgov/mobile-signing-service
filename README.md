@@ -2,18 +2,17 @@
 ## About
 
 This is the Agent component to the BCDevX Mobile App Signing Service. The Signing
-Service is designed to be a selfe-serve system that enables development teams to
+Service is designed to be a self-serve system that enables development teams to
 sign and deploy build artifacts in a secure environment.
 
-The Agent is meant to run on a macOS system and run signing jobs; these can be
-for iOS, macOS, or Android. When a signing job is completed the artifacts are
-made available for a short period of time.
+The Agent is meant to run on a *macOS* system and run signing jobs; these can be
+for iOS, macOS, or Android.
 
 Additional component can be fond in these repos:
 
-[Public API](https://github.com/bcdevx/mobile-cicd-api)
+[Public API](https://github.com//bcdevops/mobile-cicd-api.git)
 
-[Public Web](https://github.com/bcdevx/mobile-cicd-web)
+[Public Web](https://github.com//bcdevops/mobile-cicd-web.git)
 
 ## Usage
 
@@ -25,8 +24,9 @@ npm run build:doc
 
 ## Build
 
-Use the OpenShift `build.json` template in this repo with the following (sample) command. The build is meant to be a CI
-process to confirm that a build can happen without error, that no code quality, security or test errors occur.
+While this application is meant to be run on macOS to accommodate iOS / macOS code signing it can be built on OpenShift to accommodate code analysis and testing.
+
+Use the OpenShift `build.json` template in this repo with the following (sample) command. The build is meant to be a CI process to confirm that a build can happen without error, ensure code quality, and that the code is security.
 
 ```console
 oc process -f openshift/templates/build.json \
@@ -40,37 +40,28 @@ oc create -f -
 | GIT_REF            | NO            | The branch to build from |
 | SLACK_SECRET       | NO            | Slack token to post to channel(s) |
 
-* See the `build.json` template for other *optional* parameters.
-** To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
+\*  See the `build.json` template for other *optional* parameters.
+
+\**  To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
 
 ## Deployment
 
-TBD
+* Checkout the source code on the destination server;
+* Manually run `npm run build`;
+* Run `npm run`.
 
 ## Local Installation for Development
 
-There are two steps to running this project locally for development:
+See the [API documentation](https://github.com/bcdevops/mobile-cicd-api.git/README.md) on how to setup and run supplemental services like minio.
 
-1. Minio
-
-Run a local minio docker image (find them [here](https://hub.docker.com/r/minio/minio/)). The sample command below is using a docker volume named `minio_data` to store data; see the Docker documentation on how to do this if you're interested. When minio starts it will print the `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` needed for step two.
-
-```console
-docker run -p 9000:9000 --name minio -v minio_data:/data minio/minio server /data
-```
-
-2. API
-
-Create a file called `.env` in the root project folder and populate it with the following environment variables; update them as needed.
+Create an `.env` file on the root folder with the folloping variables:
 
 ```console
 NODE_ENV=development
 MINIO_ACCESS_KEY="XXXXXXXX"
 MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
-MINIO_ENDPOINT="localhost"
-SSO_CLIENT_SECRET="00000000-aaaa-aaaa-aaaa-000000000000"
-SESSION_SECRET="abc123"
-APP_URL="http://localhost:8000"
+MINIO_HOST="localhost"
+PORT=8088
 ```
 
 Run the node application with the following command:
@@ -78,6 +69,8 @@ Run the node application with the following command:
 ```console
 npm run dev
 ```
+
+\* See src/lib/config/development.json for configuration options that do not need to be secure.
 
 ## Project Status / Goals / Roadmap
 
