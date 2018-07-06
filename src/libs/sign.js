@@ -284,33 +284,37 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
  *
  */
 // eslint-disable-next-line no-unused-vars
+/* eslint-disable global-require */
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  const packagePath = path.join(workspace, shortid.generate());
+  logger.info(archiveFilePath);
+  const apath = path.join(workspace, shortid.generate());
+  const packagePath = path.join(apath, shortid.generate());
   const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
 
-  // Fetch signing key's alias and password from keyChain:
-  const apkBundleID = await getApkBundleID(signedApkPath);
+  // Get the package:
+  const buffer = await getObject(client, bucket, archiveFilePath);
+  await exec(`mkdir -p ${packagePath}`);
+  await writeFile(outFileName, buffer, 'utf8');
+  const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
+  if (apkPathFull.stderr) {
+    throw new Error('Cannot find the package.');
+  }
+  const apkPath = apkPathFull.stdout.trim().split('\n');
+
+  // Fetch signing keystore, key alias and password from keyChain:
+  const apkBundleID = await getApkBundleID(apkPath);
   const keyPasswordFull = await exec(`security find-generic-password -w -s keyPassword -a ${apkBundleID}`);
   const keyAliasFull = await exec(`security find-generic-password -w -s keyAlias -a ${apkBundleID}`);
+  const keyStoreFull = await exec(`security find-generic-password -w -s keyStorePath -a ${apkBundleID}`);
 
+  if (keyPasswordFull.stderr || keyAliasFull.stderr || keyStoreFull.stderr) {
+    throw new Error('Cannot find key to sign this package.');
+  }
+
+  // Extract value from stdout:
   const keyPassword = keyPasswordFull.stdout.trim().split('\n');
   const keyAlias = keyAliasFull.stdout.trim().split('\n');
-
-  // Extract the package that contains both apk and key:
-  await exec(`
-    mkdir -p "${packagePath}" && \
-    unzip -q "${archiveFilePath}" -d "${packagePath}"
-  `);
-
-  // Find apk and signing key:
-  const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
-  const keyPathFull = await exec(`find ${packagePath} -iname '*.keystore'`);
-  if (keyPath.stderr || apkPath.stderr) {
-    throw new Error('Cannot find apk or signing key.');
-  }
-  // Extract the path of apk and key:
-  const apkPath = apkPathFull.stdout.trim().split('\n');
-  const keyPath = keyPathFull.stdout.trim().split('\n');
+  const keyPath = keyStoreFull.stdout.trim().split('\n');
 
   // Sign the apk:
   const response = await exec(`
@@ -324,8 +328,10 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
     ${apkPath}`);
 
   if (!response.stdout.includes('Signed')) {
-    console.log(response.stderr);
+    throw new Error(response.stderr);
   }
+
+  logger.info('Successfully signed package.');
 
   return outFileName;
 };
