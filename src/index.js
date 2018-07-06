@@ -22,6 +22,7 @@
 
 // import cluster from 'cluster';
 import bodyParser from 'body-parser';
+import { logger, started } from 'common-nodejs';
 import flash from 'connect-flash';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -29,7 +30,6 @@ import fs from 'fs';
 import path from 'path';
 import config from './config';
 import authmw from './libs/authmware';
-import { logger, started } from './libs/logger';
 
 // Config
 const env = config.get('environment');

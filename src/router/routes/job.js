@@ -22,9 +22,9 @@
 
 'use strict';
 
+import { logger } from 'common-nodejs';
 import { Router } from 'express';
 import DataManager from '../../libs/db';
-import { logger } from '../../libs/logger';
 import { asyncMiddleware, errorWithCode } from '../../libs/utils';
 // import { JOB_STATUS } from '../../constants';
 

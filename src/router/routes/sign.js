@@ -22,6 +22,15 @@
 
 'use strict';
 
+import {
+  logger,
+  createBucketIfRequired,
+  bucketExists,
+  putObject,
+  isExpired,
+  presignedGetObject,
+  statObject,
+} from 'common-nodejs';
 import * as minio from 'minio';
 import url from 'url';
 import fs from 'fs';
@@ -29,20 +38,11 @@ import request from 'request-promise-native';
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
-import { logger } from '../../libs/logger';
 import {
   asyncMiddleware,
   errorWithCode,
   cleanup,
 } from '../../libs/utils';
-import {
-  createBucketIfRequired,
-  bucketExists,
-  putObject,
-  isExpired,
-  presignedGetObject,
-  statObject,
-} from '../../libs/bucket';
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
 
