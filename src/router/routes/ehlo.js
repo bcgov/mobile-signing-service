@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { asyncMiddleware } from 'common-nodejs';
+import { asyncMiddleware } from '@bcgov/common-nodejs';
 import { Router } from 'express';
 
 const router = new Router();

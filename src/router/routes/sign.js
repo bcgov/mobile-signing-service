@@ -32,7 +32,7 @@ import {
   statObject,
   asyncMiddleware,
   errorWithCode,
-} from 'common-nodejs';
+} from '@bcgov/common-nodejs';
 import * as minio from 'minio';
 import url from 'url';
 import fs from 'fs';

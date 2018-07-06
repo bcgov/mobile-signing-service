@@ -21,8 +21,8 @@
 'use strict';
 
 // import cluster from 'cluster';
+import { logger, started } from '@bcgov/common-nodejs';
 import bodyParser from 'body-parser';
-import { logger, started } from 'common-nodejs';
 import flash from 'connect-flash';
 import cookieParser from 'cookie-parser';
 import express from 'express';
