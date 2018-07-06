@@ -20,12 +20,9 @@
 
 'use strict';
 
+import { asyncMiddleware } from 'common-nodejs';
 import { Router } from 'express';
 import passport from 'passport';
-// import url from 'url';
-// import config from '../../config';
-// import { logger } from '../../libs/logger';
-import { asyncMiddleware } from '../../libs/utils';
 
 const router = new Router();
 
