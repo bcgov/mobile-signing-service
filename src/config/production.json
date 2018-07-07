@@ -14,7 +14,8 @@
 	},
 	"agent": {
 		"hostUrl": "http://localhost:3000",
-		"signPath": "/v1/job/sign"
+    "signPath": "/v1/job/sign",
+    "deployPath": "/v1/job/deploy"
 	},
   "sso": {
 		"clientId": "secode-sign-api",
