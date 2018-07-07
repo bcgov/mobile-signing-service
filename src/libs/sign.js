@@ -286,7 +286,6 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
 // eslint-disable-next-line no-unused-vars
 /* eslint-disable global-require */
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  logger.info(archiveFilePath);
   const apath = path.join(workspace, shortid.generate());
   const packagePath = path.join(apath, shortid.generate());
   const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
