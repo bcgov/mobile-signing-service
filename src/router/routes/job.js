@@ -196,15 +196,15 @@ const handleDeploymentJob = async (job, clean = true) => {
     }
 
     if (clean) {
-      const basePath = path.dirname(deployedAppPath);
-      const workSpace = path.dirname(basePath);
+      const workSpace = path.dirname(deployedAppPath);
       const message = 'Cleaned working directory';
       logger.info(`${message}, path = ${workSpace}`);
 
       cleanup(workSpace);
     }
 
-    await reportJobStatus({ ...job });
+    // No need to update the deployment job for now:
+    // await reportJobStatus({ ...job, ...{ deliveryFileName: null, deliveryFileEtag: null } });
   } catch (error) {
     const message = 'Unable to deploy app';
     logger.error(`${message}, err = ${error.message}`);
