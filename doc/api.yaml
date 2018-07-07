@@ -83,6 +83,35 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
+  /deploy:
+    post:
+      operationId: postNewJob
+      summary: Specify a signed package for deployment
+      description: |-
+        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWtch, 
+        Google Play Store or App Store.
+      tags:
+        - deploy
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: 
+              - ios
+              - android
+      responses:
+        200:
+          description: The package was deployed
+          content:
+            applicaiton/json:
+              schema:
+                $ref: '#/components/schemas/JobReciept'
+        401:
+          description: You have not supplied a valid JWT
+        500:
+          description: Internal Error
 components:
   schemas:
     JobReciept:
