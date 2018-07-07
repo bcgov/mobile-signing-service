@@ -14,6 +14,7 @@
 
 'use strict';
 
+import { google } from 'googleapis';
 import * as minio from 'minio';
 import fs from 'fs';
 import cp from 'child_process';
@@ -36,7 +37,7 @@ const client = new minio.Client({
   secretKey: config.get('minio:secretKey'),
   region: config.get('minio:region'),
 });
-
+/* eslint-disable global-require */
 /**
  * Get the signed appliaction package
  *
@@ -50,7 +51,7 @@ const fetchFileFromStorage = async (signedApp, workspace) => {
   try {
     const buffer = await getObject(client, bucket, signedApp);
     if (!buffer) {
-      throw errorWithCode('Unable to fetch archive.', 500);
+      throw new Error('Unable to fetch archive.');
     }
     await exec(`mkdir -p ${apath}`);
     await writeFile(outFilePath, buffer, 'utf8');
@@ -114,7 +115,7 @@ const googleDeployEdit = async (publisher, editID, signedAPK) => {
     });
 
     // Commit the Edit after all actions done:
-    const commitEdit = await publisher.edits.commit({
+    await publisher.edits.commit({
       editId: newEditID,
     });
   } catch (error) {
@@ -139,7 +140,11 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
     // Turn data stream into a package-archive file for deployment:
     const signedAPK = require('fs').readFileSync(signedApkPath);
     // Get the Google client-service key to deployment:
-    const key = require('../path/to/key.json');
+    // const key = require('../path/to/key.json');
+    const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
+    const keyPath = keyFull.stdout.trim().split('\n');
+    const key = require(`${keyPath}`);
+
     // Set up Google publisher:
     const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
     const editID = String(new Date().getTime()); // unique id using timestamp
@@ -158,6 +163,7 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
         packageName: apkBundleId,
       },
     });
+
     // Authorize client:
     const token = await jwtClient.authorize();
     await oauth2Client.setCredentials(token);
@@ -171,4 +177,3 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
 
   return Promise.reject();
 };
-
