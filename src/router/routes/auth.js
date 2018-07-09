@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { asyncMiddleware } from '@bcgov/common-nodejs';
+import { asyncMiddleware } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import passport from 'passport';
 
