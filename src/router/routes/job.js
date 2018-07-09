@@ -28,7 +28,7 @@ import {
   errorWithCode,
   createBucketIfRequired,
   putObject,
-} from '@bcgov/common-nodejs';
+} from '@bcgov/nodejs-common-utils';
 import request from 'request-promise-native';
 import * as minio from 'minio';
 import util from 'util';

@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { getObject, logger } from '@bcgov/common-nodejs';
+import { getObject, logger } from '@bcgov/nodejs-common-utils';
 import * as minio from 'minio';
 import fs from 'fs';
 import cp from 'child_process';
