@@ -84,10 +84,8 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
     }
     
     stage('Install') {
-
-      sleep 7200
-  
       echo "Setup: ${BUILD_ID}"
+
       sh "node -v"
       sh "npm -v"
       sh "npm ci"
