@@ -131,9 +131,11 @@
           }
         },
         "triggers": [{
-          "type": "github",
+          "type": "GitHub",
           "github": {
-              "secret": "${NAME}-github"
+              "secretReference": {
+                "name": "${NAME}-github"
+              }
           }
         }],
         "output": {},
