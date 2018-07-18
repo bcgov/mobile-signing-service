@@ -42,7 +42,7 @@ def notifySlack(text, channel, url, attachments, icon) {
 }
 
 // See https://github.com/jenkinsci/kubernetes-plugin
-podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build, serviceAccount: 'jenkins', cloud: 'openshift', containers: [
+podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", serviceAccount: 'jenkins', cloud: 'openshift', containers: [
   containerTemplate(
     name: 'jnlp',
     image: 'docker-registry.default.svc:5000/openshift/jenkins-slave-nodejs6:latest',
