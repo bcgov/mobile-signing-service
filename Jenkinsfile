@@ -59,7 +59,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
     //   ]
   )
 ]) {
-  node("${APP_NAME}-node8-build") {
+  node("${APP_NAME}-node-build") {
 
     SLACK_TOKEN = sh (
       script: """oc get secret/slack -o template --template="{{.data.token}}" | base64 --decode""",
