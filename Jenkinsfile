@@ -20,8 +20,8 @@
 
 import groovy.json.JsonOutput
 
-def APP_NAME = 'cicd-api'
-def BUILD_CONFIG_BASE_NAME = 'cicd-api'
+def APP_NAME = 'signing-api'
+def BUILD_CONFIG_BASE_NAME = 'signing-api'
 def IMAGESTREAM_NAME = APP_NAME
 def TAG_NAMES = ['dev', 'test', 'prod']
 def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-icon.png'
@@ -42,7 +42,7 @@ def notifySlack(text, channel, url, attachments, icon) {
 }
 
 // See https://github.com/jenkinsci/kubernetes-plugin
-podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAccount: 'jenkins', cloud: 'openshift', containers: [
+podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build, serviceAccount: 'jenkins', cloud: 'openshift', containers: [
   containerTemplate(
     name: 'jnlp',
     image: 'docker-registry.default.svc:5000/openshift/jenkins-slave-nodejs6:latest',
@@ -59,7 +59,7 @@ podTemplate(label: 'cicd-api-node-build', name: 'cicd-api-node-build', serviceAc
     //   ]
   )
 ]) {
-   node('cicd-api-node-build') {
+  node("${APP_NAME}-node8-build") {
 
     SLACK_TOKEN = sh (
       script: """oc get secret/slack -o template --template="{{.data.token}}" | base64 --decode""",
