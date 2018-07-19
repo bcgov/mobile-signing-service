@@ -20,12 +20,9 @@
 
 'use strict';
 
+import { asyncMiddleware } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import passport from 'passport';
-// import url from 'url';
-// import config from '../../config';
-// import { logger } from '../../libs/logger';
-import { asyncMiddleware } from '../../libs/utils';
 
 const router = new Router();
 
@@ -55,7 +52,7 @@ router.get('/callback', passport.authenticate('oauth2', {
   failureRedirect: '/failed.html',
 }), asyncMiddleware(async (req, res) => {
   // const redirectTo = req.session.redirect_to;
-  // const baseUrl = config.get('appUrl');
+  // const baseUrl = config.get('apiUrl');
   try {
     // const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
     // console.log('u=', url.resolve(baseUrl, redirectTo));

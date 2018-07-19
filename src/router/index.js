@@ -29,16 +29,16 @@ import sign from './routes/sign';
 import deploy from './routes/deploy';
 
 const corsOptions = {
-  origin: config.get('appUrl'),
+  origin: config.get('apiUrl'),
   credentials: true,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 module.exports = (app) => {
   app.use(cors(corsOptions));
-  app.use('/ehlo', ehlo); // probes
-  app.use('/v1/auth', auth);
-  app.use('/v1/sign', sign);
-  app.use('/v1/job', job);
-  app.use('/v1/deploy', deploy);
+  app.use('/api/v1/ehlo', ehlo); // probes
+  app.use('/api/v1/auth', auth);
+  app.use('/api/v1/sign', sign);
+  app.use('/api/v1/job', job);
+  app.use('/api/v1/deploy', deploy);
 };

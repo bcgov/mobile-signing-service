@@ -21,6 +21,7 @@
 'use strict';
 
 // import cluster from 'cluster';
+import { logger, started } from '@bcgov/nodejs-common-utils';
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
 import cookieParser from 'cookie-parser';
@@ -29,7 +30,6 @@ import fs from 'fs';
 import path from 'path';
 import config from './config';
 import authmw from './libs/authmware';
-import { logger, started } from './libs/logger';
 
 // Config
 const env = config.get('environment');

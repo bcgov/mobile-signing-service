@@ -1,26 +1,82 @@
 
 ## About
 
-This is the Agent component to the BCDevX Mobile App Signing Service. The Signing
-Service is designed to be a selfe-serve system that enables development teams to
-sign and deploy build artifacts in a secure environment.
-
-The Agent is meant to run on a macOS system and run signing jobs; these can be
-for iOS, macOS, or Android. When a signing job is completed the artifacts are
-made available for a short period of time.
+This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a selfe-serve system that enables development teams to sign and deploy build artifacts in a s cure environment.
 
 Additional component can be fond in these repos:
 
-[Public API](https://github.com/bcdevx/mobile-cicd-api)
+[Signing Agent](https://github.com/bcdevops/mobile-cicd-agent)
 
-[Public Web](https://github.com/bcdevx/mobile-cicd-web)
+[Public Web](https://github.com/bcdevops/mobile-cicd-web)
 
 ## Usage
 
-The API documentation can be built with the following command; the result of building the documentaiton can be found in the `doc/` directory / folder.
+### API Usage & Documentation
+
+The API documentation can be built with the following command; the result of building the documentation can be found in the `public/doc/api` directory / folder and will be served out via the API.
 
 ```console
 npm run build:doc
+```
+
+### From the Desktop
+
+For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
+
+*xcarchive*
+
+To package up an xcarchive to submit for signing you need to:
+1. Create a folder to hold the xcarchive and options.plist
+2. Copy the xcarchive from xcode into the folder from #1.
+3. Create or copy your options.plist from #1.
+4. ZIP up the folder for submission
+
+![alt text][export-xcarchive]
+
+The `options.plist` contain the answers to the questions xcode normally asks you when you export or upload to the app store from the organizer window. The `doc` folder of this repository contains samples for Enterprise and iTunes Connect releases.
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>teamID</key>
+	<string>P83QAVS3C</string>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>
+```
+
+\* sample *options.plist* for iTunes Connect release
+
+The keys in the plist represent the questions xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
+
+Once you have your package created use the following cURL commands to submit, check the status, and download the signed artifact.
+
+__Submit for Signing__
+
+```console
+curl -F -X POST file=@"myarchive-20180629.zip" http://localhost:8080/api/v1/sign?platform=ios
+```
+
+__Check Status__
+
+```console
+curl -v http://localhost:8080/api/v1/job/73/status
+```
+
+__Retrieve Signed Artifact__
+
+```console
+curl -vL http://localhost:8080/api/v1/sign/73/download -o foo.zip
 ```
 
 ## Build
@@ -40,12 +96,28 @@ oc create -f -
 | GIT_REF            | NO            | The branch to build from |
 | SLACK_SECRET       | NO            | Slack token to post to channel(s) |
 
-* See the `build.json` template for other *optional* parameters.
-** To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
+\* See the `build.json` template for other *optional* parameters.
+
+\** To build multiple branches you'll use the config file multiple times. This will create errors from the `oc` command output that can safely be ignored. For example: `Error from server (AlreadyExists): secrets "github" already exists`
 
 ## Deployment
 
-TBD
+Use the OpenShift `deploy.json` template in this repo with the following (sample) command to build an environment (namesapce) and deploy the code and dependencies:
+
+```console
+oc process -f openshift/templates/deploy.json \
+-p NAMESPACE=devops-devexp-dev \
+-p NODE_ENV=development \
+-p POSTGRESQL_USER=app_dv_cicd
+```
+
+| Parameter          | Optional      | Description   |
+| ------------------ | ------------- | ------------- |
+| NAMESPACE          | NO            | The environment (project) name |
+| NODE_ENV           | NO            | The node environment to build for |
+| POSTGRESQL_USER    | NO            | The PostgreSQL db user name for API access |
+
+\* See the `deploy.json` template for other *optional* parameters.
 
 ## Local Installation for Development
 
@@ -59,18 +131,58 @@ Run a local minio docker image (find them [here](https://hub.docker.com/r/minio/
 docker run -p 9000:9000 --name minio -v minio_data:/data minio/minio server /data
 ```
 
-2. API
+When you start minio it with the command above it won't detach. Copy the access key and secret key from the information minio displays to the `.env` file in step #3 below.
+
+2. PostgreSQL
+
+Run a local PostgreSQL docker image (find them [here](https://hub.docker.com/_/postgres/)). The sample command below is using a docker volume named `pgdata` to store data; see the Docker documentation on how to do this if you're interested.
+
+```console
+docker run -it --rm --name pgdev \
+-e POSTGRES_PASSWORD=yourpasswd \
+-v pgdata:/var/lib/postgresql/data postgres
+```
+
+Onces running connect to the running container and use `psql` to run the following SQL commands to create your application user and database. The extra `-c` arguments can be skipped if needed but I prefer to adjust column and lines.
+
+```console
+docker exec -i -t $1 /bin/bash -c "export COLUMNS=`tput cols`; export LINES=`tput lines`; exec bash";
+```
+
+Once you're connected run the following SQL to create the database, db user, and to give the new user access to the database.
+
+```sql
+DROP DATABASE cicd;
+CREATE DATABASE cicd;
+CREATE USER app_dv_cicd WITH PASSWORD 'PASSWD_HERE';
+GRANT ALL PRIVILEGES ON DATABASE cicd TO app_dv_cicd;
+ALTER DATABASE cicd OWNER TO app_dv_cicd;
+```
+
+You'll use the USER and PASSWORD from the SQL above in the `.env` file you create in step 3 below.
+
+The final step is to run the Knex migration scripts to build the database schema; make sure you've installed all the `npm` packages with `npm install`:
+
+```console
+NODE_ENV=development ./node_modules/.bin/knex migrate:latest
+```
+
+3. API
 
 Create a file called `.env` in the root project folder and populate it with the following environment variables; update them as needed.
 
 ```console
 NODE_ENV=development
-MINIO_ACCESS_KEY="XXXXXXXX"
-MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
-MINIO_ENDPOINT="localhost"
-SSO_CLIENT_SECRET="00000000-aaaa-aaaa-aaaa-000000000000"
-SESSION_SECRET="abc123"
-APP_URL="http://localhost:8000"
+POSTGRESQL_PASSWORD=
+POSTGRESQL_USER=
+POSTGRESQL_HOST=localhost
+MINIO_ACCESS_KEY=
+MINIO_SECRET_KEY=
+MINIO_HOST="localhost"
+SSO_CLIENT_SECRET=
+SESSION_SECRET=
+API_URL="http://localhost:8089"
+PORT=8089
 ```
 
 Run the node application with the following command:
@@ -132,3 +244,6 @@ and the code for the cc 4.0 footer looks like this:
     xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">the Province of Britich Columbia
     </span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
     Creative Commons Attribution 4.0 International License</a>.
+
+
+[export-xcarchive]: https://github.com/bcdevops/mobile-cicd-api/raw/develop/doc/images/export-xcarchive.gif "Prepare & Export xcarchive"

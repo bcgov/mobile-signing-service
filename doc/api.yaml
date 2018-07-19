@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: All things code signing related
 servers:
-  - url: http://localhost:8000/v1/
+  - url: http://localhost:8000
     description: Local development server
-  - url: http://localhost:8000/v1/
+  - url: http://localhost:8000
     description: Production server
 paths:
   /ehlo:
@@ -21,7 +21,7 @@ paths:
       responses:
         200:
           description: The server is OK.
-  /sign:
+  /api/v1/sign:
     post:
       operationId: postNewJob
       summary: Submit a package for signing
@@ -52,7 +52,7 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
-  /sign/{jobId}/status:
+  /api/v1/sign/{jobId}/status:
     get:
       operationId: getJobStatus
       summary: Check the status of a job
@@ -83,7 +83,37 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
-  /deploy:
+  /api/v1/job/{jobId}:
+    put:
+      operationId: updateJobStatus
+      summary: Update the status of a job
+      description: |-
+        This endpoint is used by a signing agent to update the status of a `Job`.
+      tags:
+        - job
+      parameters:
+        - name: jobId
+          description: |-
+            The id of the job being reported on.
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The request body contasin a JSON formated object with the main details of the jobs status.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobReport'
+      responses:
+        200:
+          description: The job was accepted for signing
+        401:
+          description: You have not supplied a valid JWT
+        500:
+          description: Internal Error
+  /api/v1/deploy:
     post:
       operationId: postNewJob
       summary: Specify a signed package for deployment
@@ -99,8 +129,9 @@ paths:
           schema:
             type: string
             enum: 
-              - ios
-              - android
+              - itune
+              - google
+              - airwatch
       responses:
         200:
           description: The package was deployed
@@ -119,21 +150,38 @@ components:
       type: object
       properties: 
         id: 
-          type: string
+          type: integer
       example:
-        id: 'rynjE6Tl7'
+        id: 32
     Status:
       title: Job Status
       type: object
       properties:
         id:
-          type: string
+          type: integer
         url:
           type: string
         durationInSeconds:
           type: number
           format: float
       example:
-        id: 'rynjE6Tl7'
+        id: 32
         url: 'http://localhost:8000/v1/sign/rynjE6Tl7/download'
         durationInSeconds: '123.45'
+    JobReport:
+      title: Job Report
+      description: The job description / metadata to be updated
+      type: object
+      properties:
+        deliveryFileName:
+          type: string
+          description: The name of the file to be processed as part of this job
+        deliveryFileEtag:
+          type: string
+          description: The etag identifer of the file to be processed
+      required:
+        - deliveryFileName
+        - deliveryFileEtag
+      example:
+        deliveryFileName: 'hello-world.zip'
+        deliveryFileEtag: '0370fa71540271e33b6fa5105e5caccb'

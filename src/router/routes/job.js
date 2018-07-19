@@ -22,11 +22,9 @@
 
 'use strict';
 
+import { asyncMiddleware, errorWithCode, logger } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import DataManager from '../../libs/db';
-import { logger } from '../../libs/logger';
-import { asyncMiddleware, errorWithCode } from '../../libs/utils';
-// import { JOB_STATUS } from '../../constants';
 
 const router = new Router();
 const dm = new DataManager();

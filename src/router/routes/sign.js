@@ -22,27 +22,27 @@
 
 'use strict';
 
+import {
+  logger,
+  createBucketIfRequired,
+  bucketExists,
+  putObject,
+  isExpired,
+  presignedGetObject,
+  statObject,
+  asyncMiddleware,
+  errorWithCode,
+} from '@bcgov/nodejs-common-utils';
 import * as minio from 'minio';
 import url from 'url';
 import fs from 'fs';
-import util from 'util';
 import request from 'request-promise-native';
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
-import { logger } from '../../libs/logger';
 import {
-  asyncMiddleware,
-  errorWithCode,
   cleanup,
 } from '../../libs/utils';
-import {
-  createBucketIfRequired,
-  bucketExists,
-  getObject,
-  putObject,
-  isExpired,
-} from '../../libs/bucket';
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
 
@@ -55,7 +55,7 @@ const {
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
 const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
+  endPoint: config.get('minio:host'),
   port: config.get('minio:port'),
   secure: config.get('minio:secure'),
   accessKey: config.get('minio:accessKey'),
@@ -63,11 +63,11 @@ const client = new minio.Client({
   region: config.get('minio:region'),
 });
 
-try {
-  createBucketIfRequired(client, bucket);
-} catch (err) {
-  logger.error(`Problem creating bucket ${bucket}`);
-}
+createBucketIfRequired(client, bucket)
+  .then(() => logger.info(`Created bucket ${bucket}`))
+  .catch((error) => {
+    logger.error(error.message);
+  });
 
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
@@ -122,15 +122,16 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
       headers: { 'content-type': 'application/json' },
       method: 'POST',
       uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-      body: { ...job, ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` } },
+      body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
       json: true,
     };
+
     const status = await request(options);
     if (status !== 'OK') {
       throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
     }
 
-    res.send(202).json({ id: job.id }); // Accepted
+    res.status(202).json({ id: job.id }); // Accepted
 
     return null;
   } catch (error) {
@@ -161,7 +162,7 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       status: JOB_STATUS.COMPLETED,
       url: `http://localhost:8000/v1/job/${job.id}/download`,
       durationInSeconds: job.duration,
@@ -179,27 +180,18 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
 
   try {
     const job = await Job.findById(db, jobId);
-    const statObject = util.promisify(client.statObject);
-    const stat = await statObject(bucket, `${job.deliveryFile}`);
+    const stat = await statObject(client, bucket, job.deliveryFileName);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    const buffer = await getObject(client, bucket, job.deliveryFile);
-
-    if (!buffer) {
-      throw errorWithCode('Unable to fetch archive.', 500);
-    }
-
-    res.contentType(stat.contentType);
-
-    logger.info(`Download album ZIP archive from bucket ${bucket}, object ${job.deliveryFile}`);
-
-    res.end(buffer, 'binary');
+    const link = await presignedGetObject(client, bucket, job.deliveryFileName, 3);
+    res.redirect(link);
   } catch (error) {
-    const message = 'Unable to retrieve archive';
+    const message = `Unable to retrieve arcive for job with ID ${jobId}`;
     logger.error(`${message}, err = ${error.message}`);
+    throw errorWithCode(`${message}, err = ${error.message}`, 500);
   }
 }));
 

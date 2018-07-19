@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: cicd-api-config
+objects:
+- apiVersion: v1
+  data:
+    default.json: |-
+      {
+        "temporaryUploadPath": "uploads",
+        "expirationInDays": 90,
+        "minio": {
+          "bucket": "secode-sign",
+          "port": 9000,
+          "secure": false,
+          "expiry": 604800,
+          "region": "us-east-1"
+        },
+        "session": {
+          "maxAge": 604800000,
+          "expires": 604800000
+        },
+        "agent": {
+          "hostUrl": "http://142.24.79.163:80",
+          "signPath": "/v1/job/sign"
+        },
+        "db": {
+          "database": "cicd"
+        },
+        "sso": {
+          "clientId": "secode-sign-api",
+          "callback": "/v1/auth/callback",
+          "authUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/auth",
+          "tokenUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/token",
+          "certsUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/certs"
+        }
+      }
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: cicd-api-config
