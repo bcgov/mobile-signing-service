@@ -27,9 +27,7 @@ def TAG_NAMES = ['dev', 'test', 'prod']
 def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-icon.png'
 def JENKINS_ICO = 'https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png'
 def OPENSHIFT_ICO = 'https://commons.wikimedia.org/wiki/File:OpenShift-LogoType.svg'
-// def GIT_BRANCH_NAME = ("${env.JOB_BASE_NAME}".contains("master")) ? "master" : "develop"
 def SLACK_CHANNEL = '#devhubx'
-def SONARQUBE_URL = 'https://sonarqube-devhub-tools.pathfinder.gov.bc.ca'
 
 def notifySlack(text, channel, url, attachments, icon) {
     def slackURL = url
@@ -194,7 +192,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       }
     }
 
-    stage('Build') {
+    stage('Image Build') {
        try {
         echo "Build: ${BUILD_ID}"
 
