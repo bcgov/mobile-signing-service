@@ -24,37 +24,29 @@ const gulp = require('gulp');
 const babel = require('gulp-babel');
 const clean = require('gulp-clean');
 
-gulp.task('clean', () => gulp.src('build', { read: false })
+gulp.task('clean', () => gulp.src('build', { read: false, allowEmpty: true })
   .pipe(clean({
     force: true,
   })));
 
-gulp.task('transpile-src', ['clean'], () =>
-  gulp.src('src/**/*.js')
-    .pipe(babel())
-    .pipe(gulp.dest('build/src')));
+gulp.task('transpile-src', () => gulp.src('src/**/*.js')
+  .pipe(babel())
+  .pipe(gulp.dest('build/src')));
 
-gulp.task('transpile-scripts', ['clean'], () =>
-  gulp.src('scripts/**/*.js')
-    .pipe(babel())
-    .pipe(gulp.dest('build/scripts')));
+gulp.task('transpile-scripts', () => gulp.src('scripts/**/*.js')
+  .pipe(babel())
+  .pipe(gulp.dest('build/scripts')));
 
-gulp.task('copy-config', ['clean'], () =>
-  gulp.src('src/config/*.json')
-    .pipe(gulp.dest('build/src/config')));
+gulp.task('copy-config', () => gulp.src('src/config/*.json')
+  .pipe(gulp.dest('build/src/config')));
 
-gulp.task('copy-node-config', ['clean'], () =>
-  gulp.src(['apidoc.json', 'package.json', 'package-lock.json'])
-    .pipe(gulp.dest('build')));
+gulp.task('copy-node-config', () => gulp.src(['package.json', 'package-lock.json'])
+  .pipe(gulp.dest('build')));
 
-gulp.task('copy-templates', ['clean'], () =>
-  gulp.src('templates/**')
-    .pipe(gulp.dest('build/templates')));
+gulp.task('copy-public', () => gulp.src('public/**')
+  .pipe(gulp.dest('build/public')));
 
-gulp.task('copy-public', ['clean'], () =>
-  gulp.src('public/**')
-    .pipe(gulp.dest('build/public')));
-
-gulp.task('default', ['clean', 'transpile-src', 'transpile-scripts',
-  'copy-config', 'copy-node-config', 'copy-templates', 'copy-public',
-]);
+gulp.task('default', gulp.series('clean', gulp.parallel(
+  'transpile-src', 'transpile-scripts', 'copy-config', 'copy-node-config',
+  'copy-public',
+)));
