@@ -14,6 +14,7 @@
 
 'use strict';
 
+import { getObject, logger } from '@bcgov/nodejs-common-utils';
 import { google } from 'googleapis';
 import * as minio from 'minio';
 import fs from 'fs';
@@ -22,8 +23,6 @@ import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
-import { getObject } from './bucket';
-import { logger } from './logger';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
@@ -140,7 +139,6 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
     // Turn data stream into a package-archive file for deployment:
     const signedAPK = require('fs').readFileSync(signedApkPath);
     // Get the Google client-service key to deployment:
-    // const key = require('../path/to/key.json');
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
     const key = require(`${keyPath}`);

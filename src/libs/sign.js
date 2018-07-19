@@ -20,6 +20,7 @@
 
 'use strict';
 
+import { getObject, logger } from '@bcgov/nodejs-common-utils';
 import * as minio from 'minio';
 import fs from 'fs';
 import cp from 'child_process';
@@ -27,8 +28,6 @@ import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
-import { getObject } from './bucket';
-import { logger } from './logger';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
