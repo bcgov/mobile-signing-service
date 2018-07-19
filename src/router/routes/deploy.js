@@ -53,11 +53,11 @@ const client = new minio.Client({
   region: config.get('minio:region'),
 });
 
-try {
-  createBucketIfRequired(client, bucket);
-} catch (err) {
-  logger.error(`Problem creating bucket ${bucket}`);
-}
+createBucketIfRequired(client, bucket)
+  .then(() => logger.info(`Created bucket ${bucket}`))
+  .catch((error) => {
+    logger.error(error.message);
+  });
 
 // curl -X POST http://localhost:8080/api/v1/deploy/8?platform=android
 // option 2: deployment platform = public/enterprise
