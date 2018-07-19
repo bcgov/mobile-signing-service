@@ -24,20 +24,17 @@
 
 import * as minio from 'minio';
 import url from 'url';
-import util from 'util';
 import request from 'request-promise-native';
 import { Router } from 'express';
-import config from '../../config';
-import { logger } from '../../libs/logger';
 import {
-  asyncMiddleware,
-  errorWithCode,
-} from '../../libs/utils';
-import {
+  logger,
   createBucketIfRequired,
   bucketExists,
   isExpired,
-} from '../../libs/bucket';
+  asyncMiddleware,
+  errorWithCode,
+} from '@bcgov/nodejs-common-utils';
+import config from '../../config';
 import DataManager from '../../libs/db';
 
 const router = new Router();
@@ -74,7 +71,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
   const expirationInDays = config.get('expirationInDays');
 
   if (!bucketExists(client, bucket)) {
-    return res.status(500).json({ message: 'Unable to store attached file.' });
+    throw errorWithCode('Unable to store attached file.', 500);
   }
 
   try {
@@ -120,8 +117,6 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
     }
 
     res.send(202).json({ id: job.id }); // Accepted
-
-    return null;
   } catch (error) {
     const message = 'Unable to create deployment job';
     logger.error(`${message}, err = ${error.message}`);
