@@ -24,24 +24,22 @@
 
 const table = 'job';
 
-exports.up = async knex =>
-  knex.schema.createTable(table, async (t) => {
-    t.increments('id').unsigned().index().primary();
-    t.string('platform', 8).notNull();
-    t.string('original_file_name', 128).notNull();
-    t.string('original_file_etag', 33).unique();
-    t.string('delivery_file_name', 64);
-    t.string('delivery_file_etag', 33).unique();
-    t.dateTime('created_at').notNull().defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
-    t.dateTime('updated_at').notNull().defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
+exports.up = async knex => knex.schema.createTable(table, async (t) => {
+  t.increments('id').unsigned().index().primary();
+  t.string('platform', 8).notNull();
+  t.string('original_file_name', 128).notNull();
+  t.string('original_file_etag', 33).unique();
+  t.string('delivery_file_name', 64);
+  t.string('delivery_file_etag', 33).unique();
+  t.dateTime('created_at').notNull().defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
+  t.dateTime('updated_at').notNull().defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
 
-    const query = `
-    CREATE TRIGGER update_${table}_changetimestamp BEFORE UPDATE
-    ON ${table} FOR EACH ROW EXECUTE PROCEDURE 
-    update_changetimestamp_column();`;
+  const query = `
+  CREATE TRIGGER update_${table}_changetimestamp BEFORE UPDATE
+  ON ${table} FOR EACH ROW EXECUTE PROCEDURE 
+  update_changetimestamp_column();`;
 
-    await knex.schema.raw(query);
-  });
+  await knex.schema.raw(query);
+});
 
-exports.down = knex =>
-  knex.schema.dropTable(table);
+exports.down = knex => knex.schema.dropTable(table);

@@ -42,8 +42,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) in package');
     }
 
-    const promises = findResult.stdout.trim().split('\n').map(async element =>
-      exec(`
+    const promises = findResult.stdout.trim().split('\n').map(async element => exec(`
         xcodebuild \
         -exportArchive \
         -archivePath ${element} \
@@ -78,11 +77,10 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
     }
 
     return Promise.resolve(deliveryFile);
-  } catch (error) {
-    console.log(error.message);
+  } catch (err) {
+    const message = `Unable sign xcarchive, err = ${err.message}`;
+    throw new Error(message);
   }
-
-  return Promise.reject();
 };
 
 /**
