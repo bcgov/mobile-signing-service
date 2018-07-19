@@ -27,7 +27,7 @@ def TAG_NAMES = ['dev', 'test', 'prod']
 def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-icon.png'
 def JENKINS_ICO = 'https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png'
 def OPENSHIFT_ICO = 'https://commons.wikimedia.org/wiki/File:OpenShift-LogoType.svg'
-def GIT_BRANCH_NAME = ("${env.JOB_BASE_NAME}".contains("master")) ? "master" : "develop"
+def SLACK_CHANNEL = '#devhubx'
 
 def notifySlack(text, channel, url, attachments, icon) {
     def slackURL = url
@@ -75,15 +75,15 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       GIT_COMMIT_AUTHOR = sh (
         script: """git show -s --pretty=%an""",
         returnStdout: true).trim()
-      // GIT_BRANCH_NAME = sh (
-      //   script: """git branch -a -v --no-abbrev --contains ${GIT_COMMIT_SHORT_HASH} | \
-      //   grep 'remotes' | \
-      //   awk -F ' ' '{print \$1}' | \
-      //   awk -F '/' '{print \$3}'""",
-      //   returnStdout: true).trim()
+      GIT_BRANCH_NAME = sh (
+        script: """git branch -a -v --no-abbrev --contains ${GIT_COMMIT_SHORT_HASH} | \
+        grep 'remotes' | \
+        awk -F ' ' '{print \$1}' | \
+        awk -F '/' '{print \$3}'""",
+        returnStdout: true).trim()
     }
     
-    stage('Install') {
+    stage('Steup') {
       echo "Setup: ${BUILD_ID}"
 
       sh "node -v"
@@ -95,37 +95,89 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       echo "Testing: ${BUILD_ID}"
 
       script {
-        // Run a security check on our packages
+        //
+        // Check the code builds
+        //
+
         try {
-          sh "./node_modules/.bin/nsp check"
+          echo "Checking Build"
+          sh "npm run build"
         } catch (error) {
-          // def output = readFile('nsp-report.txt').trim()
           def attachment = [:]
           attachment.fallback = 'See build log for more details'
-          attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :fox4:"
-          attachment.color = '#FFA500' // Orange
-          attachment.text = "There are security warnings related to your packages.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
+          attachment.title = "API Build ${BUILD_ID} FAILED! :face_with_head_bandage: :hankey:"
+          attachment.color = '#CD0000' // Red
+          attachment.text = "The code does not build.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
+          // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], PIRATE_ICO)
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          sh "exit 1001"
         }
 
         try {
-          // Run our code quality tests et al.
+          echo "Checking code quality with SonarQube"
+          SONARQUBE_URL = sh (
+              script: 'oc get routes -o wide --no-headers | awk \'/sonarqube/{ print match($0,/edge/) ?  "https://"$2 : "http://"$2 }\'',
+              returnStdout: true
+                ).trim()
+          echo "SONARQUBE_URL: ${SONARQUBE_URL}"
+          dir('sonar-runner') {
+            sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar.verbose=true --stacktrace --info -Dsonar.projectName=${APP_NAME} -Dsonar.branch=${GIT_BRANCH_NAME} -Dsonar.projectKey=org.sonarqube:${APP_NAME} -Dsonar.sources=.."
+          }
+        } catch (error) {
+          def attachment = [:]
+          attachment.fallback = 'See build log for more details'
+          attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :facepalm:"
+          attachment.color = '#FFA500' // Orange
+          attachment.text = "The SonarQube code quality check failed.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
+          // attachment.title_link = "${env.BUILD_URL}"
+
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        }
+
+        //
+        // Check code quality with a LINTer
+        //
+
+        try {
+          echo "Checking code quality with LINTer"
           sh "npm run test:lint"
         } catch (error) {
           def attachment = [:]
           attachment.fallback = 'See build log for more details'
           attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :facepalm:"
           attachment.color = '#FFA500' // Orange
-          attachment.text = "There are issues with the code quality.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
+          attachment.text = "There LINTer code quality check failed.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
         }
 
+        //
+        // Run a security check on our packages
+        //
+
         try {
-          // Run our unit tests et al.
-          // sh "npm test"
+          echo "Checking dependencies for security issues"
+          sh "npx nsp check"
+        } catch (error) {
+          // def output = readFile('nsp-report.txt').trim()
+          def attachment = [:]
+          attachment.fallback = 'See build log for more details'
+          attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :facepalm:"
+          attachment.color = '#FFA500' // Orange
+          attachment.text = "There are security warnings related to some packages.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
+
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        }
+
+        //
+        // Run our unit tests et al.
+        //
+
+        try {
+          echo "Running Unit Tests"
+          sh "npm test"
         } catch (error) {
           def attachment = [:]
           attachment.fallback = 'See build log for more details'
@@ -134,13 +186,13 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
           attachment.text = "There are issues with the unit tests.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "#rangedevteam", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
           sh "exit 1001"
         }
       }
     }
 
-    stage('Build') {
+    stage('Image Build') {
        try {
         echo "Build: ${BUILD_ID}"
 
