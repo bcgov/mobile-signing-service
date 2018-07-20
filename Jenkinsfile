@@ -114,6 +114,10 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
           sh "exit 1001"
         }
 
+        //
+        // Check code quality
+        //
+
         try {
           echo "Checking code quality with SonarQube"
           SONARQUBE_URL = sh (
