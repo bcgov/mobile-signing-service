@@ -37,7 +37,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import config from '../../config';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployApk } from '../../libs/deploy';
+import { deployGoogle, deployAirWatch } from '../../libs/deploy';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -186,12 +186,19 @@ const handleDeploymentJob = async (job, clean = true) => {
         throw new Error('Temploray not supported');
         // break;
       }
-      case 'android':
+      case 'google':
+      {
       // Sharing the same job from signing work:
       // - the originalFileName should be the signed app for deployment Job
       // - leave the rest fields empty
-        deployedAppPath = await deployApk(job.originalFileName);
+        deployedAppPath = await deployGoogle(job.originalFileName);
         break;
+      }
+      case 'airwatch':
+      {
+        deployedAppPath = await deployAirWatch(job.originalFileName);
+        break;
+      }
       default:
         throw new Error('Unsupported platform');
     }

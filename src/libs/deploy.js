@@ -130,7 +130,7 @@ const googleDeployEdit = async (publisher, editID, signedAPK) => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployApk = async (signedApp, workspace = '/tmp/') => {
+export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
   try {
     // Get apk:
     const signedApkPath = await fetchFileFromStorage(signedApp, workspace);
@@ -174,4 +174,16 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
   }
 
   return Promise.reject();
+};
+
+/**
+ * AirWatch Deployment
+ *
+ * @param {String} signedApp The name of the signed app
+ * @param {string} [workspace='/tmp/'] The workspace to use
+ * @returns The status of the deployment
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
+  
 };
