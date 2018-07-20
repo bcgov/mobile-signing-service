@@ -13,7 +13,7 @@
 		"expires": 604800000
 	},
 	"agent": {
-		"hostUrl": "http://localhost:3000",
+		"hostUrl": "http://localhost:8089",
     "signPath": "/v1/job/sign",
     "deployPath": "/v1/job/deploy"
 	},

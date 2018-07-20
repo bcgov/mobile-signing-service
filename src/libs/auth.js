@@ -87,7 +87,7 @@ export const isAuthenticated = async (req, res, next) => {
 
     logger.info('Redirecting web user to login');
     req.session.redirect_to = req.originalUrl;
-    res.redirect('/v1/auth/login');
+    res.redirect('/api/v1/auth/login');
     return null;
   }
 
