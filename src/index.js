@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,25 +15,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-01-10.
+// Created by Jason Leach on 2018-07-20.
 //
 
 'use strict';
 
 // import cluster from 'cluster';
-import { logger, started } from '@bcgov/nodejs-common-utils';
+import { logger } from '@bcgov/nodejs-common-utils';
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import config from './config';
 import authmw from './libs/authmware';
 
 // Config
-const env = config.get('environment');
-const port = config.get('port');
+// const env = config.get('environment');
+// const port = config.get('port');
 const app = express();
 const options = {
   inflate: true,
@@ -89,14 +88,14 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   res.status(code).json({ error: message, success: false });
 });
 
-app.listen(port, '0.0.0.0', (err) => {
-  if (err) {
-    return logger.error(`There was a problem starting the server, ${err.message}`);
-  }
-  if (env !== 'production') {
-    return started(port);
-  }
-  return logger.info(`Production server running on port: ${port}`);
-});
+// app.listen(port, '0.0.0.0', (err) => {
+//   if (err) {
+//     return logger.error(`There was a problem starting the server, ${err.message}`);
+//   }
+//   if (env !== 'production') {
+//     return started(port);
+//   }
+//   return logger.info(`Production server running on port: ${port}`);
+// });
 
 module.exports = app;

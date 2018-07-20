@@ -18,32 +18,23 @@
 // Created by Jason Leach on 2018-01-10.
 //
 
-/* eslint-env es6 */
-
 'use strict';
 
-import jest from 'jest';
-import { isValid } from '../server/libs/utils'
+import { logger, started } from '@bcgov/nodejs-common-utils';
+import config from './config';
+import app from './index';
 
-describe('utility helpers', function() {
+const env = config.get('environment');
+const port = config.get('port');
 
-    beforeEach(() => {
-      // nothig to do
-    });
-  
-    afterEach(() => {
-      // nothig to do
-    });
-  
-    test('isValid handles a valid string', async () => {
-        let testString = 'a-b_c%123';
-
-        expect(isValid(testString)).toBe(true); 
-    });
-
-    test('isValid handles string with invalid characters', async () => {
-        let testString = 'a-b_c#123';
-
-        expect(isValid(testString)).toBe(false); 
-    });
+app.listen(port, '0.0.0.0', (err) => {
+  if (err) {
+    return logger.error(`There was a problem starting the server, ${err.message}`);
+  }
+  if (env !== 'production') {
+    return started(port);
+  }
+  return logger.info(`Production server running on port: ${port}`);
 });
+
+module.exports = app;
