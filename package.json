@@ -67,7 +67,7 @@
     "build:doc": "bootprint openapi doc/api.yaml public/doc/api",
     "test": "NODE_ENV=development jest __tests__",
     "test:schema": "swagger-cli validate doc/api.yaml",
-    "test:watch": "NODE_ENV=development jest test/*_spec.js --watch",
+    "test:watch": "NODE_ENV=development jest __tests__ --watch",
     "test:lint": "eslint --env node --ext .js src"
   },
   "jest": {
