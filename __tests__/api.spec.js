@@ -39,13 +39,13 @@ describe('Test job routes', () => {
     expect(response.statusCode).toBe(404); // Not Found
   });
 
-  test('Test job object must be present', async () => {
+  test('Test job object must be in the request body', async () => {
     const response = await request(app)
       .put('/api/v1/job/10');
     expect(response.statusCode).toBe(400); // Bad Request
   });
 
-  test('Test job contains all required fields', async () => {
+  test('Test job request body contains all required fields', async () => {
     const response = await request(app)
       .put('/api/v1/job/10')
       .set('content-type', 'application/json')
@@ -58,7 +58,7 @@ describe('Test job routes', () => {
     expect(response.statusCode).toBe(400); // Bad Request
   });
 
-  test('Test job required fields are accepted', async () => {
+  test('Test job request body fields are accepted', async () => {
     const response = await request(app)
       .put('/api/v1/job/10')
       .set('content-type', 'application/json')
