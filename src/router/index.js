@@ -26,6 +26,7 @@ import auth from './routes/auth';
 import ehlo from './routes/ehlo';
 import job from './routes/job';
 import sign from './routes/sign';
+import deploy from './routes/deploy';
 
 const corsOptions = {
   origin: config.get('apiUrl'),
@@ -39,4 +40,5 @@ module.exports = (app) => {
   app.use('/api/v1/auth', auth);
   app.use('/api/v1/sign', sign);
   app.use('/api/v1/job', job);
+  app.use('/api/v1/deploy', deploy);
 };
