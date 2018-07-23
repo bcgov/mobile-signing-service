@@ -17,9 +17,6 @@
     "signPath": "/v1/job/sign",
     "deployPath": "/v1/job/deploy"
 	},
-	"db": {
-		"database": "cicd"
-	},
   "sso": {
 		"clientId": "secode-sign-api",
 		"callback": "/v1/auth/callback",

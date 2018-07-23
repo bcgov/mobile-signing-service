@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: All things code signing related
 servers:
-  - url: http://localhost:8000
+  - url: http://localhost:8080
     description: Local development server
-  - url: http://localhost:8000
+  - url: http://localhost:8080
     description: Production server
 paths:
   /ehlo:
@@ -113,6 +113,36 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
+  /api/v1/deploy:
+    post:
+      operationId: postNewJob
+      summary: Specify a signed package for deployment
+      description: |-
+        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWtch, 
+        Google Play Store or App Store.
+      tags:
+        - deploy
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: 
+              - itune
+              - google
+              - airwatch
+      responses:
+        200:
+          description: The package was deployed
+          content:
+            applicaiton/json:
+              schema:
+                $ref: '#/components/schemas/JobReciept'
+        401:
+          description: You have not supplied a valid JWT
+        500:
+          description: Internal Error
 components:
   schemas:
     JobReciept:
@@ -136,7 +166,7 @@ components:
           format: float
       example:
         id: 32
-        url: 'http://localhost:8000/v1/sign/rynjE6Tl7/download'
+        url: 'http://localhost:8080/api/v1/sign/rynjE6Tl7/download'
         durationInSeconds: '123.45'
     JobReport:
       title: Job Report
