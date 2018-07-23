@@ -181,8 +181,8 @@ MINIO_SECRET_KEY=
 MINIO_HOST="localhost"
 SSO_CLIENT_SECRET=
 SESSION_SECRET=
-API_URL="http://localhost:8089"
-PORT=8089
+API_URL="http://localhost:8080"
+PORT=8080
 ```
 
 Run the node application with the following command:
