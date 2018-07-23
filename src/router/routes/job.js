@@ -37,6 +37,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import config from '../../config';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
+import { deployApk } from '../../libs/deploy';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -168,6 +169,52 @@ const handleJob = async (job, clean = true) => {
   }
 };
 
+/**
+ * Start processing a deployment `Job`
+ *
+ * @param {Job} job The `Job` to process
+ * @param {boolean} [clean=true] Cleanup after processing is done
+ */
+const handleDeploymentJob = async (job, clean = true) => {
+  logger.info(`Processing job with ID ${job.id}`);
+
+  try {
+    let deployedAppPath;
+    switch (job.platform) {
+      case 'ios':
+      {
+        throw new Error('Temploray not supported');
+        // break;
+      }
+      case 'android':
+      // Sharing the same job from signing work:
+      // - the originalFileName should be the signed app for deployment Job
+      // - leave the rest fields empty
+        deployedAppPath = await deployApk(job.originalFileName);
+        break;
+      default:
+        throw new Error('Unsupported platform');
+    }
+
+    if (clean) {
+      const workSpace = path.dirname(deployedAppPath);
+      const message = 'Cleaned working directory';
+      logger.info(`${message}, path = ${workSpace}`);
+
+      cleanup(workSpace);
+    }
+
+    // No need to update the deployment job for now:
+    // await reportJobStatus({ ...job, ...{ deliveryFileName: null, deliveryFileEtag: null } });
+  } catch (error) {
+    const message = 'Unable to deploy app';
+    logger.error(`${message}, err = ${error.message}`);
+
+    throw new Error(`${message}, err = ${error.message}`);
+  }
+};
+
+
 // create a new job
 router.post('/sign', asyncMiddleware(async (req, res) => {
   const job = req.body;
@@ -179,6 +226,19 @@ router.post('/sign', asyncMiddleware(async (req, res) => {
   res.sendStatus(200).end();
 
   await handleJob(job);
+}));
+
+// create a new job for Deployment:
+router.post('/deploy', asyncMiddleware(async (req, res) => {
+  const job = req.body;
+
+  if (!job) {
+    throw errorWithCode('No such job exists', 400);
+  }
+
+  res.sendStatus(200).end();
+
+  await handleDeploymentJob(job);
 }));
 
 module.exports = router;

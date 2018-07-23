@@ -46,6 +46,30 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
+  /job/deploy:
+    post:
+      operationId: postNewDeploymentJob
+      summary: Submit a new job for deployment
+      description: |-
+        Use this endpoint to submit a job for deployment.
+        The job could be an xcarchive, ipa or apk for
+        deploying to Google Play or App Store.
+      tags:
+        - deploy
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        204:
+          description: The archive was deployed
+        401:
+          description: You have not supplied a valid google client authentication
+        500:
+          description: Internal Error
 components:
   schemas:
     Job:

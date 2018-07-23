@@ -152,6 +152,27 @@ const packageForDelivery = async (apath, items) => {
 };
 
 /**
+ * Get the bundle ID of the app package
+ *
+ * @param {String} apkPackage The name of the signed app
+ * @returns The bundle ID
+ */
+const getApkBundleID = async (apkPackage) => {
+  try {
+    // Use Android Asset Packaging Tool to get package bundle ID:
+    const apkBundle = await exec(`
+    aapt dump badging ${apkPackage} | \
+    grep package: | \
+    cut -d "'" -f2
+    `);
+    // Get rid of the linebreak at the end:
+    return apkBundle.stdout.replace(/(\r\n\t|\n|\r\t)/gm, '');
+  } catch (error) {
+    throw new Error(`Unable to find package name! ${error}`);
+  }
+};
+
+/**
  * Sign an xcode xcarchive file.
  *
  * @param {string} archiveFilePath The path to the xcarchive file
@@ -262,55 +283,53 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
  *
  */
 // eslint-disable-next-line no-unused-vars
+/* eslint-disable global-require */
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  const outputDir = 'tmp';
   const apath = path.join(workspace, shortid.generate());
-  const outBasePath = path.join(apath, outputDir);
-  const packagePath = `${path.join(apath, shortid.generate())}`;
-  const outFileName = `${path.join(apath, shortid.generate())}.apk`;
-  // Hardcoded key credential:
-  const keyPassword = '';
-  const keyAlias = '';
+  const packagePath = path.join(apath, shortid.generate());
+  const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
 
-  await exec(`
-    mkdir -p "${apath}" && \
-    cp -a "${archiveFilePath}" "${packagePath}"
-  `);
-
-  // Extract the package that contains both apk and key:
-  await exec(`
-    mkdir -p "${outBasePath}" && \
-    unzip -q "${packagePath}" -d "${outBasePath}"
-  `);
-
-  // Find apk and signing key:
-  const apkPath = await exec(`find ${outBasePath} -iname '*.apk'`);
-  const keyPath = await exec(`find ${outBasePath} -iname '*.keystore'`);
-  if (keyPath.stderr || apkPath.stderr) {
-    throw new Error('Cannot find apk or signing key.');
+  // Get the package:
+  const buffer = await getObject(client, bucket, archiveFilePath);
+  await exec(`mkdir -p ${packagePath}`);
+  await writeFile(outFileName, buffer, 'utf8');
+  const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
+  if (apkPathFull.stderr) {
+    throw new Error('Cannot find the package.');
   }
+  const apkPath = apkPathFull.stdout.trim().split('\n');
+
+  // Fetch signing keystore, key alias and password from keyChain:
+  const apkBundleID = await getApkBundleID(apkPath);
+  const keyPasswordFull = await exec(`security find-generic-password -w -s keyPassword -a ${apkBundleID}`);
+  const keyAliasFull = await exec(`security find-generic-password -w -s keyAlias -a ${apkBundleID}`);
+  const keyStoreFull = await exec(`security find-generic-password -w -s keyStorePath -a ${apkBundleID}`);
+
+  if (keyPasswordFull.stderr || keyAliasFull.stderr || keyStoreFull.stderr) {
+    throw new Error('Cannot find key to sign this package.');
+  }
+
+  // Extract value from stdout:
+  const keyPassword = keyPasswordFull.stdout.trim().split('\n');
+  const keyAlias = keyAliasFull.stdout.trim().split('\n');
+  const keyPath = keyStoreFull.stdout.trim().split('\n');
 
   // Sign the apk:
   const response = await exec(`
     apksigner sign \
     -v \
-    --ks ${keyPath.stdout.trim().split('\n')} \
+    --ks ${keyPath} \
     --ks-key-alias ${keyAlias} \
     --ks-pass pass:${keyPassword} \
     --key-pass pass:${keyPassword} \
     --out ${outFileName} \
-    ${apkPath.stdout.trim().split('\n')}`);
+    ${apkPath}`);
 
-  // Zip signed apk:
-  if (response.stdout.includes('Signed')) {
-    await exec(`
-    cd "${path.dirname(outFileName)}" && \
-    zip -qr "${path.basename(outFileName)}" *`);
-
-    return outFileName;
+  if (!response.stdout.includes('Signed')) {
+    throw new Error(response.stderr);
   }
 
-  // console.log(response.stderr);
+  logger.info('Successfully signed package.');
 
   return outFileName;
 };
