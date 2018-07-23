@@ -24,7 +24,6 @@
 
 import {
   logger,
-  createBucketIfRequired,
   bucketExists,
   putObject,
   isExpired,
@@ -46,6 +45,8 @@ import {
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
 
+console.log(config.get('minio:host'));
+
 const router = new Router();
 const dm = new DataManager();
 const {
@@ -62,12 +63,6 @@ const client = new minio.Client({
   secretKey: config.get('minio:secretKey'),
   region: config.get('minio:region'),
 });
-
-createBucketIfRequired(client, bucket)
-  .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
-    logger.error(error.message);
-  });
 
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;

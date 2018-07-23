@@ -20,12 +20,28 @@
 
 'use strict';
 
-import { logger, started } from '@bcgov/nodejs-common-utils';
+import { createBucketIfRequired, logger, started } from '@bcgov/nodejs-common-utils';
+import * as minio from 'minio';
 import config from './config';
 import app from './index';
 
 const env = config.get('environment');
 const port = config.get('port');
+const bucket = config.get('minio:bucket');
+const client = new minio.Client({
+  endPoint: config.get('minio:host'),
+  port: config.get('minio:port'),
+  secure: config.get('minio:secure'),
+  accessKey: config.get('minio:accessKey'),
+  secretKey: config.get('minio:secretKey'),
+  region: config.get('minio:region'),
+});
+
+createBucketIfRequired(client, bucket)
+  .then(() => logger.info(`Created bucket ${bucket}`))
+  .catch((error) => {
+    logger.error(error.message);
+  });
 
 app.listen(port, '0.0.0.0', (err) => {
   if (err) {

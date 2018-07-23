@@ -22,18 +22,12 @@
 
 'use strict';
 
-import * as minio from 'minio';
-import url from 'url';
-import request from 'request-promise-native';
+// eslint-disable-next-line object-curly-newline
+import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
-import {
-  logger,
-  createBucketIfRequired,
-  bucketExists,
-  isExpired,
-  asyncMiddleware,
-  errorWithCode,
-} from '@bcgov/nodejs-common-utils';
+import * as minio from 'minio';
+import request from 'request-promise-native';
+import url from 'url';
 import config from '../../config';
 import DataManager from '../../libs/db';
 
@@ -43,21 +37,16 @@ const {
   db,
   Job,
 } = dm;
+
 const bucket = config.get('minio:bucket');
 const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
+  endPoint: config.get('minio:host'),
   port: config.get('minio:port'),
   secure: config.get('minio:secure'),
   accessKey: config.get('minio:accessKey'),
   secretKey: config.get('minio:secretKey'),
   region: config.get('minio:region'),
 });
-
-createBucketIfRequired(client, bucket)
-  .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
-    logger.error(error.message);
-  });
 
 // curl -X POST http://localhost:8080/api/v1/deploy/8?platform=android
 // option 2: deployment platform = public/enterprise
