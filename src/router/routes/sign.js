@@ -55,7 +55,7 @@ const {
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
 const client = new minio.Client({
-  endPoint: config.get('minio:host'),
+  endPoint: config.get('minio:endPoint'),
   port: config.get('minio:port'),
   secure: config.get('minio:secure'),
   accessKey: config.get('minio:accessKey'),

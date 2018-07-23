@@ -44,7 +44,7 @@ nconf.overrides({
   host: process.env.HOST || '127.0.0.1',
   port: process.env.PORT || 8000,
   minio: {
-    host: process.env.MINIO_HOST,
+    endPoint: process.env.MINIO_HOST,
     accessKey: process.env.MINIO_ACCESS_KEY,
     secretKey: process.env.MINIO_SECRET_KEY,
   },
