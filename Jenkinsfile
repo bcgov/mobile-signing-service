@@ -27,7 +27,7 @@ def TAG_NAMES = ['dev', 'test', 'prod']
 def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-icon.png'
 def JENKINS_ICO = 'https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png'
 def OPENSHIFT_ICO = 'https://commons.wikimedia.org/wiki/File:OpenShift-LogoType.svg'
-def SLACK_CHANNEL = '#devhubx'
+def SLACK_CHANNEL = '${SLACK_CHANNEL}x'
 
 def notifySlack(text, channel, url, attachments, icon) {
     def slackURL = url
@@ -114,6 +114,10 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
           sh "exit 1001"
         }
 
+        //
+        // Check code quality
+        //
+
         try {
           echo "Checking code quality with SonarQube"
           SONARQUBE_URL = sh (
@@ -186,7 +190,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
           attachment.text = "There are issues with the unit tests.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
           // attachment.title_link = "${env.BUILD_URL}"
 
-          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "#rangedevteam", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+          notifySlack("${APP_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
           sh "exit 1001"
         }
       }
@@ -223,11 +227,11 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
         }
         attachment.text = message
 
-        notifySlack("${env.JOB_NAME}", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        notifySlack("${env.JOB_NAME}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
 
         if( "master" == GIT_BRANCH_NAME.toLowerCase() ) {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[2], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
           echo "Applying tag ${TAG_NAMES[2]} to image ${IMAGE_HASH}"
         } else {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[0], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
@@ -242,7 +246,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
         attachment.color = '#CD0000' // Red
         attachment.text = "There are issues with OpenShift build.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
 
-        notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
+        notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
         sh "exit 1002"
       }
     }
@@ -255,7 +259,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       node ('master') {
         stage('Promotion') {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[1], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "#devhub", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+          notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
         }
       }  
     }

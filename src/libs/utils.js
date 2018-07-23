@@ -28,6 +28,13 @@ import shortid from 'shortid';
 
 const exec = util.promisify(cp.exec);
 
+/**
+ * Sign an xcarchive
+ *
+ * @param {string} archiveFilePath Location of the xcarchive
+ * @param {string} [workspace='/tmp/'] Where temporary artifacts are stored
+ * @returns A promise resolved if success, rejected otherwise
+ */
 export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
   try {
     const apath = path.join(workspace, shortid.generate());
@@ -86,7 +93,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
 /**
  * Cleanup artifacts left over from the signing process
  *
- * @param {*} apath The locaton of the artifacts
+ * @param {String} apath The locaton of the artifacts
  */
 export const cleanup = async (apath) => {
   const rm = util.promisify(fs.remove);

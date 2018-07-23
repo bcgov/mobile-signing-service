@@ -15,27 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-05-06.
+// Created by Jason Leach on 2018-07-23.
 //
 
 'use strict';
 
-import Model from './model';
-
-export default class Job extends Model {
-  static get fields() {
-    // primary key *must* be first!
-    return ['id', 'platform', 'original_file_name', 'original_file_etag', 'delivery_file_name',
-      'delivery_file_etag']
-      .map(field => `${this.table}.${field}`);
-  }
-
-  static get table() {
-    return 'job';
-  }
-
-  get duration() {
-    const delta = this.createdAt - this.updatedAt;
-    return Math.abs(delta / 1000);
+export default class Model {
+  static async update() {
+    return {};
   }
 }
