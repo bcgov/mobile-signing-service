@@ -22,9 +22,55 @@
 import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../src';
 
+jest.mock('../src/libs/db/models/job');
+
+
 describe('Test monitoring routes', () => {
-  test('The readyness probe should respond with 200 ', async () => {
+  test('The readiness probe should respond with 200 ', async () => {
     const response = await request(app).get('/api/v1/ehlo');
     expect(response.statusCode).toBe(200);
+  });
+});
+
+describe('Test job routes', () => {
+  test('Test jobId must be present', async () => {
+    const response = await request(app)
+      .put('/api/v1/job')
+      .send({});
+    expect(response.statusCode).toBe(404); // Not Found
+  });
+
+  test('Test job object must be present', async () => {
+    const response = await request(app)
+      .put('/api/v1/job/10');
+    expect(response.statusCode).toBe(400); // Bad Request
+  });
+
+  test('Test job contains all required fields', async () => {
+    const response = await request(app)
+      .put('/api/v1/job/10')
+      .type('form')
+      // .set('content-type', 'application/json')
+      .send({
+        job: {
+          name: 'moon',
+          type: 'cake',
+        },
+      });
+    expect(response.statusCode).toBe(400); // Bad Request
+  });
+
+  test('Test job required fields are accepted', async () => {
+    const response = await request(app)
+      .put('/api/v1/job/10')
+      .type('form')
+      // .set('content-type', 'application/json')
+      .send({
+        job: {
+          deliveryFileName: 'moon',
+          deliveryFileEtag: 'cake',
+        },
+      });
+    expect(response.statusCode).toBe(200); // Bad Request
   });
 });
