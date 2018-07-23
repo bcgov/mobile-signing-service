@@ -39,6 +39,15 @@ router.put('/:jobId', asyncMiddleware(async (req, res) => {
   } = req.params;
   const { job } = req.body;
 
+  if (!jobId || !job) {
+    throw errorWithCode('Required parameters missing', 400);
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(job, 'deliveryFileName')
+    || !Object.prototype.hasOwnProperty.call(job, 'deliveryFileEtag')) {
+    throw errorWithCode('Required job properties', 400);
+  }
+
   logger.info(`Updating status of job jobId = ${jobId}`);
 
   try {
