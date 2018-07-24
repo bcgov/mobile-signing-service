@@ -52,7 +52,7 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
-  /api/v1/sign/{jobId}/status:
+  /api/v1/job/{jobId}/status:
     get:
       operationId: getJobStatus
       summary: Check the status of a job
