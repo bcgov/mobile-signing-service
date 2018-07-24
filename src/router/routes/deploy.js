@@ -22,20 +22,14 @@
 
 'use strict';
 
-import * as minio from 'minio';
-import url from 'url';
-import request from 'request-promise-native';
+// eslint-disable-next-line object-curly-newline
+import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
-import {
-  logger,
-  createBucketIfRequired,
-  bucketExists,
-  isExpired,
-  asyncMiddleware,
-  errorWithCode,
-} from '@bcgov/nodejs-common-utils';
+import request from 'request-promise-native';
+import url from 'url';
 import config from '../../config';
 import DataManager from '../../libs/db';
+import shared from '../../libs/shared';
 
 const router = new Router();
 const dm = new DataManager();
@@ -44,20 +38,6 @@ const {
   Job,
 } = dm;
 const bucket = config.get('minio:bucket');
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
-
-createBucketIfRequired(client, bucket)
-  .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
-    logger.error(error.message);
-  });
 
 // curl -X POST http://localhost:8080/api/v1/deploy/8?platform=android
 // option 2: deployment platform = public/enterprise
@@ -70,7 +50,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
   const expirationInDays = config.get('expirationInDays');
 
-  if (!bucketExists(client, bucket)) {
+  if (!bucketExists(shared.minio, bucket)) {
     throw errorWithCode('Unable to store attached file.', 500);
   }
 
@@ -89,7 +69,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
       throw errorWithCode('Cannot find a signed package with this job!', 404);
     }
 
-    const stat = await client.statObject(bucket, `${signJob.deliveryFileName}`);
+    const stat = await shared.minio.statObject(bucket, `${signJob.deliveryFileName}`);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);

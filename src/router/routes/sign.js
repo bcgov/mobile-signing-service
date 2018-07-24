@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -24,7 +24,6 @@
 
 import {
   logger,
-  createBucketIfRequired,
   bucketExists,
   putObject,
   isExpired,
@@ -33,7 +32,6 @@ import {
   asyncMiddleware,
   errorWithCode,
 } from '@bcgov/nodejs-common-utils';
-import * as minio from 'minio';
 import url from 'url';
 import fs from 'fs';
 import request from 'request-promise-native';
@@ -45,6 +43,7 @@ import {
 } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
+import shared from '../../libs/shared';
 
 const router = new Router();
 const dm = new DataManager();
@@ -54,21 +53,6 @@ const {
 } = dm;
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
-
-createBucketIfRequired(client, bucket)
-  .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
-    logger.error(error.message);
-  });
-
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
 
@@ -76,7 +60,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     return res.status(400).json({ message: 'Unable to process attached form.' });
   }
 
-  if (!bucketExists(client, bucket)) {
+  if (!bucketExists(shared.minio, bucket)) {
     return res.status(500).json({ message: 'Unable to store attached file.' });
   }
 
@@ -106,7 +90,7 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     });
 
     const readStream = fs.createReadStream(req.file.path);
-    const etag = await putObject(client, bucket, req.file.originalname, readStream);
+    const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
     if (etag) {
       await cleanup(req.file.path);
     }
@@ -180,13 +164,13 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
 
   try {
     const job = await Job.findById(db, jobId);
-    const stat = await statObject(client, bucket, job.deliveryFileName);
+    const stat = await statObject(shared.minio, bucket, job.deliveryFileName);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    const link = await presignedGetObject(client, bucket, job.deliveryFileName, 3);
+    const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 3);
     res.redirect(link);
   } catch (error) {
     const message = `Unable to retrieve arcive for job with ID ${jobId}`;
