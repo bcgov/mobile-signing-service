@@ -39,7 +39,7 @@ if (!(gs.indexOf(key) > -1)) {
 
 const singleton = {};
 
-Object.defineProperty(singleton, 'shared', {
+Object.defineProperty(singleton, 'minio', {
   get: () => global[key],
 });
 
