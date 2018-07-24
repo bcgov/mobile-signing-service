@@ -23,13 +23,13 @@
 import { createBucketIfRequired, logger, started } from '@bcgov/nodejs-common-utils';
 import config from './config';
 import app from './index';
-import client from './libs/shared';
+import shared from './libs/shared';
 
 const env = config.get('environment');
 const port = config.get('port');
 const bucket = config.get('minio:bucket');
 
-createBucketIfRequired(client.shared, bucket)
+createBucketIfRequired(shared.minio, bucket)
   .then(() => logger.info(`Created bucket ${bucket}`))
   .catch((error) => {
     logger.error(error.message);
