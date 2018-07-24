@@ -31,8 +31,7 @@ import path from 'path';
 import authmw from './libs/authmware';
 
 // Config
-// const env = config.get('environment');
-// const port = config.get('port');
+
 const app = express();
 const options = {
   inflate: true,
@@ -87,15 +86,5 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 
   res.status(code).json({ error: message, success: false });
 });
-
-// app.listen(port, '0.0.0.0', (err) => {
-//   if (err) {
-//     return logger.error(`There was a problem starting the server, ${err.message}`);
-//   }
-//   if (env !== 'production') {
-//     return started(port);
-//   }
-//   return logger.info(`Production server running on port: ${port}`);
-// });
 
 module.exports = app;
