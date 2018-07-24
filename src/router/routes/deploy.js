@@ -40,13 +40,15 @@ const {
 const bucket = config.get('minio:bucket');
 
 // curl -X POST http://localhost:8080/api/v1/deploy/8?platform=android
-// option 2: deployment platform = public/enterprise
+// deployment platform - (airwatch, iTunes, Google) + (public, enterprise):
+// iTunes, Google -> public?
+// airwatch -> enterprise?
+// TODO: add deployment platform in Job model
 router.post('/:jobId', asyncMiddleware(async (req, res) => {
   const {
     jobId,
   } = req.params;
 
-  // and platform:
   const { platform } = req.query;
   const expirationInDays = config.get('expirationInDays');
 
@@ -54,33 +56,37 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
     throw errorWithCode('Unable to store attached file.', 500);
   }
 
+  if (!jobId || !platform) {
+    throw errorWithCode('Required parameters missing', 400);
+  }
+
   try {
     // Get object from db:
     logger.info(`Checking the package name from job ${jobId}`);
 
-    const signJob = await Job.findById(db, jobId);
+    const signedJob = await Job.findById(db, jobId);
 
-    if (!signJob) {
+    if (!signedJob) {
+      console.log(signedJob.deliveryFileName);
       throw errorWithCode('No such job', 404);
     }
 
-    if (signJob && !signJob.deliveryFileName) {
+    if (signedJob && !signedJob.deliveryFileName) {
       // The signing job was not successfully completed!
       throw errorWithCode('Cannot find a signed package with this job!', 404);
     }
 
-    const stat = await shared.minio.statObject(bucket, `${signJob.deliveryFileName}`);
+    const stat = await shared.minio.statObject(bucket, `${signedJob.deliveryFileName}`);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
     }
 
     // create a new deploy-job in db:
-    // remember to add deployment platform!!!!!!
     const job = await Job.create(db, {
-      originalFileName: signJob.deliveryFileName,
+      originalFileName: signedJob.deliveryFileName,
       platform: platform.toLocaleLowerCase(),
-      originalFileEtag: signJob.etag,
+      originalFileEtag: signedJob.etag,
     });
     logger.info(`Created deployment job with ID ${job.id}`);
 
