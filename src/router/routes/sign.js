@@ -146,14 +146,14 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
     jobId,
   } = req.params;
 
+  logger.info(`Checking status of job ${jobId}`);
+
+  const job = await Job.findById(db, jobId);
+  if (!job) {
+    throw errorWithCode('No such job', 404);
+  }
+
   try {
-    logger.info(`Checking status of job ${jobId}`);
-
-    const job = await Job.findById(db, jobId);
-    if (!job) {
-      throw errorWithCode('No such job', 404);
-    }
-
     if (job && !job.deliveryFile) {
       // The request has been accepted for processing,
       // but the processing has not been completed.

@@ -71,3 +71,22 @@ describe('Test job routes', () => {
     expect(response.statusCode).toBe(200); // Ok
   });
 });
+
+describe('Test signing routes', () => {
+  test('Job 10 status should be 202 ', async () => {
+    const response = await request(app).get('/api/v1/sign/10/status');
+    expect(response.statusCode).toBe(202);
+    expect(response.body.status).toBe('Processing');
+  });
+
+  test('Job 20 status should be 200 ', async () => {
+    const response = await request(app).get('/api/v1/sign/20/status');
+    expect(response.statusCode).toBe(200);
+    expect(response.body.status).toBe('Completed');
+  });
+
+  test('Job 30 status should be 404 ', async () => {
+    const response = await request(app).get('/api/v1/sign/40/status');
+    expect(response.statusCode).toBe(404);
+  });
+});
