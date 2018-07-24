@@ -27,7 +27,7 @@ export default class Model {
 
   static async findById(db, id) {
     if (Number(id) === 10) return { id: 10 };
-    if (Number(id) === 20) return { id: 20, deliveryFile: 'cake' };
+    if (Number(id) === 20) return { id: 20, deliveryFileName: 'cake' };
 
     return undefined;
   }
