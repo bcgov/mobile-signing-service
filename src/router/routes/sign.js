@@ -44,7 +44,6 @@ import {
   cleanup,
 } from '../../libs/utils';
 import DataManager from '../../libs/db';
-import { JOB_STATUS } from '../../constants';
 
 const router = new Router();
 const dm = new DataManager();
@@ -136,39 +135,6 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     return null;
   } catch (error) {
     const message = 'Unable to create signing job';
-    logger.error(`${message}, err = ${error.message}`);
-    throw errorWithCode(`${message}, err = ${error.message}`, 500);
-  }
-}));
-
-router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
-  const {
-    jobId,
-  } = req.params;
-
-  logger.info(`Checking status of job ${jobId}`);
-
-  const job = await Job.findById(db, jobId);
-  if (!job) {
-    throw errorWithCode('No such job', 404);
-  }
-
-  try {
-    if (job && !job.deliveryFile) {
-      // The request has been accepted for processing,
-      // but the processing has not been completed.
-      return res.status(202).json({
-        status: JOB_STATUS.PROCESSING,
-      });
-    }
-
-    return res.status(200).json({
-      status: JOB_STATUS.COMPLETED,
-      url: `http://localhost:8000/v1/job/${job.id}/download`,
-      durationInSeconds: job.duration,
-    });
-  } catch (error) {
-    const message = `Unable to retrieve job with ID ${jobId}`;
     logger.error(`${message}, err = ${error.message}`);
     throw errorWithCode(`${message}, err = ${error.message}`, 500);
   }
