@@ -80,7 +80,7 @@ router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
   }
 
   try {
-    if (job && !job.deliveryFile) {
+    if (job && !job.deliveryFileName) {
       // The request has been accepted for processing,
       // but the processing has not been completed.
       return res.status(202).json({
