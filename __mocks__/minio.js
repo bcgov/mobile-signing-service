@@ -20,22 +20,6 @@
 
 'use strict';
 
-import Model from './model';
+const minio = jest.genMockFromModule('minio');
 
-export default class Job extends Model {
-  static get fields() {
-    // primary key *must* be first!
-    return ['id', 'platform', 'original_file_name', 'original_file_etag', 'delivery_file_name',
-      'delivery_file_etag']
-      .map(field => `${this.table}.${field}`);
-  }
-
-  static get table() {
-    return 'job';
-  }
-
-  get duration() {
-    const delta = this.createdAt - this.updatedAt;
-    return Math.abs(delta / 1000);
-  }
-}
+module.exports = minio;
