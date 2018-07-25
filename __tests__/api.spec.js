@@ -70,23 +70,33 @@ describe('Test job routes', () => {
       });
     expect(response.statusCode).toBe(200); // Ok
   });
-});
 
-describe('Test signing routes', () => {
   test('Job 10 status should be 202 ', async () => {
     const response = await request(app).get('/api/v1/job/10/status');
-    expect(response.statusCode).toBe(202);
+    expect(response.statusCode).toBe(202); // Processing
     expect(response.body.status).toBe('Processing');
   });
 
   test('Job 20 status should be 200 ', async () => {
     const response = await request(app).get('/api/v1/job/20/status');
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200); // Ok
     expect(response.body.status).toBe('Completed');
   });
 
-  test('Job 30 status should be 404 ', async () => {
+  test('Job 40 status should be 404 ', async () => {
     const response = await request(app).get('/api/v1/job/40/status');
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(404); // Not Found
+  });
+});
+
+describe('Test signing routes', () => {
+  test('Job 30 to be expired', async () => {
+    const response = await request(app).get('/api/v1/sign/30/download');
+    expect(response.statusCode).toBe(400); // Bad Request
+  });
+
+  test('Job 20 be a redirect', async () => {
+    const response = await request(app).get('/api/v1/sign/20/download');
+    expect(response.statusCode).toBe(302); // Redirect
   });
 });
