@@ -93,7 +93,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
     
     stage('Test') {
       echo "Testing: ${BUILD_ID}"
-
+      sleep 3600
       script {
         //
         // Check the code builds
