@@ -89,11 +89,15 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       sh "node -v"
       sh "npm -v"
       sh "npm ci"
+
+      // This is required for the unit tests to run
+      // sucessfully.
+      sh "echo \"SESSION_SECRET=helloworld\" > .env"
     }
     
     stage('Test') {
       echo "Testing: ${BUILD_ID}"
-      sleep 3600
+
       script {
         //
         // Check the code builds
