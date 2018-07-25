@@ -22,4 +22,25 @@
 
 const minio = jest.genMockFromModule('minio');
 
+function statObject(bucket, file, cb) {
+  const now = new Date();
+  if (file === 'expiredFile') {
+    now.setDate(now.getDate() + 1000);
+  }
+
+  return cb(undefined, {
+    size: 1000,
+    etag: 'abc123',
+    metaData: {},
+    lastModified: now,
+  });
+}
+
+function presignedGetObject(bucket, name, expiryInSeconds, cb) {
+  cb(undefined, 'http://localhost/foo/abc123');
+}
+
+minio.Client.prototype.statObject = statObject;
+minio.Client.prototype.presignedGetObject = presignedGetObject;
+
 module.exports = minio;

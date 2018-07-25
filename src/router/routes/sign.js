@@ -139,6 +139,10 @@ router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
     const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 3);
     res.redirect(link);
   } catch (error) {
+    if (error.code) {
+      throw error;
+    }
+
     const message = `Unable to retrieve arcive for job with ID ${jobId}`;
     logger.error(`${message}, err = ${error.message}`);
     throw errorWithCode(`${message}, err = ${error.message}`, 500);

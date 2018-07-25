@@ -26,9 +26,9 @@ export default class Model {
   }
 
   static async findById(db, id) {
-    if (Number(id) === 10) return { id: 10 };
-    if (Number(id) === 20) return { id: 20, deliveryFileName: 'cake' };
-    if (Number(id) === 30) return { id: 30, deliveryFileName: 'moon' };
+    if (Number(id) === 10) return { id: 10 }; // Processing
+    if (Number(id) === 20) return { id: 20, deliveryFileName: 'notExpiredFile' }; // Done
+    if (Number(id) === 30) return { id: 30, deliveryFileName: 'expiredFile' }; // Done
 
     return undefined;
   }

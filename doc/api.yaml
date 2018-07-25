@@ -166,7 +166,7 @@ components:
           format: float
       example:
         id: 32
-        url: 'http://localhost:8080/api/v1/sign/rynjE6Tl7/download'
+        url: 'http://localhost:8080/api/v1/job/10/download'
         durationInSeconds: '123.45'
     JobReport:
       title: Job Report
