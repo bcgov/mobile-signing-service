@@ -67,7 +67,6 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
     const signedJob = await Job.findById(db, jobId);
 
     if (!signedJob) {
-      console.log(signedJob.deliveryFileName);
       throw errorWithCode('No such job', 404);
     }
 
