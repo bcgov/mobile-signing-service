@@ -1,5 +1,6 @@
+
 //
-// Code Sign
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,21 +16,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-05-06.
+// Created by Jason Leach on 2018-07-20.
 //
 
-/* eslint-disable no-unused-vars */
+import { default as request } from 'supertest'; // eslint-disable-line
+import app from '../../src';
 
-'use strict';
+jest.mock('../../src/libs/db/models/job');
 
-let rpn = jest.genMockFromModule('request-promise-native');
-
-function request(options) {
-  return new Promise((resolve, reject) => {
-    resolve('OK');
+describe('Test signing routes', () => {
+  test('Job 30 to be expired', async () => {
+    const response = await request(app).get('/api/v1/sign/30/download');
+    expect(response.statusCode).toBe(400); // Bad Request
   });
-}
 
-rpn = request;
-
-module.exports = rpn;
+  test('Job 20 be a redirect', async () => {
+    const response = await request(app).get('/api/v1/sign/20/download');
+    expect(response.statusCode).toBe(302); // Redirect
+  });
+});

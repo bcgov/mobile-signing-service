@@ -20,16 +20,9 @@
 //
 
 import { default as request } from 'supertest'; // eslint-disable-line
-import app from '../src';
+import app from '../../src';
 
-jest.mock('../src/libs/db/models/job');
-
-describe('Test monitoring routes', () => {
-  test('The readiness probe should respond with 200 ', async () => {
-    const response = await request(app).get('/api/v1/ehlo');
-    expect(response.statusCode).toBe(200);
-  });
-});
+jest.mock('../../src/libs/db/models/job');
 
 describe('Test job routes', () => {
   test('Test jobId must be present', async () => {
@@ -86,17 +79,5 @@ describe('Test job routes', () => {
   test('Job 40 status should be 404 ', async () => {
     const response = await request(app).get('/api/v1/job/40/status');
     expect(response.statusCode).toBe(404); // Not Found
-  });
-});
-
-describe('Test signing routes', () => {
-  test('Job 30 to be expired', async () => {
-    const response = await request(app).get('/api/v1/sign/30/download');
-    expect(response.statusCode).toBe(400); // Bad Request
-  });
-
-  test('Job 20 be a redirect', async () => {
-    const response = await request(app).get('/api/v1/sign/20/download');
-    expect(response.statusCode).toBe(302); // Redirect
   });
 });
