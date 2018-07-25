@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //

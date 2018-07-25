@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -52,7 +52,6 @@ const {
 } = dm;
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
-
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
 

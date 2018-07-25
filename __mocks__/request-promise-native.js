@@ -15,25 +15,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-07-23.
+// Created by Jason Leach on 2018-05-06.
 //
 
 'use strict';
 
-export default class Model {
-  static async update() {
-    return {};
-  }
+let rpn = jest.genMockFromModule('request-promise-native');
 
-  static async findById(db, id) {
-    if (Number(id) === 10) return { id: 10 }; // Processing
-    if (Number(id) === 20) return { id: 20, deliveryFileName: 'notExpiredFile' }; // Done
-    if (Number(id) === 30) return { id: 30, deliveryFileName: 'expiredFile' }; // Done
-
-    return undefined;
-  }
-
-  static async create(db, values) {
-    return this.findById(db, 20);
-  }
+function request(options) {
+  return new Promise((resolve, reject) => {
+    resolve('OK');
+  });
 }
+
+rpn = request;
+
+module.exports = rpn;
