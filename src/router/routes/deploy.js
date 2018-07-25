@@ -23,7 +23,7 @@
 'use strict';
 
 // eslint-disable-next-line object-curly-newline
-import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger } from '@bcgov/nodejs-common-utils';
+import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger, statObject } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import request from 'request-promise-native';
 import url from 'url';
@@ -75,7 +75,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
       throw errorWithCode('Cannot find a signed package with this job!', 404);
     }
 
-    const stat = await shared.minio.statObject(bucket, `${signedJob.deliveryFileName}`);
+    const stat = await statObject(shared.minio, bucket, signedJob.deliveryFileName);
 
     if (isExpired(stat, expirationInDays)) {
       throw errorWithCode('This artifact is expired', 400);
