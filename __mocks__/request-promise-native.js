@@ -20,15 +20,14 @@
 
 'use strict';
 
-console.log('we are here');
+let rpn = jest.genMockFromModule('request-promise-native');
 
-const rpn = jest.genMockFromModule('request-promise-native');
+function request(options) {
+  return new Promise((resolve, reject) => {
+    resolve('OK');
+  });
+}
 
-const request = options => new Promise((resolve, reject) => {
-  console.log('in the request mock');
-  resolve('{status: OK}');
-});
-
-rpn.request = request;
+rpn = request;
 
 module.exports = rpn;
