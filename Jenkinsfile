@@ -54,9 +54,11 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
     command: '',
     args: '${computer.jnlpmac} ${computer.name}',
     alwaysPullImage: false
-    // envVars: [
-    //     secretEnvVar(key: 'SLACK_TOKEN', secretName: 'slack', secretKey: 'token')
-    //   ]
+    envVars: [
+      envVar(key: 'NODE_ENV', value: 'test'),
+      envVar(key: 'SESSION_SECRET', value: 'helloworld'),
+      // secretEnvVar(key: 'SLACK_TOKEN', secretName: 'slack', secretKey: 'token')
+      ]
   )
 ]) {
   node("${APP_NAME}-node-build") {
@@ -89,10 +91,6 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       sh "node -v"
       sh "npm -v"
       sh "npm ci"
-
-      // This is required for the unit tests to run
-      // sucessfully.
-      sh "echo \"SESSION_SECRET=helloworld\" > .env"
     }
     
     stage('Test') {
