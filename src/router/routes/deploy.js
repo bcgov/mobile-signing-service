@@ -101,7 +101,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
       throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
     }
 
-    res.send(202).json({ id: job.id }); // Accepted
+    res.status(202).json({ id: job.id }); // Accepted
   } catch (error) {
     const message = 'Unable to create deployment job';
     logger.error(`${message}, err = ${error.message}`);
