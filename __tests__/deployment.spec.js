@@ -24,9 +24,7 @@ import app from '../src';
 
 jest.mock('../src/libs/db/models/job');
 jest.mock('request-promise-native');
-// jest.mock('minio');
-// jest.mock('../src/libs/shared');
-
+jest.mock('minio');
 
 describe('Test deployment routes', () => {
   test('Test jobId must be present', async () => {
@@ -39,15 +37,14 @@ describe('Test deployment routes', () => {
   test('Test deployment platform must be in the request body', async () => {
     const response = await request(app)
       .post('/api/v1/deploy/10');
-    expect(response.statusCode).toBe(400); // Bad Request
+    expect(response.statusCode).toBe(400); // Required parameters missing
   });
 
   test('Test deployment request is accepted', async () => {
     const response = await request(app)
-      .post('/api/v1/deploy/30')
-      .set('content-type', 'application/json')
-      .query({ platform: 'android' });
-    // expect(response.statusCode).toBe(202); // Ok
-    expect(response).toBe('202');
+      .post('/api/v1/deploy/20')
+      .query({ platform: 'android' })
+      .set('content-type', 'application/json');
+    expect(response.statusCode).toBe(202); // OK
   });
 });
