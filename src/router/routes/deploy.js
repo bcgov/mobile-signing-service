@@ -39,11 +39,6 @@ const {
 } = dm;
 const bucket = config.get('minio:bucket');
 
-// curl -X POST http://localhost:8080/api/v1/deploy/8?platform=android
-// deployment platform - (airwatch, iTunes, Google) + (public, enterprise):
-// iTunes, Google -> public?
-// airwatch -> enterprise?
-// TODO: add deployment platform in Job model
 router.post('/:jobId', asyncMiddleware(async (req, res) => {
   const {
     jobId,
