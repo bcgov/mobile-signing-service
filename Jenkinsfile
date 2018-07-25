@@ -56,7 +56,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
     alwaysPullImage: false,
     envVars: [
       envVar(key: 'NODE_ENV', value: 'test'),
-      envVar(key: 'SESSION_SECRET', value: 'helloworld'),
+      // envVar(key: 'SESSION_SECRET', value: 'helloworld'),
       // secretEnvVar(key: 'SLACK_TOKEN', secretName: 'slack', secretKey: 'token')
       ]
   )
