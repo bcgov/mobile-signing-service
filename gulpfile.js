@@ -29,7 +29,7 @@ gulp.task('clean', () => gulp.src('build', { read: false, allowEmpty: true })
     force: true,
   })));
 
-gulp.task('transpile-src', () => gulp.src('src/**/*.js')
+gulp.task('transpile-src', () => gulp.src(['src/**/*.js', '!src/**/__mocks__'])
   .pipe(babel())
   .pipe(gulp.dest('build/src')));
 
