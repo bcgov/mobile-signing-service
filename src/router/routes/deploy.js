@@ -51,7 +51,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
     throw errorWithCode('Unable to store attached file.', 500);
   }
 
-  if (!jobId || !platform) {
+  if (!platform) {
     throw errorWithCode('Required parameters missing', 400);
   }
 
