@@ -42,8 +42,8 @@ describe('Test deployment routes', () => {
 
   test('Test deployment request is accepted', async () => {
     const response = await request(app)
-      .post('/api/v1/deploy/20')
-      .query({ platform: 'android' })
+      .post('/api/v1/deploy/21')
+      .query({ deploymentPlatform: 'public' })
       .set('content-type', 'application/json');
     expect(response.statusCode).toBe(202); // OK
   });
