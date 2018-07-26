@@ -37,7 +37,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import config from '../../config';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch } from '../../libs/deploy';
+import { deployGoogle, deployAirWatch, deployAppleStore } from '../../libs/deploy';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -180,27 +180,35 @@ const handleDeploymentJob = async (job, clean = true) => {
 
   try {
     let deployedAppPath;
-    switch (job.platform) {
-      case 'ios':
+
+    switch (job.deploymentPlatform) {
+      // Enterprise deployment refer to Airwatch:
+      case 'enterprise':
       {
-        throw new Error('Temploray not supported');
+        throw new Error('Unsupported platform');
+        // deployedAppPath = await deployAirWatch(job.originalFileName);
         // break;
       }
-      case 'google':
+      // Public deployment refer to Apple or Google Store, depends on application type:
+      case 'public':
       {
-      // Sharing the same job from signing work:
-      // - the originalFileName should be the signed app for deployment Job
-      // - leave the rest fields empty
-        deployedAppPath = await deployGoogle(job.originalFileName);
-        break;
-      }
-      case 'airwatch':
-      {
-        deployedAppPath = await deployAirWatch(job.originalFileName);
+        switch (job.platform) {
+          case 'ios':
+          {
+            throw new Error('Temploray not supported');
+          }
+          case 'android':
+          {
+            deployedAppPath = await deployGoogle(job.originalFileName);
+            break;
+          }
+          default:
+            throw new Error('Unsupported application type');
+        }
         break;
       }
       default:
-        throw new Error('Unsupported platform');
+        throw new Error('Unsupported deployment platform');
     }
 
     if (clean) {
@@ -211,8 +219,7 @@ const handleDeploymentJob = async (job, clean = true) => {
       cleanup(workSpace);
     }
 
-    // No need to update the deployment job for now:
-    // await reportJobStatus({ ...job, ...{ deliveryFileName: null, deliveryFileEtag: null } });
+    // No need to update the deployment job.
   } catch (error) {
     const message = 'Unable to deploy app';
     logger.error(`${message}, err = ${error.message}`);
@@ -241,6 +248,10 @@ router.post('/deploy', asyncMiddleware(async (req, res) => {
 
   if (!job) {
     throw errorWithCode('No such job exists', 400);
+  }
+
+  if (!job.platform || !job.deploymentPlatform) {
+    throw errorWithCode('No platform specified', 400);
   }
 
   res.sendStatus(200).end();

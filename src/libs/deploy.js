@@ -177,6 +177,20 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
 };
 
 /**
+ * Apple Store Deployment
+ *
+ * @param {String} signedApp The name of the signed app
+ * @param {string} [workspace='/tmp/'] The workspace to use
+ * @returns The status of the deployment
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
+
+  // TODO
+
+};
+
+/**
  * AirWatch Deployment
  *
  * @param {String} signedApp The name of the signed app
@@ -186,6 +200,6 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
 // eslint-disable-next-line import/prefer-default-export
 export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
 
-  // here!
+  // TODO
 
 };
