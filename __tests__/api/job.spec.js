@@ -26,20 +26,20 @@ jest.mock('../../src/libs/db/models/job');
 
 describe('Test job routes', () => {
   test('Test jobId must be present', async () => {
-    const response = await request(app)
+    await request(app)
       .put('/api/v1/job')
-      .send({});
-    expect(response.statusCode).toBe(404); // Not Found
+      .send({})
+      .expect(404); // Not Found
   });
 
   test('Test job object must be in the request body', async () => {
-    const response = await request(app)
-      .put('/api/v1/job/10');
-    expect(response.statusCode).toBe(400); // Bad Request
+    await request(app)
+      .put('/api/v1/job/10')
+      .expect(400); // Bad Request
   });
 
   test('Test job request body contains all required fields', async () => {
-    const response = await request(app)
+    await request(app)
       .put('/api/v1/job/10')
       .set('content-type', 'application/json')
       .send({
@@ -47,12 +47,13 @@ describe('Test job routes', () => {
           name: 'moon',
           type: 'cake',
         },
-      });
-    expect(response.statusCode).toBe(400); // Bad Request
+      })
+      .expect(400) // Bad Request
+      .expect('Content-Type', /json/);
   });
 
   test('Test job request body fields are accepted', async () => {
-    const response = await request(app)
+    await request(app)
       .put('/api/v1/job/10')
       .set('content-type', 'application/json')
       .send({
@@ -60,24 +61,27 @@ describe('Test job routes', () => {
           deliveryFileName: 'moon',
           deliveryFileEtag: 'cake',
         },
-      });
-    expect(response.statusCode).toBe(200); // Ok
+      })
+      .expect(200); // Ok
   });
 
   test('Job 10 status should be 202 ', async () => {
-    const response = await request(app).get('/api/v1/job/10/status');
-    expect(response.statusCode).toBe(202); // Processing
+    const response = await request(app)
+      .get('/api/v1/job/10/status')
+      .expect(202); // Processing
     expect(response.body.status).toBe('Processing');
   });
 
   test('Job 20 status should be 200 ', async () => {
-    const response = await request(app).get('/api/v1/job/20/status');
-    expect(response.statusCode).toBe(200); // Ok
+    const response = await request(app)
+      .get('/api/v1/job/20/status')
+      .expect(200); // Ok
     expect(response.body.status).toBe('Completed');
   });
 
   test('Job 40 status should be 404 ', async () => {
-    const response = await request(app).get('/api/v1/job/40/status');
-    expect(response.statusCode).toBe(404); // Not Found
+    await request(app)
+      .get('/api/v1/job/40/status')
+      .expect(404); // Not Found
   });
 });

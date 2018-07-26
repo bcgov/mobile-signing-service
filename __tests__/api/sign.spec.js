@@ -19,19 +19,51 @@
 // Created by Jason Leach on 2018-07-20.
 //
 
+import path from 'path';
 import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
 
 jest.mock('../../src/libs/db/models/job');
 
-describe('Test signing routes', () => {
-  test('Job 30 to be expired', async () => {
-    const response = await request(app).get('/api/v1/sign/30/download');
-    expect(response.statusCode).toBe(400); // Bad Request
+const sample = path.join(__dirname, '../../', 'samples/foo.zip');
+
+describe('Test signing route', () => {
+  test('The platform parameter must be specified', async () => {
+    await request(app)
+      .post('/api/v1/sign')
+      .attach('file', sample)
+      .expect(400)
+      .expect('Content-Type', /json/);
   });
 
-  test('Job 20 be a redirect', async () => {
-    const response = await request(app).get('/api/v1/sign/20/download');
-    expect(response.statusCode).toBe(302); // Redirect
+  test('There must be a file attachment.', async () => {
+    await request(app)
+      .post('/api/v1/sign')
+      .query({ platform: 'ios' })
+      .expect(400)
+      .expect('Content-Type', /json/);
+  });
+
+  test('All valid parameters are accepted', async () => {
+    await request(app)
+      .post('/api/v1/sign')
+      .query({ platform: 'ios' })
+      .attach('file', sample)
+      .expect(202)
+      .expect('Content-Type', /json/);
+  });
+});
+
+describe('Test download route', () => {
+  test('Job 30 is expired can can not be downloaded', async () => {
+    await request(app)
+      .get('/api/v1/sign/30/download')
+      .expect(400); // Bad Request
+  });
+
+  test('Job 20 is OK and can be downloaded', async () => {
+    await request(app)
+      .get('/api/v1/sign/20/download')
+      .expect(302); // Redirect
   });
 });

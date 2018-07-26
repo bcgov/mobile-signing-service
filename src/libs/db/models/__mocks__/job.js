@@ -18,6 +18,8 @@
 // Created by Jason Leach on 2018-07-23.
 //
 
+/* eslint-disable no-unused-vars */
+
 'use strict';
 
 export default class Model {
@@ -29,11 +31,12 @@ export default class Model {
     if (Number(id) === 10) return { id: 10 }; // Processing
     if (Number(id) === 20) return { id: 20, deliveryFileName: 'notExpiredFile' }; // Done
     if (Number(id) === 30) return { id: 30, deliveryFileName: 'expiredFile' }; // Done
+    if (Number(id) === 100) return { id: 100, deliveryFileName: 'notExpiredFile' }; // Done
 
     return undefined;
   }
 
   static async create(db, values) {
-    return this.findById(db, 20);
+    return this.findById(db, 100);
   }
 }
