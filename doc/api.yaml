@@ -118,7 +118,7 @@ paths:
       operationId: postNewJob
       summary: Specify a signed package for deployment
       description: |-
-        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWtch, 
+        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWatch, 
         Google Play Store or App Store.
       tags:
         - deploy
@@ -129,9 +129,16 @@ paths:
           schema:
             type: string
             enum: 
-              - itune
-              - google
-              - airwatch
+              - ios
+              - android
+        - name: deployment_platform
+          in: path
+          required: false
+          schema:
+            type: string
+            enum: 
+              - enterprise
+              - public
       responses:
         200:
           description: The package was deployed
