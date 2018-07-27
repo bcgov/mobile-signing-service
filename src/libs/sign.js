@@ -21,26 +21,18 @@
 'use strict';
 
 import { getObject, logger } from '@bcgov/nodejs-common-utils';
-import * as minio from 'minio';
 import fs from 'fs';
 import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
+import shared from './shared';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
 
 const bucket = config.get('minio:bucket');
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
 
 /**
  * Fetch all the currently available signing identities for iOS
@@ -98,7 +90,7 @@ const fetchFileFromStorage = async (archiveFilePath, workspace) => {
   const outFileName = shortid.generate();
   const apath = path.join(workspace, shortid.generate());
   const outFilePath = path.join(apath, outFileName);
-  const buffer = await getObject(client, bucket, archiveFilePath);
+  const buffer = await getObject(shared.minio, bucket, archiveFilePath);
 
   await exec(`mkdir -p ${apath}`);
   await writeFile(outFilePath, buffer, 'utf8');
@@ -290,7 +282,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
 
   // Get the package:
-  const buffer = await getObject(client, bucket, archiveFilePath);
+  const buffer = await getObject(shared.minio, bucket, archiveFilePath);
   await exec(`mkdir -p ${packagePath}`);
   await writeFile(outFileName, buffer, 'utf8');
   const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);

@@ -26,35 +26,20 @@ import {
   logger,
   asyncMiddleware,
   errorWithCode,
-  createBucketIfRequired,
   putObject,
 } from '@bcgov/nodejs-common-utils';
 import request from 'request-promise-native';
-import * as minio from 'minio';
 import util from 'util';
 import { Router } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
 import config from '../../config';
+import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
 import { deployApk } from '../../libs/deploy';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
-
-createBucketIfRequired(client, bucket)
-  .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
-    logger.error(error.message);
-  });
 
 /**
  * Cleanup artifacts left over from the signing process
@@ -144,7 +129,7 @@ const handleJob = async (job, clean = true) => {
 
     const readStream = fs.createReadStream(deliveryFile);
     const filename = path.basename(deliveryFile);
-    const etag = await putObject(client, bucket, filename, readStream, undefined);
+    const etag = await putObject(shared.minio, bucket, filename, readStream, undefined);
 
     if (etag) {
       const message = 'Uploaded file for delivery';
