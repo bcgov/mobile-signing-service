@@ -61,7 +61,7 @@ NODE_ENV=development
 MINIO_ACCESS_KEY="XXXXXXXX"
 MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
 MINIO_HOST="localhost"
-PORT=8088
+PORT=8089
 ```
 
 Run the node application with the following command:
