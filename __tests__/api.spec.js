@@ -23,6 +23,8 @@ import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../src';
 
 jest.mock('../src/libs/db/models/job');
+jest.mock('request-promise-native');
+jest.mock('minio');
 
 describe('Test monitoring routes', () => {
   test('The readiness probe should respond with 200 ', async () => {
@@ -98,5 +100,27 @@ describe('Test signing routes', () => {
   test('Job 20 be a redirect', async () => {
     const response = await request(app).get('/api/v1/sign/20/download');
     expect(response.statusCode).toBe(302); // Redirect
+  });
+});
+
+describe('Test deployment routes', () => {
+  test('Test jobId must be present', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy');
+    expect(response.statusCode).toBe(404); // Required parameters missing
+  });
+
+  test('Test deployment platform must be in the request body', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/10');
+    expect(response.statusCode).toBe(400); // Bad request
+  });
+
+  test('Test deployment request is accepted', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/21')
+      .query({ deploymentPlatform: 'public' })
+      .set('content-type', 'application/json');
+    expect(response.statusCode).toBe(202); // OK
   });
 });
