@@ -8,7 +8,7 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@bcgov/nodejs-common-utils": "0.0.2",
+    "@bcgov/nodejs-common-utils": "0.0.3",
     "body-parser": "^1.18.3",
     "compression": "^1.7.2",
     "connect-flash": "^0.1.1",
@@ -57,9 +57,9 @@
     "dev": "NODE_ENV=development nodemon src --exec babel-node --inspect=9228",
     "build": "NODE_ENV=production gulp",
     "build:doc": "bootprint openapi doc/api.yaml public/doc/api",
-    "test": "NODE_ENV=test jest test/",
+    "test": "NODE_ENV=test jest _test_",
     "test:schema": "swagger-cli validate doc/api.yaml",
-    "test:watch": "NODE_ENV=test jest test/*_spec.js --watch",
+    "test:watch": "NODE_ENV=test jest _test_/*_spec.js --watch",
     "test:lint": "eslint --env node --ext .js src"
   },
   "repository": {

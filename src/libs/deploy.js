@@ -16,26 +16,18 @@
 
 import { getObject, logger } from '@bcgov/nodejs-common-utils';
 import { google } from 'googleapis';
-import * as minio from 'minio';
 import fs from 'fs';
 import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
+import shared from './shared';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
-
 const bucket = config.get('minio:bucket');
-const client = new minio.Client({
-  endPoint: config.get('minio:endPoint'),
-  port: config.get('minio:port'),
-  secure: config.get('minio:secure'),
-  accessKey: config.get('minio:accessKey'),
-  secretKey: config.get('minio:secretKey'),
-  region: config.get('minio:region'),
-});
+
 /* eslint-disable global-require */
 /**
  * Get the signed appliaction package
@@ -48,7 +40,7 @@ const fetchFileFromStorage = async (signedApp, workspace) => {
   const apath = path.join(workspace, shortid.generate());
   const outFilePath = path.join(apath, signedApp);
   try {
-    const buffer = await getObject(client, bucket, signedApp);
+    const buffer = await getObject(shared.minio, bucket, signedApp);
     if (!buffer) {
       throw new Error('Unable to fetch archive.');
     }
@@ -130,7 +122,7 @@ const googleDeployEdit = async (publisher, editID, signedAPK) => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployApk = async (signedApp, workspace = '/tmp/') => {
+export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
   try {
     // Get apk:
     const signedApkPath = await fetchFileFromStorage(signedApp, workspace);
@@ -174,4 +166,32 @@ export const deployApk = async (signedApp, workspace = '/tmp/') => {
   }
 
   return Promise.reject();
+};
+
+/**
+ * Apple Store Deployment
+ *
+ * @param {String} signedApp The name of the signed app
+ * @param {string} [workspace='/tmp/'] The workspace to use
+ * @returns The status of the deployment
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
+
+  // TODO
+
+};
+
+/**
+ * AirWatch Deployment
+ *
+ * @param {String} signedApp The name of the signed app
+ * @param {string} [workspace='/tmp/'] The workspace to use
+ * @returns The status of the deployment
+ */
+// eslint-disable-next-line import/prefer-default-export
+export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
+
+  // TODO
+
 };
