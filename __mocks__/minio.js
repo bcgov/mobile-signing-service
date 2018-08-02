@@ -40,7 +40,12 @@ function presignedGetObject(bucket, name, expiryInSeconds, cb) {
   cb(undefined, 'http://localhost/foo/abc123');
 }
 
+function putObject(bucket, name, data, cb) {
+  cb(undefined, '123456789');
+}
+
 minio.Client.prototype.statObject = statObject;
 minio.Client.prototype.presignedGetObject = presignedGetObject;
+minio.Client.prototype.putObject = putObject;
 
 module.exports = minio;

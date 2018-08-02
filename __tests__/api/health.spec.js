@@ -1,5 +1,6 @@
+
 //
-// Code Sign
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,21 +16,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-05-06.
+// Created by Jason Leach on 2018-07-20.
 //
 
-/* eslint-disable no-unused-vars */
+import { default as request } from 'supertest'; // eslint-disable-line
+import app from '../../src';
 
-'use strict';
-
-let rpn = jest.genMockFromModule('request-promise-native');
-
-function request(options) {
-  return new Promise((resolve, reject) => {
-    resolve('OK');
+describe('Test monitoring routes', () => {
+  test('The readiness probe should respond with 200 ', async () => {
+    await request(app).get('/api/v1/ehlo')
+      .expect(200);
   });
-}
-
-rpn = request;
-
-module.exports = rpn;
+});

@@ -83,6 +83,7 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
       originalFileEtag: signedJob.etag,
       deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
     });
+
     logger.info(`Created deployment job with ID ${job.id}`);
 
     const options = {

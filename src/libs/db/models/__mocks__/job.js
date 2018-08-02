@@ -18,6 +18,8 @@
 // Created by Jason Leach on 2018-07-23.
 //
 
+/* eslint-disable no-unused-vars */
+
 'use strict';
 
 export default class Model {
@@ -35,6 +37,6 @@ export default class Model {
   }
 
   static async create(db, values) {
-    return this.findById(db, 20);
+    return this.findById(db, 21);
   }
 }

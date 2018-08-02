@@ -24,7 +24,6 @@
 
 import {
   logger,
-  bucketExists,
   putObject,
   isExpired,
   presignedGetObject,
@@ -55,12 +54,12 @@ const bucket = config.get('minio:bucket');
 router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   const { platform } = req.query;
 
-  if (!req.file) {
-    return res.status(400).json({ message: 'Unable to process attached form.' });
+  if (!platform || !['ios', 'android'].includes(platform.toLocaleLowerCase())) {
+    throw errorWithCode('Invalid platform parameter.', 400);
   }
 
-  if (!bucketExists(shared.minio, bucket)) {
-    return res.status(500).json({ message: 'Unable to store attached file.' });
+  if (!req.file) {
+    throw errorWithCode('To file attachment found.', 400);
   }
 
   /* This is the document format from multer:
@@ -81,15 +80,14 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     fs.access(fpath, fs.constants.R_OK, (err) => {
       if (err) {
         const message = 'Unable to access uploaded package';
-        logger.error(message);
-        return res.status(500).json({ message });
+        logger.error(`${message}, , error = ${err.message}`);
+        throw errorWithCode(message, 501);
       }
-
-      return null;
     });
 
     const readStream = fs.createReadStream(req.file.path);
     const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
+
     if (etag) {
       await cleanup(req.file.path);
     }
@@ -108,8 +106,8 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
       body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
       json: true,
     };
-
     const status = await request(options);
+
     if (status !== 'OK') {
       throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
     }
@@ -117,10 +115,14 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
     res.status(202).json({ id: job.id }); // Accepted
 
     return null;
-  } catch (error) {
+  } catch (err) {
+    if (err.code) {
+      throw err;
+    }
+
     const message = 'Unable to create signing job';
-    logger.error(`${message}, err = ${error.message}`);
-    throw errorWithCode(`${message}, err = ${error.message}`, 500);
+    logger.error(`${message}, err = ${err.message}`);
+    throw errorWithCode(`${message}, err = ${err.message}`, 500);
   }
 }));
 
