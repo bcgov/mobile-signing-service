@@ -44,14 +44,14 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
     jobId,
   } = req.params;
 
-  const { platform } = req.query;
+  const { deploymentPlatform } = req.query;
   const expirationInDays = config.get('expirationInDays');
 
   if (!bucketExists(shared.minio, bucket)) {
-    throw errorWithCode('Unable to store attached file.', 500);
+    throw errorWithCode('Unable to store or accesss attached file.', 500);
   }
 
-  if (!platform) {
+  if (!jobId || !deploymentPlatform) {
     throw errorWithCode('Required parameters missing', 400);
   }
 
@@ -76,12 +76,14 @@ router.post('/:jobId', asyncMiddleware(async (req, res) => {
       throw errorWithCode('This artifact is expired', 400);
     }
 
-    // create a new deploy-job in db:
+    // create a new deployment job in db:
     const job = await Job.create(db, {
       originalFileName: signedJob.deliveryFileName,
-      platform: platform.toLocaleLowerCase(),
+      platform: signedJob.platform.toLocaleLowerCase(),
       originalFileEtag: signedJob.etag,
+      deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
     });
+
     logger.info(`Created deployment job with ID ${job.id}`);
 
     const options = {

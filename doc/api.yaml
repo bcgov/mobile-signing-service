@@ -113,25 +113,33 @@ paths:
           description: You have not supplied a valid JWT
         500:
           description: Internal Error
-  /api/v1/deploy:
+  /api/v1/deploy/{jobId}:
     post:
       operationId: postNewJob
-      summary: Specify a signed package for deployment
+      summary: Specify a signed app package for deployment
       description: |-
-        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWtch, 
+        Use this endpoint to specify a signed package from the signing jobs to deploy to AirWatch, 
         Google Play Store or App Store.
       tags:
         - deploy
       parameters:
-        - name: platform
+        - name: jobId
+          description: |-
+            The id of the job that contains the signed app.
           in: path
           required: true
           schema:
+            type: integer
+        - name: deployment_platform
+          description: |-
+            The platform to deploy the signed app.
+          in: path
+          required: false
+          schema:
             type: string
             enum: 
-              - itune
-              - google
-              - airwatch
+              - enterprise
+              - public
       responses:
         200:
           description: The package was deployed
@@ -139,8 +147,12 @@ paths:
             applicaiton/json:
               schema:
                 $ref: '#/components/schemas/JobReciept'
+        400:
+          description: Missing required parameters or the artifact is expired
         401:
           description: You have not supplied a valid JWT
+        404:
+          description: Cannot find a job with the signed package
         500:
           description: Internal Error
 components:

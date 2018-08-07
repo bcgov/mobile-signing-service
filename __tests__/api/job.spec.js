@@ -1,4 +1,3 @@
-
 //
 // Code Signing
 //
@@ -23,6 +22,8 @@ import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
 
 jest.mock('../../src/libs/db/models/job');
+jest.mock('request-promise-native');
+jest.mock('minio');
 
 describe('Test job routes', () => {
   test('Test jobId must be present', async () => {

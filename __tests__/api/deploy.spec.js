@@ -23,26 +23,27 @@ import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
 
 jest.mock('../../src/libs/db/models/job');
+jest.mock('request-promise-native');
+jest.mock('minio');
 
 describe('Test deployment routes', () => {
   test('Test jobId must be present', async () => {
-    await request(app)
-      .post('/api/v1/deploy')
-      .query({ platform: 'ios' })
-      .expect(404); // Not Found
+    const response = await request(app)
+      .post('/api/v1/deploy');
+    expect(response.statusCode).toBe(404); // Required parameters missing
   });
 
-  test('Test platform must be in the request body', async () => {
-    await request(app)
-      .post('/api/v1/deploy/10')
-      .expect(400); // Bad Request
+  test('Test deployment platform must be in the request body', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/10');
+    expect(response.statusCode).toBe(400); // Bad request
   });
 
-  test('Test request is accepted', async () => {
-    await request(app)
-      .post('/api/v1/deploy/20')
-      .query({ platform: 'android' })
-      .set('content-type', 'application/json')
-      .expect(202); // OK
+  test('Test deployment request is accepted', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/21')
+      .query({ deploymentPlatform: 'public' })
+      .set('content-type', 'application/json');
+    expect(response.statusCode).toBe(202); // OK
   });
 });

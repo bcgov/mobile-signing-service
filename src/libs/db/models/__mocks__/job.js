@@ -31,12 +31,12 @@ export default class Model {
     if (Number(id) === 10) return { id: 10 }; // Processing
     if (Number(id) === 20) return { id: 20, deliveryFileName: 'notExpiredFile' }; // Done
     if (Number(id) === 30) return { id: 30, deliveryFileName: 'expiredFile' }; // Done
-    if (Number(id) === 100) return { id: 100, deliveryFileName: 'notExpiredFile' }; // Done
+    if (Number(id) === 21) return { id: 21, platform: 'android', deliveryFileName: 'notExpiredFile' }; // Deployment api test
 
     return undefined;
   }
 
   static async create(db, values) {
-    return this.findById(db, 100);
+    return this.findById(db, 21);
   }
 }
