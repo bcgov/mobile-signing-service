@@ -21,7 +21,7 @@ npm run build:doc
 
 ### From the Desktop
 
-For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
+#### For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
 
 *xcarchive*
 
@@ -62,7 +62,7 @@ The keys in the plist represent the questions xcode asks you when you export or 
 *ipa*
 ????
 
-For Android you can sign an apk. Build the project in release mode and you are ready to upload.
+#### For Android you can sign an apk. Build the project in release mode and you are ready to upload.
 
 Once you have your package created use the following cURL commands to submit, check the status, and download the signed artifact.
 For ipa and xcarchive, specify the platform as `ios`, for apk use `android`.
@@ -84,6 +84,21 @@ __Retrieve Signed Artifact__
 ```console
 curl -vL http://localhost:8080/api/v1/sign/73/download -o foo.zip
 ```
+
+#### For application deployment, you can use the api to upload the signed app package to the following destinations:
+1. Enterprise: AirWatch
+2. Public: Google Play Store, App Store
+
+To upload the package:
+1. Use the jobID from the signing job to start a deployment process.
+2. Specify the platform you want to deploy, `public` (Google Play Store, App Store) or `enterprise` (internal deployment with AirWatch).
+
+__Submit for Deployment__
+
+```console
+curl -v http://localhost:8080/api/v1/job/deploy/73?deploymentPlatform=enterprise
+```
+
 
 ## Build
 
