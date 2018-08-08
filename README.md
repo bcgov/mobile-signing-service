@@ -1,7 +1,7 @@
 
 ## About
 
-This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a selfe-serve system that enables development teams to sign and deploy build artifacts in a s cure environment.
+This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a self-serve system that enables development teams to sign and deploy build artifacts in a secure environment.
 
 Additional component can be fond in these repos:
 
@@ -26,9 +26,9 @@ For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the ste
 *xcarchive*
 
 To package up an xcarchive to submit for signing you need to:
-1. Create a folder to hold the xcarchive and options.plist
+1. Create a folder to hold the xcarchive and options.plist.
 2. Copy the xcarchive from xcode into the folder from #1.
-3. Create or copy your options.plist from #1.
+3. Create or copy your options.plist from #1, you could update the content from sample below.
 4. ZIP up the folder for submission
 
 ![alt text][export-xcarchive]
@@ -59,7 +59,13 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 
 The keys in the plist represent the questions xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
 
+*ipa*
+????
+
+For Android you can sign an apk. Build the project in release mode and you are ready to upload.
+
 Once you have your package created use the following cURL commands to submit, check the status, and download the signed artifact.
+For ipa and xcarchive, specify the platform as `ios`, for apk use `android`.
 
 __Submit for Signing__
 
