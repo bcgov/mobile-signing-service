@@ -177,8 +177,9 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
     const outputDir = 'signed';
     const apath = await extractArchiveContents(archiveFilePath, workspace);
     const findResult = await exec(`find ${apath} -iname '*.xcarchive'`);
-    if (findResult.stderr !== '') {
-      throw new Error('Unable to find xcarchive(s) in package');
+    const plistPath = await exec(`find ${apath} -iname 'options.plist'`);
+    if (findResult.stderr || plistPath.stderr !== '') {
+      throw new Error('Unable to find xcarchive(s) or options.plist in package');
     }
 
     const promises = findResult
