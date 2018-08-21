@@ -47,19 +47,19 @@ nconf.overrides({
   minio: {
     host: process.env.MINIO_HOST,
     accessKey: process.env.MINIO_ACCESS_KEY,
-    secretKey: process.env.MINIO_SECRET_KEY
+    secretKey: process.env.MINIO_SECRET_KEY,
   },
   db: {
     user: process.env.POSTGRESQL_USER,
     password: process.env.POSTGRESQL_PASSWORD,
-    host: process.env.POSTGRESQL_HOST
+    host: process.env.POSTGRESQL_HOST,
   },
   sso: {
-    clientSecret: process.env.SSO_CLIENT_SECRET
+    clientSecret: process.env.SSO_CLIENT_SECRET,
   },
   session: {
-    key: process.env.SESSION_SECRET
-  }
+    key: process.env.SESSION_SECRET,
+  },
 });
 
 // load other properties from file.
@@ -71,7 +71,7 @@ nconf
 // if nothing else is set, use defaults. This will be set if
 // they do not exist in overrides or the config file.
 nconf.defaults({
-  apiUrl: process.env.API_URL || `http://localhost:${process.env.PORT || defaultPort}`
+  apiUrl: process.env.API_URL || `http://localhost:${process.env.PORT || defaultPort}`,
 });
 
 export default nconf;

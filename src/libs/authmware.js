@@ -32,10 +32,10 @@ const authmware = app => {
     secret: config.get('session:key'),
     cookie: {
       maxAge: config.get('session:maxAge'),
-      httpOnly: false
+      httpOnly: false,
     },
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   };
 
   app.use(session(sessionOptions));
@@ -60,7 +60,7 @@ const authmware = app => {
       tokenURL: config.get('sso:tokenUrl'),
       clientID: config.get('sso:clientId'),
       clientSecret: config.get('sso:clientSecret'),
-      callbackURL: url.resolve(`${config.get('apiUrl')}`, config.get('sso:callback'))
+      callbackURL: url.resolve(`${config.get('apiUrl')}`, config.get('sso:callback')),
     },
     (accessToken, refreshToken, profile, done) => done(null, {})
   );

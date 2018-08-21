@@ -23,11 +23,11 @@
 // eslint-disable-next-line import/prefer-default-export
 export const ENVIRONMENTS = {
   DEVELOPMENT: 'development',
-  PRODUCTION: 'production'
+  PRODUCTION: 'production',
 };
 
 export const JOB_STATUS = {
   CREATED: 'Created',
   PROCESSING: 'Processing',
-  COMPLETED: 'Completed'
+  COMPLETED: 'Completed',
 };

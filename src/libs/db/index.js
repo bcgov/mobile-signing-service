@@ -23,17 +23,17 @@ export default class DataManager {
         database: config.get('db:database'),
         port: 5432,
         host: config.get('db:host'),
-        password: config.get('db:password')
+        password: config.get('db:password'),
       },
       searchPath: ['public'],
       debug: false,
       pool: {
         min: 1,
-        max: 64
+        max: 64,
       },
       migrations: {
-        tableName: 'migration'
-      }
+        tableName: 'migration',
+      },
     });
 
     this.db = k;

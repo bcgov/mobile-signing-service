@@ -28,7 +28,7 @@ export default class Model {
     Object.defineProperty(this, 'db', {
       enumerable: false,
       value: db,
-      writable: false
+      writable: false,
     });
 
     Object.assign(this, Model.transformToCamelCase(data));
@@ -100,8 +100,8 @@ export default class Model {
         db: {
           enumerable: false,
           value: db,
-          writable: false
-        }
+          writable: false,
+        },
       });
       Object.assign(obj, this.transformToCamelCase(row));
 

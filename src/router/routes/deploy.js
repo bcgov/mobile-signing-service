@@ -29,7 +29,7 @@ import {
   errorWithCode,
   isExpired,
   logger,
-  statObject
+  statObject,
 } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import request from 'request-promise-native';
@@ -85,7 +85,7 @@ router.post(
         originalFileName: signedJob.deliveryFileName,
         platform: signedJob.platform.toLocaleLowerCase(),
         originalFileEtag: signedJob.etag,
-        deploymentPlatform: deploymentPlatform.toLocaleLowerCase()
+        deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
       });
 
       logger.info(`Created deployment job with ID ${job.id}`);
@@ -96,9 +96,9 @@ router.post(
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
         body: {
           ...job,
-          ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` }
+          ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` },
         },
-        json: true
+        json: true,
       };
       const status = await request(options);
       if (status !== 'OK') {

@@ -36,7 +36,7 @@ const app = express();
 const options = {
   inflate: true,
   limit: '204800kb', // 200Mb
-  type: 'image/*'
+  type: 'image/*',
 };
 const docpath = path.join(__dirname, '../', 'public/doc/api');
 const pubpath = path.join(__dirname, '../', 'public');
@@ -62,13 +62,13 @@ fs.access(pubpath, fs.constants.R_OK, err => {
 app.use(cookieParser());
 app.use(
   bodyParser.urlencoded({
-    extended: true
+    extended: true,
   })
 );
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
-    extended: true
+    extended: true,
   })
 );
 app.use(bodyParser.raw(options));

@@ -33,14 +33,14 @@ if (!(gs.indexOf(key) > -1)) {
     secure: config.get('minio:secure'),
     accessKey: config.get('minio:accessKey'),
     secretKey: config.get('minio:secretKey'),
-    region: config.get('minio:region')
+    region: config.get('minio:region'),
   });
 }
 
 const singleton = {};
 
 Object.defineProperty(singleton, 'minio', {
-  get: () => global[key]
+  get: () => global[key],
 });
 
 Object.freeze(singleton);

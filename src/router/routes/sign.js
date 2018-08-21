@@ -29,7 +29,7 @@ import {
   presignedGetObject,
   statObject,
   asyncMiddleware,
-  errorWithCode
+  errorWithCode,
 } from '@bcgov/nodejs-common-utils';
 import url from 'url';
 import fs from 'fs';
@@ -93,7 +93,7 @@ router.post(
       const job = await Job.create(db, {
         originalFileName: req.file.originalname,
         platform: platform.toLocaleLowerCase(),
-        originalFileEtag: etag
+        originalFileEtag: etag,
       });
       logger.info(`Created job with ID ${job.id}`);
 
@@ -102,7 +102,7 @@ router.post(
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
         body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
-        json: true
+        json: true,
       };
       const status = await request(options);
 

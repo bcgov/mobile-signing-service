@@ -51,7 +51,7 @@ router.get('/login', passport.authenticate('oauth2'));
 router.get(
   '/callback',
   passport.authenticate('oauth2', {
-    failureRedirect: '/failed.html'
+    failureRedirect: '/failed.html',
   }),
   asyncMiddleware(async (req, res) => {
     // const redirectTo = req.session.redirect_to;

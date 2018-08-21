@@ -56,7 +56,7 @@ router.put(
         { id: jobId },
         {
           deliveryFileName: job.deliveryFileName,
-          deliveryFileEtag: job.deliveryFileEtag
+          deliveryFileEtag: job.deliveryFileEtag,
         }
       );
 
@@ -87,14 +87,14 @@ router.get(
         // The request has been accepted for processing,
         // but the processing has not been completed.
         return res.status(202).json({
-          status: JOB_STATUS.PROCESSING
+          status: JOB_STATUS.PROCESSING,
         });
       }
 
       return res.status(200).json({
         status: JOB_STATUS.COMPLETED,
         url: `http://localhost:8000/v1/job/${job.id}/download`,
-        durationInSeconds: job.duration
+        durationInSeconds: job.duration,
       });
     } catch (error) {
       const message = `Unable to retrieve job with ID ${jobId}`;
