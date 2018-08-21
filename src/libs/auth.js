@@ -31,48 +31,47 @@ const sendError = (res, statusCode, message) => {
   res.status(statusCode).json({ error: message, success: false });
 };
 
-const verifyToken = clientAccessToken => new Promise((resolve, reject) => {
-  request.get(config.get('sso:certsUrl'), {
-
-  }, (err, res, certsBody) => {
-    if (err) {
-      reject(err);
-      return;
-    }
-
-    const certsJson = JSON.parse(certsBody).keys[0];
-    const modulus = certsJson.n;
-    const exponent = certsJson.e;
-    const algorithm = certsJson.alg;
-
-    if (!modulus) {
-      reject(new Error('No modulus'));
-      return;
-    }
-
-    if (!exponent) {
-      reject(new Error('No exponent'));
-      return;
-    }
-
-    if (!algorithm) {
-      reject(new Error('No algorithm'));
-      return;
-    }
-
-    // build a certificate
-    const pem = pemFromModAndExponent(modulus, exponent);
-
-    // verify
-    jwt.verify(clientAccessToken, pem, { algorithms: [algorithm] }, (verifyErr, verifyResult) => {
-      if (verifyErr) {
-        reject(verifyErr);
+const verifyToken = clientAccessToken =>
+  new Promise((resolve, reject) => {
+    request.get(config.get('sso:certsUrl'), {}, (err, res, certsBody) => {
+      if (err) {
+        reject(err);
         return;
       }
-      resolve(verifyResult);
+
+      const certsJson = JSON.parse(certsBody).keys[0];
+      const modulus = certsJson.n;
+      const exponent = certsJson.e;
+      const algorithm = certsJson.alg;
+
+      if (!modulus) {
+        reject(new Error('No modulus'));
+        return;
+      }
+
+      if (!exponent) {
+        reject(new Error('No exponent'));
+        return;
+      }
+
+      if (!algorithm) {
+        reject(new Error('No algorithm'));
+        return;
+      }
+
+      // build a certificate
+      const pem = pemFromModAndExponent(modulus, exponent);
+
+      // verify
+      jwt.verify(clientAccessToken, pem, { algorithms: [algorithm] }, (verifyErr, verifyResult) => {
+        if (verifyErr) {
+          reject(verifyErr);
+          return;
+        }
+        resolve(verifyResult);
+      });
     });
   });
-});
 
 // eslint-disable-next-line import/prefer-default-export
 export const isAuthenticated = async (req, res, next) => {
@@ -102,7 +101,11 @@ export const isAuthenticated = async (req, res, next) => {
 
   const authHeaderArray = authHeader.split(' ');
   if (authHeaderArray.length < 2) {
-    return sendError(res, 400, 'Please send Authorization header with bearer type first followed by a space and then access token');
+    return sendError(
+      res,
+      400,
+      'Please send Authorization header with bearer type first followed by a space and then access token'
+    );
   }
   const clientAccessToken = authHeaderArray[1];
 

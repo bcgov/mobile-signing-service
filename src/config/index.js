@@ -57,7 +57,8 @@ nconf.overrides({
 });
 
 // load other properties from file.
-nconf.argv()
+nconf
+  .argv()
   .env()
   .file({ file: path.join(__dirname, `${env}.json`) });
 

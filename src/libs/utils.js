@@ -20,6 +20,7 @@
 
 'use strict';
 
+import { logger } from '@bcgov/nodejs-common-utils';
 import cp from 'child_process';
 import util from 'util';
 import path from 'path';
@@ -42,19 +43,23 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) in package');
     }
 
-    const promises = findResult.stdout.trim().split('\n').map(async element =>
-      exec(`
+    const promises = findResult.stdout
+      .trim()
+      .split('\n')
+      .map(async element =>
+        exec(`
         xcodebuild \
         -exportArchive \
         -archivePath ${element} \
         -exportPath ${path.join(apath, 'signed', path.basename(element).split('.')[0])}  \
         -exportOptionsPlist ${path.join(apath, 'options.plist')} 
-      `));
+      `)
+      );
 
     const response = await Promise.all(promises);
 
     const items = [];
-    response.forEach((value) => {
+    response.forEach(value => {
       const { stdout } = value;
       if (stdout.includes('EXPORT SUCCEEDED')) {
         const lines = stdout.trim().split('\n');
@@ -79,7 +84,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
     return Promise.resolve(deliveryFile);
   } catch (error) {
-    console.log(error.message);
+    logger.error(error.message);
   }
 
   return Promise.reject();

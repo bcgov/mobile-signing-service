@@ -22,12 +22,7 @@
 
 'use strict';
 
-import {
-  logger,
-  asyncMiddleware,
-  errorWithCode,
-  putObject,
-} from '@bcgov/nodejs-common-utils';
+import { logger, asyncMiddleware, errorWithCode, putObject } from '@bcgov/nodejs-common-utils';
 import request from 'request-promise-native';
 import util from 'util';
 import { Router } from 'express';
@@ -36,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch, deployAppleStore } from '../../libs/deploy';
+import { deployGoogle } from '../../libs/deploy';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -46,12 +41,12 @@ const bucket = config.get('minio:bucket');
  *
  * @param {*} apath The locaton of the artifacts
  */
-const cleanup = async (apath) => {
+const cleanup = async apath => {
   const rm = util.promisify(fs.remove);
   try {
     await rm(apath);
 
-    fs.access(apath, fs.constants.R_OK, (err) => {
+    fs.access(apath, fs.constants.R_OK, err => {
       if (!err) {
         const message = 'Path exists after cleanup.';
         logger.error(message);
@@ -69,7 +64,7 @@ const cleanup = async (apath) => {
   }
 };
 
-const reportJobStatus = async (job) => {
+const reportJobStatus = async job => {
   const options = {
     headers: { 'content-type': 'application/json' },
     method: 'PUT',
@@ -108,8 +103,7 @@ const handleJob = async (job, clean = true) => {
   try {
     let deliveryFile;
     switch (job.platform) {
-      case 'ios':
-      {
+      case 'ios': {
         const oname = job.originalFileName;
         if (path.extname(oname).includes('ipa')) {
           deliveryFile = await signipaarchive(oname);
@@ -168,22 +162,18 @@ const handleDeploymentJob = async (job, clean = true) => {
 
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
-      case 'enterprise':
-      {
+      case 'enterprise': {
         throw new Error('Unsupported platform');
         // deployedAppPath = await deployAirWatch(job.originalFileName);
         // break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
-      case 'public':
-      {
+      case 'public': {
         switch (job.platform) {
-          case 'ios':
-          {
+          case 'ios': {
             throw new Error('Temploray not supported');
           }
-          case 'android':
-          {
+          case 'android': {
             deployedAppPath = await deployGoogle(job.originalFileName);
             break;
           }
@@ -213,35 +203,40 @@ const handleDeploymentJob = async (job, clean = true) => {
   }
 };
 
-
 // create a new job
-router.post('/sign', asyncMiddleware(async (req, res) => {
-  const job = req.body;
+router.post(
+  '/sign',
+  asyncMiddleware(async (req, res) => {
+    const job = req.body;
 
-  if (!job) {
-    throw errorWithCode('No such job exists', 400);
-  }
+    if (!job) {
+      throw errorWithCode('No such job exists', 400);
+    }
 
-  res.sendStatus(200).end();
+    res.sendStatus(200).end();
 
-  await handleJob(job);
-}));
+    await handleJob(job);
+  })
+);
 
 // create a new job for Deployment:
-router.post('/deploy', asyncMiddleware(async (req, res) => {
-  const job = req.body;
+router.post(
+  '/deploy',
+  asyncMiddleware(async (req, res) => {
+    const job = req.body;
 
-  if (!job) {
-    throw errorWithCode('No such job exists', 400);
-  }
+    if (!job) {
+      throw errorWithCode('No such job exists', 400);
+    }
 
-  if (!job.platform || !job.deploymentPlatform) {
-    throw errorWithCode('No platform specified', 400);
-  }
+    if (!job.platform || !job.deploymentPlatform) {
+      throw errorWithCode('No platform specified', 400);
+    }
 
-  res.sendStatus(200).end();
+    res.sendStatus(200).end();
 
-  await handleDeploymentJob(job);
-}));
+    await handleDeploymentJob(job);
+  })
+);
 
 module.exports = router;
