@@ -25,9 +25,15 @@ import Model from './model';
 export default class Job extends Model {
   static get fields() {
     // primary key *must* be first!
-    return ['id', 'platform', 'original_file_name', 'original_file_etag', 'delivery_file_name',
-      'delivery_file_etag', 'deployment_platform']
-      .map(field => `${this.table}.${field}`);
+    return [
+      'id',
+      'platform',
+      'original_file_name',
+      'original_file_etag',
+      'delivery_file_name',
+      'delivery_file_etag',
+      'deployment_platform'
+    ].map(field => `${this.table}.${field}`);
   }
 
   static get table() {

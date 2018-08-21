@@ -1,14 +1,13 @@
 {
-   "parserOptions": {
-     "ecmaVersion": 6,
-     "sourceType": "module"
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
   },
-  "plugins": [
-    "jest"
-  ],
+  "plugins": ["jest", "prettier"],
   "parser": "babel-eslint",
-  "extends": ["airbnb-base", "plugin:jest/recommended"],
+  "extends": ["airbnb-base", "plugin:jest/recommended", "plugin:prettier/recommended"],
   "rules": {
+    "prettier/prettier": ["error"],
     "strict": 0,
     "linebreak-style": 0
   }

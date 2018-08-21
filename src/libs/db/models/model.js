@@ -28,7 +28,7 @@ export default class Model {
     Object.defineProperty(this, 'db', {
       enumerable: false,
       value: db,
-      writable: false,
+      writable: false
     });
 
     Object.assign(this, Model.transformToCamelCase(data));
@@ -55,7 +55,7 @@ export default class Model {
 
   static transformToCamelCase(data) {
     const obj = {};
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       obj[Model.toCamelCase(key)] = data[key];
     });
 
@@ -63,9 +63,13 @@ export default class Model {
   }
 
   static toCamelCase(str) {
-    return str.replace(/_/g, ' ').replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => { // eslint-disable-line arrow-body-style
-      return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
-    }).replace(/\s+/g, '');
+    return str
+      .replace(/_/g, ' ')
+      .replace(
+        /(?:^\w|[A-Z]|\b\w)/g,
+        (letter, index) => (index === 0 ? letter.toLowerCase() : letter.toUpperCase())
+      )
+      .replace(/\s+/g, '');
   }
 
   static toSnakeCase(str) {
@@ -75,9 +79,7 @@ export default class Model {
   // Find an object(s) with the provided where conditions
   static async find(db, where, order = undefined) {
     let results = [];
-    const q = db
-      .table(this.table)
-      .select(...this.fields);
+    const q = db.table(this.table).select(...this.fields);
 
     if (Object.keys(where).length === 1 && where[Object.keys(where)[0]].constructor === Array) {
       const k = Object.keys(where)[0];
@@ -93,13 +95,13 @@ export default class Model {
       results = await q;
     }
 
-    const objs = results.map((row) => {
+    const objs = results.map(row => {
       const obj = Object.create(this.prototype, {
         db: {
           enumerable: false,
           value: db,
-          writable: false,
-        },
+          writable: false
+        }
       });
       Object.assign(obj, this.transformToCamelCase(row));
 
@@ -122,10 +124,10 @@ export default class Model {
   static async update(db, where, values) {
     // Only the keys returned by the `fields` getter can
     // be updated (by default). Override for different behaviour.
-    const obj = { };
+    const obj = {};
     this.fields
       .slice(1) // skip the PK, they can not be updated.
-      .forEach((key) => {
+      .forEach(key => {
         const aKey = key.split('.').pop();
         // check for both camel case and snake case values
         if (values[Model.toCamelCase(aKey)]) {
@@ -149,9 +151,7 @@ export default class Model {
   }
 
   static async count(db, where = {}) {
-    const q = db
-      .table(this.table)
-      .count('*');
+    const q = db.table(this.table).count('*');
 
     if (Object.keys(where).length === 1 && where[Object.keys(where)[0]].constructor === Array) {
       const k = Object.keys(where)[0];
@@ -174,8 +174,8 @@ export default class Model {
     // Only the keys returned by the `fields` getter can
     // be used to create a new record (by default). Override for
     // different behaviour.
-    const obj = { };
-    this.fields.forEach((key) => {
+    const obj = {};
+    this.fields.forEach(key => {
       const aKey = key.split('.').pop();
       // check for both camel case and snake case values
       if (values[Model.toCamelCase(aKey)]) {
@@ -213,7 +213,7 @@ export default class Model {
   // extract a models properties from the given data
   static extract(data) {
     const obj = {};
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       const prefix = this.table;
       if (key.startsWith(prefix)) {
         const aKey = key.replace(prefix, '').slice(1);

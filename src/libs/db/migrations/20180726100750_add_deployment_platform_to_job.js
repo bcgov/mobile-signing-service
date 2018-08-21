@@ -1,4 +1,3 @@
-
 //
 // Code Signing
 //
@@ -25,10 +24,12 @@
 
 const table = 'job';
 
-exports.up = async knex => knex.schema.table(table, async (t) => {
-  t.string('deployment_platform', 8);
-});
+exports.up = async knex =>
+  knex.schema.table(table, async t => {
+    t.string('deployment_platform', 8);
+  });
 
-exports.down = async knex => knex.schema.table(table, async (t) => {
-  t.dropColumn('deployment_platform');
-});
+exports.down = async knex =>
+  knex.schema.table(table, async t => {
+    t.dropColumn('deployment_platform');
+  });

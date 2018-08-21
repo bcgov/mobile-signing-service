@@ -29,7 +29,7 @@ import {
   presignedGetObject,
   statObject,
   asyncMiddleware,
-  errorWithCode,
+  errorWithCode
 } from '@bcgov/nodejs-common-utils';
 import url from 'url';
 import fs from 'fs';
@@ -37,32 +37,30 @@ import request from 'request-promise-native';
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
-import {
-  cleanup,
-} from '../../libs/utils';
+import { cleanup } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
 
 const router = new Router();
 const dm = new DataManager();
-const {
-  db,
-  Job,
-} = dm;
+const { db, Job } = dm;
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
-router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
-  const { platform } = req.query;
+router.post(
+  '/',
+  upload.single('file'),
+  asyncMiddleware(async (req, res) => {
+    const { platform } = req.query;
 
-  if (!platform || !['ios', 'android'].includes(platform.toLocaleLowerCase())) {
-    throw errorWithCode('Invalid platform parameter.', 400);
-  }
+    if (!platform || !['ios', 'android'].includes(platform.toLocaleLowerCase())) {
+      throw errorWithCode('Invalid platform parameter.', 400);
+    }
 
-  if (!req.file) {
-    throw errorWithCode('To file attachment found.', 400);
-  }
+    if (!req.file) {
+      throw errorWithCode('To file attachment found.', 400);
+    }
 
-  /* This is the document format from multer:
+    /* This is the document format from multer:
   {
     destination: "uploads"
     encoding: "7bit",
@@ -75,80 +73,84 @@ router.post('/', upload.single('file'), asyncMiddleware(async (req, res) => {
   }
   */
 
-  try {
-    const fpath = req.file.path;
-    fs.access(fpath, fs.constants.R_OK, (err) => {
-      if (err) {
-        const message = 'Unable to access uploaded package';
-        logger.error(`${message}, , error = ${err.message}`);
-        throw errorWithCode(message, 501);
+    try {
+      const fpath = req.file.path;
+      fs.access(fpath, fs.constants.R_OK, err => {
+        if (err) {
+          const message = 'Unable to access uploaded package';
+          logger.error(`${message}, , error = ${err.message}`);
+          throw errorWithCode(message, 501);
+        }
+      });
+
+      const readStream = fs.createReadStream(req.file.path);
+      const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
+
+      if (etag) {
+        await cleanup(req.file.path);
       }
-    });
 
-    const readStream = fs.createReadStream(req.file.path);
-    const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
+      const job = await Job.create(db, {
+        originalFileName: req.file.originalname,
+        platform: platform.toLocaleLowerCase(),
+        originalFileEtag: etag
+      });
+      logger.info(`Created job with ID ${job.id}`);
 
-    if (etag) {
-      await cleanup(req.file.path);
+      const options = {
+        headers: { 'content-type': 'application/json' },
+        method: 'POST',
+        uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
+        body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
+        json: true
+      };
+      const status = await request(options);
+
+      if (status !== 'OK') {
+        throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
+      }
+
+      res.status(202).json({ id: job.id }); // Accepted
+
+      return null;
+    } catch (err) {
+      if (err.code) {
+        throw err;
+      }
+
+      const message = 'Unable to create signing job';
+      logger.error(`${message}, err = ${err.message}`);
+      throw errorWithCode(`${message}, err = ${err.message}`, 500);
     }
+  })
+);
 
-    const job = await Job.create(db, {
-      originalFileName: req.file.originalname,
-      platform: platform.toLocaleLowerCase(),
-      originalFileEtag: etag,
-    });
-    logger.info(`Created job with ID ${job.id}`);
+router.get(
+  '/:jobId/download',
+  asyncMiddleware(async (req, res) => {
+    const { jobId } = req.params;
+    const expirationInDays = config.get('expirationInDays');
 
-    const options = {
-      headers: { 'content-type': 'application/json' },
-      method: 'POST',
-      uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-      body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
-      json: true,
-    };
-    const status = await request(options);
+    try {
+      const job = await Job.findById(db, jobId);
+      const stat = await statObject(shared.minio, bucket, job.deliveryFileName);
 
-    if (status !== 'OK') {
-      throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
+      if (isExpired(stat, expirationInDays)) {
+        throw errorWithCode('This artifact is expired', 400);
+      }
+
+      const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 3);
+      res.redirect(link);
+    } catch (error) {
+      if (error.code) {
+        throw error;
+      }
+
+      const message = `Unable to retrieve arcive for job with ID ${jobId}`;
+      logger.error(`${message}, err = ${error.message}`);
+      throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
-
-    res.status(202).json({ id: job.id }); // Accepted
-
-    return null;
-  } catch (err) {
-    if (err.code) {
-      throw err;
-    }
-
-    const message = 'Unable to create signing job';
-    logger.error(`${message}, err = ${err.message}`);
-    throw errorWithCode(`${message}, err = ${err.message}`, 500);
-  }
-}));
-
-router.get('/:jobId/download', asyncMiddleware(async (req, res) => {
-  const { jobId } = req.params;
-  const expirationInDays = config.get('expirationInDays');
-
-  try {
-    const job = await Job.findById(db, jobId);
-    const stat = await statObject(shared.minio, bucket, job.deliveryFileName);
-
-    if (isExpired(stat, expirationInDays)) {
-      throw errorWithCode('This artifact is expired', 400);
-    }
-
-    const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 3);
-    res.redirect(link);
-  } catch (error) {
-    if (error.code) {
-      throw error;
-    }
-
-    const message = `Unable to retrieve arcive for job with ID ${jobId}`;
-    logger.error(`${message}, err = ${error.message}`);
-    throw errorWithCode(`${message}, err = ${error.message}`, 500);
-  }
-}));
+  })
+);
 
 module.exports = router;

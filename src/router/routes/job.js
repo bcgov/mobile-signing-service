@@ -29,75 +29,79 @@ import DataManager from '../../libs/db';
 
 const router = new Router();
 const dm = new DataManager();
-const {
-  db,
-  Job,
-} = dm;
+const { db, Job } = dm;
 
-router.put('/:jobId', asyncMiddleware(async (req, res) => {
-  const {
-    jobId,
-  } = req.params;
-  const { job } = req.body;
+router.put(
+  '/:jobId',
+  asyncMiddleware(async (req, res) => {
+    const { jobId } = req.params;
+    const { job } = req.body;
 
-  if (!jobId || !job) {
-    throw errorWithCode('Required parameters missing', 400);
-  }
-
-  if (!Object.prototype.hasOwnProperty.call(job, 'deliveryFileName')
-    || !Object.prototype.hasOwnProperty.call(job, 'deliveryFileEtag')) {
-    throw errorWithCode('Required job properties', 400);
-  }
-
-  logger.info(`Updating status of job jobId = ${jobId}`);
-
-  try {
-    await Job.update(db, { id: jobId }, {
-      deliveryFileName: job.deliveryFileName,
-      deliveryFileEtag: job.deliveryFileEtag,
-    });
-
-    res.sendStatus(200).end();
-  } catch (error) {
-    const message = `Unable to update job ${job.id} status, error = ${error.message}`;
-    logger.error(message);
-
-    throw errorWithCode(message, 500);
-  }
-}));
-
-
-router.get('/:jobId/status', asyncMiddleware(async (req, res) => {
-  const {
-    jobId,
-  } = req.params;
-
-  logger.info(`Checking status of job ${jobId}`);
-
-  const job = await Job.findById(db, jobId);
-  if (!job) {
-    throw errorWithCode('No such job', 404);
-  }
-
-  try {
-    if (job && !job.deliveryFileName) {
-      // The request has been accepted for processing,
-      // but the processing has not been completed.
-      return res.status(202).json({
-        status: JOB_STATUS.PROCESSING,
-      });
+    if (!jobId || !job) {
+      throw errorWithCode('Required parameters missing', 400);
     }
 
-    return res.status(200).json({
-      status: JOB_STATUS.COMPLETED,
-      url: `http://localhost:8000/v1/job/${job.id}/download`,
-      durationInSeconds: job.duration,
-    });
-  } catch (error) {
-    const message = `Unable to retrieve job with ID ${jobId}`;
-    logger.error(`${message}, err = ${error.message}`);
-    throw errorWithCode(`${message}, err = ${error.message}`, 500);
-  }
-}));
+    if (
+      !Object.prototype.hasOwnProperty.call(job, 'deliveryFileName') ||
+      !Object.prototype.hasOwnProperty.call(job, 'deliveryFileEtag')
+    ) {
+      throw errorWithCode('Required job properties', 400);
+    }
+
+    logger.info(`Updating status of job jobId = ${jobId}`);
+
+    try {
+      await Job.update(
+        db,
+        { id: jobId },
+        {
+          deliveryFileName: job.deliveryFileName,
+          deliveryFileEtag: job.deliveryFileEtag
+        }
+      );
+
+      res.sendStatus(200).end();
+    } catch (error) {
+      const message = `Unable to update job ${job.id} status, error = ${error.message}`;
+      logger.error(message);
+
+      throw errorWithCode(message, 500);
+    }
+  })
+);
+
+router.get(
+  '/:jobId/status',
+  asyncMiddleware(async (req, res) => {
+    const { jobId } = req.params;
+
+    logger.info(`Checking status of job ${jobId}`);
+
+    const job = await Job.findById(db, jobId);
+    if (!job) {
+      throw errorWithCode('No such job', 404);
+    }
+
+    try {
+      if (job && !job.deliveryFileName) {
+        // The request has been accepted for processing,
+        // but the processing has not been completed.
+        return res.status(202).json({
+          status: JOB_STATUS.PROCESSING
+        });
+      }
+
+      return res.status(200).json({
+        status: JOB_STATUS.COMPLETED,
+        url: `http://localhost:8000/v1/job/${job.id}/download`,
+        durationInSeconds: job.duration
+      });
+    } catch (error) {
+      const message = `Unable to retrieve job with ID ${jobId}`;
+      logger.error(`${message}, err = ${error.message}`);
+      throw errorWithCode(`${message}, err = ${error.message}`, 500);
+    }
+  })
+);
 
 module.exports = router;

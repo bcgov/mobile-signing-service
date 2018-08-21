@@ -36,12 +36,12 @@ const app = express();
 const options = {
   inflate: true,
   limit: '204800kb', // 200Mb
-  type: 'image/*',
+  type: 'image/*'
 };
 const docpath = path.join(__dirname, '../', 'public/doc/api');
 const pubpath = path.join(__dirname, '../', 'public');
 
-fs.access(docpath, fs.constants.R_OK, (err) => {
+fs.access(docpath, fs.constants.R_OK, err => {
   if (err) {
     logger.warn('API documentation does not exist');
     return;
@@ -50,7 +50,7 @@ fs.access(docpath, fs.constants.R_OK, (err) => {
   app.use('/doc', express.static(docpath));
 });
 
-fs.access(pubpath, fs.constants.R_OK, (err) => {
+fs.access(pubpath, fs.constants.R_OK, err => {
   if (err) {
     logger.warn('Static assets location does not exist');
     return;
@@ -60,13 +60,17 @@ fs.access(pubpath, fs.constants.R_OK, (err) => {
 });
 
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({
-  extended: true,
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true,
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
 app.use(bodyParser.raw(options));
 app.use(flash());
 // app.use('/download', express.static('download'));
@@ -79,7 +83,8 @@ require('./router')(app);
 
 // Error handleing middleware. This needs to be last in or it will
 // not get called.
-app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
   logger.error(err.message);
   const code = err.code ? err.code : 500;
   const message = err.message ? err.message : 'Internal Server Error';

@@ -49,18 +49,23 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) in package');
     }
 
-    const promises = findResult.stdout.trim().split('\n').map(async element => exec(`
+    const promises = findResult.stdout
+      .trim()
+      .split('\n')
+      .map(async element =>
+        exec(`
         xcodebuild \
         -exportArchive \
         -archivePath ${element} \
         -exportPath ${path.join(apath, 'signed', path.basename(element).split('.')[0])}  \
         -exportOptionsPlist ${path.join(apath, 'options.plist')} 
-      `));
+      `)
+      );
 
     const response = await Promise.all(promises);
 
     const items = [];
-    response.forEach((value) => {
+    response.forEach(value => {
       const { stdout } = value;
       if (stdout.includes('EXPORT SUCCEEDED')) {
         const lines = stdout.trim().split('\n');
@@ -95,12 +100,12 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
  *
  * @param {String} apath The locaton of the artifacts
  */
-export const cleanup = async (apath) => {
+export const cleanup = async apath => {
   const rm = util.promisify(fs.remove);
   try {
     await rm(apath);
 
-    fs.access(apath, fs.constants.R_OK, (err) => {
+    fs.access(apath, fs.constants.R_OK, err => {
       if (!err) {
         const message = `Path exists after cleanup, err = ${err.message}`;
         throw new Error(message);

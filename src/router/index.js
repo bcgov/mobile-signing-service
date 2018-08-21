@@ -31,10 +31,10 @@ import deploy from './routes/deploy';
 const corsOptions = {
   origin: config.get('apiUrl'),
   credentials: true,
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-module.exports = (app) => {
+module.exports = app => {
   app.use(cors(corsOptions));
   app.use('/api/v1/ehlo', ehlo); // probes
   app.use('/api/v1/auth', auth);

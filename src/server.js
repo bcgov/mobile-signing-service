@@ -31,11 +31,11 @@ const bucket = config.get('minio:bucket');
 
 createBucketIfRequired(shared.minio, bucket)
   .then(() => logger.info(`Created bucket ${bucket}`))
-  .catch((error) => {
+  .catch(error => {
     logger.error(error.message);
   });
 
-app.listen(port, '0.0.0.0', (err) => {
+app.listen(port, '0.0.0.0', err => {
   if (err) {
     return logger.error(`There was a problem starting the server, ${err.message}`);
   }

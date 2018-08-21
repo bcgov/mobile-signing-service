@@ -35,7 +35,7 @@ const router = new Router();
  * @apiDescription This API is meant to start the authentication workflow for browser based
  * clients. Don't use this from a script / program.
  */
- /* eslint-enable */
+/* eslint-enable */
 router.get('/login', passport.authenticate('oauth2'));
 
 /* eslint-disable */
@@ -47,24 +47,28 @@ router.get('/login', passport.authenticate('oauth2'));
  * @apiDescription This API is meant for oAuth2 providers use for callbacks as
  * specified in the protocol. Don't use this from a script / program.
  */
- /* eslint-enable */
-router.get('/callback', passport.authenticate('oauth2', {
-  failureRedirect: '/failed.html',
-}), asyncMiddleware(async (req, res) => {
-  // const redirectTo = req.session.redirect_to;
-  // const baseUrl = config.get('apiUrl');
-  try {
-    // const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
-    // console.log('u=', url.resolve(baseUrl, redirectTo));
-    // const html = await compile(buffer, {
-    //   download_url: url.resolve(baseUrl, redirectTo),
-    // });
+/* eslint-enable */
+router.get(
+  '/callback',
+  passport.authenticate('oauth2', {
+    failureRedirect: '/failed.html'
+  }),
+  asyncMiddleware(async (req, res) => {
+    // const redirectTo = req.session.redirect_to;
+    // const baseUrl = config.get('apiUrl');
+    try {
+      // const buffer = await loadTemplate(TEMPLATES.DOWNLOAD);
+      // console.log('u=', url.resolve(baseUrl, redirectTo));
+      // const html = await compile(buffer, {
+      //   download_url: url.resolve(baseUrl, redirectTo),
+      // });
 
-    res.send('Hello World');
-  } catch (error) {
-    // logger.error(`Unable to build download template: ${TEMPLATES.DOWNLOAD}`);
-    res.send(500);
-  }
-}));
+      res.send('Hello World');
+    } catch (error) {
+      // logger.error(`Unable to build download template: ${TEMPLATES.DOWNLOAD}`);
+      res.send(500);
+    }
+  })
+);
 
 module.exports = router;

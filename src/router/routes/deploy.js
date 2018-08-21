@@ -23,7 +23,14 @@
 'use strict';
 
 // eslint-disable-next-line object-curly-newline
-import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger, statObject } from '@bcgov/nodejs-common-utils';
+import {
+  asyncMiddleware,
+  bucketExists,
+  errorWithCode,
+  isExpired,
+  logger,
+  statObject
+} from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import request from 'request-promise-native';
 import url from 'url';
@@ -33,77 +40,78 @@ import shared from '../../libs/shared';
 
 const router = new Router();
 const dm = new DataManager();
-const {
-  db,
-  Job,
-} = dm;
+const { db, Job } = dm;
 const bucket = config.get('minio:bucket');
 
-router.post('/:jobId', asyncMiddleware(async (req, res) => {
-  const {
-    jobId,
-  } = req.params;
+router.post(
+  '/:jobId',
+  asyncMiddleware(async (req, res) => {
+    const { jobId } = req.params;
 
-  const { deploymentPlatform } = req.query;
-  const expirationInDays = config.get('expirationInDays');
+    const { deploymentPlatform } = req.query;
+    const expirationInDays = config.get('expirationInDays');
 
-  if (!bucketExists(shared.minio, bucket)) {
-    throw errorWithCode('Unable to store or accesss attached file.', 500);
-  }
-
-  if (!jobId || !deploymentPlatform) {
-    throw errorWithCode('Required parameters missing', 400);
-  }
-
-  try {
-    // Get object from db:
-    logger.info(`Checking the package name from job ${jobId}`);
-
-    const signedJob = await Job.findById(db, jobId);
-
-    if (!signedJob) {
-      throw errorWithCode('No such job', 404);
+    if (!bucketExists(shared.minio, bucket)) {
+      throw errorWithCode('Unable to store or accesss attached file.', 500);
     }
 
-    if (signedJob && !signedJob.deliveryFileName) {
-      // The signing job was not successfully completed!
-      throw errorWithCode('Cannot find a signed package with this job!', 404);
+    if (!jobId || !deploymentPlatform) {
+      throw errorWithCode('Required parameters missing', 400);
     }
 
-    const stat = await statObject(shared.minio, bucket, signedJob.deliveryFileName);
+    try {
+      // Get object from db:
+      logger.info(`Checking the package name from job ${jobId}`);
 
-    if (isExpired(stat, expirationInDays)) {
-      throw errorWithCode('This artifact is expired', 400);
+      const signedJob = await Job.findById(db, jobId);
+
+      if (!signedJob) {
+        throw errorWithCode('No such job', 404);
+      }
+
+      if (signedJob && !signedJob.deliveryFileName) {
+        // The signing job was not successfully completed!
+        throw errorWithCode('Cannot find a signed package with this job!', 404);
+      }
+
+      const stat = await statObject(shared.minio, bucket, signedJob.deliveryFileName);
+
+      if (isExpired(stat, expirationInDays)) {
+        throw errorWithCode('This artifact is expired', 400);
+      }
+
+      // create a new deployment job in db:
+      const job = await Job.create(db, {
+        originalFileName: signedJob.deliveryFileName,
+        platform: signedJob.platform.toLocaleLowerCase(),
+        originalFileEtag: signedJob.etag,
+        deploymentPlatform: deploymentPlatform.toLocaleLowerCase()
+      });
+
+      logger.info(`Created deployment job with ID ${job.id}`);
+
+      const options = {
+        headers: { 'content-type': 'application/json' },
+        method: 'POST',
+        uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
+        body: {
+          ...job,
+          ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` }
+        },
+        json: true
+      };
+      const status = await request(options);
+      if (status !== 'OK') {
+        throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
+      }
+
+      res.status(202).json({ id: job.id }); // Accepted
+    } catch (error) {
+      const message = 'Unable to create deployment job';
+      logger.error(`${message}, err = ${error.message}`);
+      throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
-
-    // create a new deployment job in db:
-    const job = await Job.create(db, {
-      originalFileName: signedJob.deliveryFileName,
-      platform: signedJob.platform.toLocaleLowerCase(),
-      originalFileEtag: signedJob.etag,
-      deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
-    });
-
-    logger.info(`Created deployment job with ID ${job.id}`);
-
-    const options = {
-      headers: { 'content-type': 'application/json' },
-      method: 'POST',
-      uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
-      body: { ...job, ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` } },
-      json: true,
-    };
-    const status = await request(options);
-    if (status !== 'OK') {
-      throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
-    }
-
-    res.status(202).json({ id: job.id }); // Accepted
-  } catch (error) {
-    const message = 'Unable to create deployment job';
-    logger.error(`${message}, err = ${error.message}`);
-    throw errorWithCode(`${message}, err = ${error.message}`, 500);
-  }
-}));
+  })
+);
 
 module.exports = router;
