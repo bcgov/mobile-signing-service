@@ -50,12 +50,15 @@ nconf.overrides({
     secretKey: process.env.MINIO_SECRET_KEY,
   },
   db: {
-    user: process.env.POSTGRESQL_USER,
-    password: process.env.POSTGRESQL_PASSWORD,
-    host: process.env.POSTGRESQL_HOST,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    host: process.env.POSTGRES_HOST,
   },
   sso: {
     clientSecret: process.env.SSO_CLIENT_SECRET,
+  },
+  agent: {
+    hostUrl: process.env.AGENT_URL,
   },
   session: {
     key: process.env.SESSION_SECRET,
