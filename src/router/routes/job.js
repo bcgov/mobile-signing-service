@@ -170,9 +170,8 @@ const handleDeploymentJob = async (job, clean = true) => {
       // Enterprise deployment refer to Airwatch:
       case 'enterprise':
       {
-        throw new Error('Unsupported platform');
-        // deployedAppPath = await deployAirWatch(job.originalFileName);
-        // break;
+        deployedAppPath = await deployAirWatch(job.originalFileName);
+        break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public':
