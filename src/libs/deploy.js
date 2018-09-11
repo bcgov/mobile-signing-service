@@ -16,6 +16,8 @@
 
 import { getObject, logger } from '@bcgov/nodejs-common-utils';
 import { google } from 'googleapis';
+import request from 'request-promise-native';
+import url from 'url';
 import fs from 'fs';
 import cp from 'child_process';
 import util from 'util';
@@ -191,7 +193,92 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line import/prefer-default-export
 export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
+  const awHost = 'https://mobileconsole.gov.bc.ca';
+  const awUploadAPI = '/API/mam/blobs/uploadblob';
+  const awInstallAPI = '/API/mam/apps/internal/begininstall';
+  const awTenantCode = await exec('security find-generic-password -w -s awCode');
+  // Swtich the user credential to basic auth after system admin updates:
+  const awUsername = '';
+  const awPassword = '';
 
-  // TODO
+  // Get app binary:
+  const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
+  const appBinary = require('fs').readFileSync(signedAppPath);
 
+  const groupID = '848'; // This is the ID for Citizen Service, need to get ID for general app.
+  const deviceType = '5';
+  const applicationName = 'testapp';
+  const modelId = 5;
+
+  /* Fields to be determind from the project metadata:
+    DeviceType: android -> 5; Apple -> 2
+    ModelId: android -> 5; iPhone -> 1; iPad -> 2
+    ApplicationName: Get from project name
+  */
+  // const groupID = await getProjectID(signedApp);
+  // const applicationName = await getProjectName(signedApp);
+  // const deviceType = await getProjectPlatform(signedApp);
+  // const modelId = await getProjectDevice(signedApp);
+
+  // Step 1: Upload app as blob
+  const uploadOptions = {
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'aw-tenant-code': awTenantCode,
+      Accept: 'application/json',
+    },
+    auth: {
+      user: awUsername,
+      password: awPassword,
+    },
+    method: 'POST',
+    uri: url.resolve(awHost, awUploadAPI),
+    encoding: null,
+    body: appBinary,
+    qs: {
+      filename: signedApp,
+      organizationgroupid: groupID,
+    },
+  };
+
+  try {
+    const awUploadRes = await request(uploadOptions);
+
+    // get the blob id:
+    const blobID = JSON.parse(awUploadRes.toString()).Value;
+
+    // Step 2: Install app to an Organization Group
+    const installOptions = {
+      headers: {
+        'content-type': 'application/json',
+        'aw-tenant-code': awTenantCode,
+      },
+      auth: {
+        user: awUsername,
+        password: awPassword,
+      },
+      method: 'POST',
+      uri: url.resolve(awHost, awInstallAPI),
+      body: {
+        BlobId: blobID,
+        DeviceType: deviceType,
+        ApplicationName: applicationName,
+        PushMode: 'OnDemand',
+        SupportedModels: {
+          Model: [{
+            ModelId: modelId,
+          }],
+        },
+      },
+      json: true,
+    };
+
+    await request(installOptions);
+    return signedAppPath;
+  } catch (err) {
+    const message = 'Unable to deploy to AirWatch';
+    logger.error(`${message}, err = ${err.message}`);
+  }
+
+  return Promise.reject();
 };
