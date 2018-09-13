@@ -26,7 +26,7 @@ const table = 'job';
 
 exports.up = async knex =>
   knex.schema.table(table, async t => {
-    t.string('deployment_platform', 8);
+    t.string('deployment_platform', 16);
   });
 
 exports.down = async knex =>
