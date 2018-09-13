@@ -46,6 +46,7 @@ const dm = new DataManager();
 const { db, Job } = dm;
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
+
 router.post(
   '/',
   upload.single('file'),
