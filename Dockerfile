@@ -1,5 +1,8 @@
 FROM node:10.9
 
+RUN apt-get update && \
+  yes | apt-get upgrade
+
 RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 
