@@ -1,6 +1,6 @@
 ## About
 
-This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a selfe-serve system that enables development teams to sign and deploy build artifacts in a s cure environment.
+This is the API component to the BCDevOps Mobile Application Signing Service. The Signing Service is designed to be a self-serve system that enables development teams to sign and deploy build artifacts in a secure environment.
 
 Additional component can be fond in these repos:
 
@@ -20,7 +20,8 @@ npm run build:doc
 
 ### From the Desktop
 
-For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format:
+#### Signing iOS app:
+For iOS you can re-sight IPA or sign a newly minted xcarchive. Below are the steps for each format.
 
 _xcarchive_
 
@@ -28,7 +29,7 @@ To package up an xcarchive to submit for signing you need to:
 
 1. Create a folder to hold the xcarchive and options.plist
 2. Copy the xcarchive from xcode into the folder from #1.
-3. Create or copy your options.plist from #1.
+3. Create or copy your options.plist from #1, you could update the content from sample below.
 4. ZIP up the folder for submission
 
 ![alt text][export-xcarchive]
@@ -58,7 +59,14 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 
 The keys in the plist represent the questions xcode asks you when you export or upload to iTunes. The defaults should work in most cases; the only important ones that must be tweaked are the `method` and `teamID`.
 
+*ipa*
+To be documented.
+
+#### Signing Android apk:
+For Android you can sign an apk. Build the project in release mode and you are ready to upload.
+
 Once you have your package created use the following cURL commands to submit, check the status, and download the signed artifact.
+For ipa and xcarchive, specify the platform as `ios`, for apk use `android`.
 
 **Submit for Signing**
 
@@ -77,6 +85,22 @@ curl -v http://localhost:8080/api/v1/job/73/status
 ```console
 curl -vL http://localhost:8080/api/v1/sign/73/download -o foo.zip
 ```
+
+#### Deploying app:
+For application deployment, you can use the api to upload the signed app package to the following destinations:
+1. Enterprise: AirWatch
+2. Public: Google Play Store, App Store
+
+To upload the package:
+1. Use the jobID from the signing job to start a deployment process.
+2. Specify the platform you want to deploy, `public` (Google Play Store, App Store) or `enterprise` (internal deployment with AirWatch).
+
+__Submit for Deployment__
+
+```console
+curl -v http://localhost:8080/api/v1/job/deploy/73?deploymentPlatform=enterprise
+```
+
 
 ## Build
 
