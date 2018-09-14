@@ -1,6 +1,11 @@
 #!/bin/bash
 
 source .env
-/usr/bin/security unlock-keychain -p $KEYCHAIN_PWD cicd.keychain
+./scripts/mkc.sh $KEYCHAIN_PWD
 
-npm run dev
+if [ $? -eq 0 ]; then
+  echo "Starting agent"
+  npm run dev
+fi
+
+exit 0
