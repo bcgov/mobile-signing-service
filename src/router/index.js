@@ -29,7 +29,7 @@ import sign from './routes/sign';
 import deploy from './routes/deploy';
 
 const corsOptions = {
-  origin: config.get('apiUrl'),
+  origin: config.get('environment') === 'development' ? '*' : config.get('apiUrl'),
   credentials: true,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
