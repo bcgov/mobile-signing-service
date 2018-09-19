@@ -32,7 +32,7 @@ exports.up = async knex =>
       .primary();
     t.string('platform', 8).notNull();
     t.string('original_file_name', 128).notNull();
-    t.string('original_file_etag', 33).unique();
+    t.string('original_file_etag', 33).notNull();
     t.string('delivery_file_name', 64);
     t.string('delivery_file_etag', 33).unique();
     t.dateTime('created_at')
