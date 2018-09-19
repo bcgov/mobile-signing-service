@@ -1,4 +1,4 @@
-FROM node:10.9
+FROM node:10.10
 
 RUN apt-get update && \
   yes | apt-get upgrade
