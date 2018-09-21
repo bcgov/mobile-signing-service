@@ -29,6 +29,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { authmware } from './libs/authmware';
+import { router } from './router';
 
 // Config
 
@@ -74,7 +75,7 @@ app.use(flash());
 authmware(app);
 
 // Server API routes
-require('./router')(app);
+router(app);
 
 // Error handleing middleware. This needs to be last in or it will
 // not get called.
