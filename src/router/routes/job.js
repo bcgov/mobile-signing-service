@@ -68,7 +68,7 @@ const reportJobStatus = async job => {
   const options = {
     headers: {
       'Content-Type': 'application/json',
-      Authentication: `Bearer ${await shared.sso.accessToken}`,
+      Authorization: `Bearer ${await shared.sso.accessToken}`,
     },
     method: 'PUT',
     uri: job.ref,

@@ -21,7 +21,7 @@
 'use strict';
 
 import * as minio from 'minio';
-import { JWTServiceManager } from './jwtservicemanager';
+import { JWTServiceManager } from '@bcgov/nodejs-common-utils';
 import config from '../config';
 
 const mkey = Symbol.for('ca.bc.gov.pathfinder.signing-api.minio');
