@@ -32,7 +32,8 @@ const corsOptions = {
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-module.exports = app => {
+// eslint-disable-next-line import/prefer-default-export
+export const router = app => {
   app.use(cors(corsOptions));
   app.use('/ehlo', ehlo); // probes
   // authentication middleware for routes.
