@@ -18,35 +18,21 @@
 // Created by Jason Leach on 2018-05-23.
 //
 
+/* eslint-disable no-unused-vars */
+/* eslint-disable newline-per-chained-call */
+
 'use strict';
 
-import knex from 'knex';
-import config from '../../config';
-import Job from './models/job';
+import { JOB_STATE } from '../conastants';
 
-export default class DataManager {
-  constructor() {
-    const k = knex({
-      client: 'postgresql',
-      connection: {
-        user: config.get('db:user'),
-        database: config.get('db:database'),
-        port: 5432,
-        host: config.get('db:host'),
-        password: config.get('db:password'),
-      },
-      searchPath: ['public'],
-      debug: false,
-      pool: {
-        min: 1,
-        max: 64,
-      },
-      migrations: {
-        tableName: 'migration',
-      },
-    });
+exports.up = async knex => {
+  const values = Object.values(JOB_STATE)
+    .map(s => `'${s}'`)
+    .join(',');
 
-    this.db = k;
-    this.Job = Job;
-  }
-}
+  const query = `CREATE TYPE enum_job_status AS ENUM (${values});`;
+
+  await knex.schema.raw(query);
+};
+
+exports.down = async knex => knex.schema.raw('DROP TYPE enum_item_type;');
