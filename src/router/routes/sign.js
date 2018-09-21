@@ -42,8 +42,6 @@ import { cleanup } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
 
-console.log(shared.sso.accessToken);
-
 const router = new Router();
 const dm = new DataManager();
 const { db, Job } = dm;
@@ -105,7 +103,7 @@ router.post(
       const options = {
         headers: {
           'Content-Type': 'application/json',
-          Authentication: `Bearer ${shared.sso.accessToken}`,
+          Authentication: `Bearer ${await shared.sso.accessToken}`,
         },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
