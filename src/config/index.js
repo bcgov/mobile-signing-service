@@ -55,6 +55,7 @@ nconf.overrides({
     host: process.env.POSTGRES_HOST,
   },
   sso: {
+    registrationToken: process.env.SSO_REGISTRATION_TOKEN,
     clientSecret: process.env.SSO_CLIENT_SECRET,
   },
   agent: {

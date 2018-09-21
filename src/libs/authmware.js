@@ -1,5 +1,5 @@
 //
-// Code Signing
+// SecureImage
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -18,60 +18,62 @@
 // Created by Jason Leach on 2018-02-14.
 //
 
+/* eslint-env es6 */
+
 'use strict';
 
+import { logger, getJwtCertificate } from '@bcgov/nodejs-common-utils';
 import express from 'express';
-import session from 'express-session';
 import passport from 'passport';
-import { Strategy as OAuth2Strategy } from 'passport-oauth2';
-import url from 'url';
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
 
-const authmware = app => {
-  const sessionOptions = {
-    secret: config.get('session:key'),
-    cookie: {
-      maxAge: config.get('session:maxAge'),
-      httpOnly: false,
-    },
-    resave: false,
-    saveUninitialized: false,
-  };
-
-  app.use(session(sessionOptions));
+const authmware = async app => {
+  // app.use(session(sessionOptions));
   app.use(passport.initialize());
   app.use(passport.session());
 
   // We don't store any user information.
   passport.serializeUser((user, done) => {
+    logger.info('serialize');
     done(null, {});
   });
 
   // We don't load any addtional user information.
   passport.deserializeUser((id, done) => {
+    logger.info('deserialize');
     done(null, {});
   });
 
-  // We don't use the credentials for anything, just the isAuthenticated() in
-  // the session object to confifm authentication.
-  const oAuth2Strategy = new OAuth2Strategy(
-    {
-      authorizationURL: config.get('sso:authUrl'),
-      tokenURL: config.get('sso:tokenUrl'),
-      clientID: config.get('sso:clientId'),
-      clientSecret: config.get('sso:clientSecret'),
-      callbackURL: url.resolve(`${config.get('apiUrl')}`, config.get('sso:callback')),
-    },
-    (accessToken, refreshToken, profile, done) => done(null, {})
-  );
+  const { certificate, algorithm } = await getJwtCertificate(config.get('sso:certsUrl'));
+  const opts = {};
+  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+  opts.algorithms = [algorithm];
+  opts.secretOrKey = certificate;
 
-  // eslint-disable-next-line arrow-body-style
-  oAuth2Strategy.authorizationParams = () => {
-    // eslint-disable-next-line camelcase
-    return { kc_idp_hint: 'idir' };
-  };
+  opts.passReqToCallback = true;
+  // For development purposes only ignore the expiration
+  // time of tokens.
+  if (config.get('environment') === 'development') {
+    opts.ignoreExpiration = true;
+  }
 
-  passport.use(oAuth2Strategy);
+  const jwtStrategy = new JwtStrategy(opts, async (req, jwtPayload, done) => {
+    if (jwtPayload) {
+      return done(null, {}); // OK
+    }
+
+    return done(new Error('Failed'), false);
+
+    // try {
+    //   return done(null, {}); // OK
+    // } catch (error) {
+    //   logger.error(`error authenticating user ${error.message}`);
+    //   return done(errorWithCode(error.message, 500), false); // Internal Server Error
+    // }
+  });
+
+  passport.use(jwtStrategy);
 };
 
 module.exports = () => {

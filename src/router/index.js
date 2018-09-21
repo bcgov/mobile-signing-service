@@ -21,6 +21,7 @@
 'use strict';
 
 import cors from 'cors';
+// import passport from 'passport';
 import config from '../config';
 import auth from './routes/auth';
 import ehlo from './routes/ehlo';
@@ -37,6 +38,8 @@ const corsOptions = {
 module.exports = app => {
   app.use(cors(corsOptions));
   app.use('/api/v1/ehlo', ehlo); // probes
+  // authentication middleware for routes.
+  // app.use(passport.authenticate('jwt', { session: false }));
   app.use('/api/v1/auth', auth);
   app.use('/api/v1/sign', sign);
   app.use('/api/v1/job', job);

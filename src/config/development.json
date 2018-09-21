@@ -20,10 +20,11 @@
     "database": "cicd"
   },
   "sso": {
-    "clientId": "secode-sign-api",
+    "grantType": "client_credentials",
+    "clientId": "signing-agent",
     "callback": "/v1/auth/callback",
-    "authUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/auth",
-    "tokenUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/token",
-    "certsUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/certs"
+    "authUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/auth",
+    "tokenUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/token",
+    "certsUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/certs"
   }
 }

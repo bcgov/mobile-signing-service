@@ -96,11 +96,15 @@ router.post(
         originalFileName: req.file.originalname,
         platform: platform.toLocaleLowerCase(),
         originalFileEtag: etag,
+        status: 'Created',
       });
       logger.info(`Created job with ID ${job.id}`);
 
       const options = {
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authentication: `Bearer ${shared.sso.accessToken}`,
+        },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
         body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
