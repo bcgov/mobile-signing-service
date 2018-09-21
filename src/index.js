@@ -28,7 +28,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import authmw from './libs/authmware';
+import { authmware } from './libs/authmware';
 
 // Config
 
@@ -76,7 +76,7 @@ app.use(flash());
 // app.use('/download', express.static('download'));
 
 // Authentication middleware
-app.use(authmw(app));
+authmware(app);
 
 // Server API routes
 require('./router')(app);

@@ -23,12 +23,12 @@
 'use strict';
 
 import { logger, getJwtCertificate } from '@bcgov/nodejs-common-utils';
-import express from 'express';
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
 
-const authmware = async app => {
+// eslint-disable-next-line import/prefer-default-export
+export const authmware = async app => {
   // app.use(session(sessionOptions));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -66,11 +66,4 @@ const authmware = async app => {
   });
 
   passport.use(jwtStrategy);
-};
-
-module.exports = () => {
-  const app = express();
-  authmware(app);
-
-  return app;
 };
