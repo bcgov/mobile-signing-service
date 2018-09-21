@@ -23,7 +23,7 @@
 
 'use strict';
 
-import { JOB_STATE } from '../conastants';
+import { JOB_STATE } from '../constants';
 
 exports.up = async knex => {
   const values = Object.values(JOB_STATE)
