@@ -103,7 +103,7 @@ router.post(
       const options = {
         headers: {
           'Content-Type': 'application/json',
-          Authentication: `Bearer ${await shared.sso.accessToken}`,
+          Authorization: `Bearer ${await shared.sso.accessToken}`,
         },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),

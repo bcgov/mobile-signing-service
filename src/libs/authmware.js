@@ -50,7 +50,6 @@ const authmware = async app => {
   opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
   opts.algorithms = [algorithm];
   opts.secretOrKey = certificate;
-
   opts.passReqToCallback = true;
   // For development purposes only ignore the expiration
   // time of tokens.
@@ -64,13 +63,6 @@ const authmware = async app => {
     }
 
     return done(new Error('Failed'), false);
-
-    // try {
-    //   return done(null, {}); // OK
-    // } catch (error) {
-    //   logger.error(`error authenticating user ${error.message}`);
-    //   return done(errorWithCode(error.message, 500), false); // Internal Server Error
-    // }
   });
 
   passport.use(jwtStrategy);

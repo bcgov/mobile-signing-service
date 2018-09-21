@@ -21,7 +21,7 @@
 'use strict';
 
 import cors from 'cors';
-// import passport from 'passport';
+import passport from 'passport';
 import config from '../config';
 import auth from './routes/auth';
 import ehlo from './routes/ehlo';
