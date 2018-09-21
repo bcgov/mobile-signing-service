@@ -27,6 +27,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import config from './config';
+import authmw from './libs/authmware';
 
 // Config
 const env = config.get('environment');
@@ -74,7 +75,7 @@ app.use(flash());
 // app.use('/download', express.static('download'));
 
 // Authentication middleware
-// app.use(authmw(app));
+app.use(authmw(app));
 
 // Server API routes
 require('./router')(app);
