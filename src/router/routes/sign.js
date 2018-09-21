@@ -42,6 +42,8 @@ import { cleanup } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
 
+console.log(shared.sso.accessToken);
+
 const router = new Router();
 const dm = new DataManager();
 const { db, Job } = dm;

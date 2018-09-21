@@ -20,8 +20,8 @@
 
 'use strict';
 
-import { JWTServiceManager } from '@bcgov/nodejs-common-utils';
 import * as minio from 'minio';
+import { JWTServiceManager } from './jwtservicemanager';
 import config from '../config';
 
 const mkey = Symbol.for('ca.bc.gov.pathfinder.signing-api.minio');
@@ -42,7 +42,6 @@ if (!(gs.indexOf(mkey) > -1)) {
 if (!(gs.indexOf(skey) > -1)) {
   global[skey] = new JWTServiceManager({
     uri: config.get('sso:tokenUrl'),
-    registrationToken: config.get('sso:registrationToken'),
     grantType: config.get('sso:grantType'),
     clientId: config.get('sso:clientId'),
     clientSecret: config.get('sso:clientSecret'),
