@@ -66,7 +66,10 @@ const cleanup = async apath => {
 
 const reportJobStatus = async job => {
   const options = {
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authentication: `Bearer ${await shared.sso.accessToken}`,
+    },
     method: 'PUT',
     uri: job.ref,
     body: { job },

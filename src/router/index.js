@@ -21,12 +21,13 @@
 'use strict';
 
 import cors from 'cors';
+import passport from 'passport';
 import config from '../config';
 import ehlo from './routes/ehlo';
 import job from './routes/job';
 
 const corsOptions = {
-  origin: config.get('appUrl'),
+  origin: config.get('environment') === 'development' ? '*' : config.get('apiUrl'),
   credentials: true,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
@@ -34,5 +35,7 @@ const corsOptions = {
 module.exports = app => {
   app.use(cors(corsOptions));
   app.use('/ehlo', ehlo); // probes
+  // authentication middleware for routes.
+  app.use(passport.authenticate('jwt', { session: false }));
   app.use('/v1/job', job);
 };
