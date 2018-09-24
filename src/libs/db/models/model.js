@@ -1,3 +1,5 @@
+import { SSL_OP_NO_QUERY_MTU } from "constants";
+
 //
 // Code Signing
 //
@@ -222,5 +224,18 @@ export default class Model {
     });
 
     return obj;
+  }
+
+  static async getAirwatchGroupCode(db, where) {
+    try {
+      const q = await db
+        .select('aw_code')
+        .from('ref_aw_deployment_group')
+        .where({'aw_group_id': where});
+
+      return q.pop().aw_code;
+    } catch (err) {
+      throw err;
+    }
   }
 }
