@@ -21,6 +21,7 @@
 'use strict';
 
 import cors from 'cors';
+// import passport from 'passport';
 import config from '../config';
 import auth from './routes/auth';
 import ehlo from './routes/ehlo';
@@ -34,9 +35,13 @@ const corsOptions = {
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-module.exports = app => {
+// eslint-disable-next-line import/prefer-default-export
+export const router = app => {
   app.use(cors(corsOptions));
   app.use('/api/v1/ehlo', ehlo); // probes
+  // Any routes following the authentication middleware line below
+  // will require authentication.
+  // app.use(passport.authenticate('jwt', { session: false }));
   app.use('/api/v1/auth', auth);
   app.use('/api/v1/sign', sign);
   app.use('/api/v1/job', job);
