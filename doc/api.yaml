@@ -8,6 +8,8 @@ servers:
     description: Local development server
   - url: http://localhost:8000/v1/
     description: Production server
+security:
+  - bearerAuth: []
 paths:
   /ehlo:
     get:
@@ -71,13 +73,18 @@ paths:
         500:
           description: Internal Error
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Job:
       title: Job Description
       description: The job description / metadata
       type: object
       properties:
-        id: 
+        id:
           type: integer
           description: The job id
         platform:
