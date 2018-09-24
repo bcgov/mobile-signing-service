@@ -33,6 +33,7 @@ export default class Job extends Model {
       'delivery_file_name',
       'delivery_file_etag',
       'deployment_platform',
+      'status',
     ].map(field => `${this.table}.${field}`);
   }
 

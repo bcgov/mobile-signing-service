@@ -22,10 +22,12 @@
 
 'use strict';
 
+import url from 'url';
 import { asyncMiddleware, errorWithCode, logger } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
 import { JOB_STATUS } from '../../constants';
 import DataManager from '../../libs/db';
+import config from '../../config';
 
 const router = new Router();
 const dm = new DataManager();
@@ -93,7 +95,7 @@ router.get(
 
       return res.status(200).json({
         status: JOB_STATUS.COMPLETED,
-        url: `http://localhost:8000/v1/job/${job.id}/download`,
+        url: url.resolve(config.get('apiUrl'), `/api/v1/sign/${job.id}/download`),
         durationInSeconds: job.duration,
       });
     } catch (error) {

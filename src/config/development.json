@@ -1,30 +1,30 @@
 {
-	"temporaryUploadPath": "uploads",
-	"expirationInDays": 90,
-	"minio": {
-		"bucket": "secode-sign",
-		"port": 9000,
-		"secure": false,
-		"expiry": 604800,
-		"region": "us-east-1"
-	},
-	"session": {
-		"maxAge": 604800000,
-		"expires": 604800000
-	},
-	"agent": {
-		"hostUrl": "http://localhost:8089",
+  "temporaryUploadPath": "uploads",
+  "expirationInDays": 90,
+  "minio": {
+    "bucket": "secode-sign",
+    "port": 9000,
+    "secure": false,
+    "expiry": 604800,
+    "region": "us-east-1"
+  },
+  "session": {
+    "maxAge": 604800000,
+    "expires": 604800000
+  },
+  "agent": {
     "signPath": "/v1/job/sign",
     "deployPath": "/v1/job/deploy"
-	},
-	"db": {
-		"database": "cicd"
-	},
+  },
+  "db": {
+    "database": "cicd"
+  },
   "sso": {
-		"clientId": "secode-sign-api",
-		"callback": "/v1/auth/callback",
-		"authUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/auth",
-		"tokenUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/token",
-		"certsUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/certs"
+    "grantType": "client_credentials",
+    "clientId": "signing-agent",
+    "callback": "/v1/auth/callback",
+    "authUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/auth",
+    "tokenUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/token",
+    "certsUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/range/protocol/openid-connect/certs"
   }
 }

@@ -1,4 +1,3 @@
-
 //
 // Code Signing
 //
@@ -25,7 +24,7 @@ import app from '../../src';
 
 jest.mock('../../src/libs/db/models/job');
 
-const sample = path.join(__dirname, '../../', 'samples/foo.zip');
+const sample = path.join(__dirname, '../../', 'samples/test.zip');
 
 describe('Test signing route', () => {
   test('The platform parameter must be specified', async () => {

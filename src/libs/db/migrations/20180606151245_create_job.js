@@ -32,9 +32,10 @@ exports.up = async knex =>
       .primary();
     t.string('platform', 8).notNull();
     t.string('original_file_name', 128).notNull();
-    t.string('original_file_etag', 33).unique();
+    t.string('original_file_etag', 33).notNull();
     t.string('delivery_file_name', 64);
     t.string('delivery_file_etag', 33).unique();
+    t.string('status', 16).notNull();
     t.dateTime('created_at')
       .notNull()
       .defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
@@ -43,11 +44,19 @@ exports.up = async knex =>
       .defaultTo(knex.raw('CURRENT_TIMESTAMP(3)'));
 
     const query = `
-  CREATE TRIGGER update_${table}_changetimestamp BEFORE UPDATE
-  ON ${table} FOR EACH ROW EXECUTE PROCEDURE 
-  update_changetimestamp_column();`;
+      CREATE TRIGGER update_${table}_changetimestamp BEFORE UPDATE
+      ON ${table} FOR EACH ROW EXECUTE PROCEDURE 
+      update_changetimestamp_column();
+    `;
 
     await knex.schema.raw(query);
+
+    const aquery = `
+      ALTER TABLE ${table} ALTER COLUMN status TYPE enum_job_status
+      USING status::enum_job_status;
+    `;
+
+    await knex.schema.raw(aquery);
   });
 
 exports.down = knex => knex.schema.dropTable(table);

@@ -18,35 +18,11 @@
 // Created by Jason Leach on 2018-05-23.
 //
 
-'use strict';
+/* eslint-disable import/prefer-default-export */
 
-import knex from 'knex';
-import config from '../../config';
-import Job from './models/job';
-
-export default class DataManager {
-  constructor() {
-    const k = knex({
-      client: 'postgresql',
-      connection: {
-        user: config.get('db:user'),
-        database: config.get('db:database'),
-        port: 5432,
-        host: config.get('db:host'),
-        password: config.get('db:password'),
-      },
-      searchPath: ['public'],
-      debug: false,
-      pool: {
-        min: 1,
-        max: 64,
-      },
-      migrations: {
-        tableName: 'migration',
-      },
-    });
-
-    this.db = k;
-    this.Job = Job;
-  }
-}
+export const JOB_STATE = {
+  CREATED: 'Created',
+  PROCESSING: 'Processing',
+  COMPLETED: 'Completed',
+  FAILED: 'Failed',
+};

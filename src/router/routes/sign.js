@@ -26,12 +26,13 @@ import {
   logger,
   putObject,
   isExpired,
-  presignedGetObject,
+  getObject,
   statObject,
   asyncMiddleware,
   errorWithCode,
 } from '@bcgov/nodejs-common-utils';
 import url from 'url';
+import { PassThrough } from 'stream';
 import fs from 'fs';
 import request from 'request-promise-native';
 import { Router } from 'express';
@@ -46,6 +47,7 @@ const dm = new DataManager();
 const { db, Job } = dm;
 const upload = multer({ dest: config.get('temporaryUploadPath') });
 const bucket = config.get('minio:bucket');
+
 router.post(
   '/',
   upload.single('file'),
@@ -94,11 +96,15 @@ router.post(
         originalFileName: req.file.originalname,
         platform: platform.toLocaleLowerCase(),
         originalFileEtag: etag,
+        status: 'Created',
       });
       logger.info(`Created job with ID ${job.id}`);
 
       const options = {
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await shared.sso.accessToken}`,
+        },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
         body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
@@ -139,8 +145,20 @@ router.get(
         throw errorWithCode('This artifact is expired', 400);
       }
 
-      const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 3);
-      res.redirect(link);
+      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
+      const bstream = new PassThrough().end(obj);
+
+      const [name] = job.originalFileName.split('.');
+      res.set({
+        'Content-Disposition': `attachment;filename=${name}-signed.zip`,
+        'Content-Type': 'application/zip',
+        'Content-Length': obj.byteLength,
+      });
+
+      bstream.pipe(res);
+
+      // const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 30);
+      // res.redirect(link);
     } catch (error) {
       if (error.code) {
         throw error;
