@@ -70,6 +70,10 @@ router.post(
         throw errorWithCode('No such job', 404);
       }
 
+      if (!appProject) {
+        throw errorWithCode('Cannot find a project to deploy the app', 404);
+      }
+
       if (signedJob && !signedJob.deliveryFileName) {
         throw errorWithCode('Cannot find a signed package with this job!', 404);
       }
