@@ -35,17 +35,4 @@ export default class Project extends Model {
   static get table() {
     return 'project';
   }
-
-  static async getAirwatchGroupCode(db, where) {
-    try {
-      const q = db
-        .select(aw_code)
-        .from(ref_aw_deployment_group)
-        .where(where);
-      return q;
-    } catch (err) {
-      throw err;
-    }
-  }
-
 }
