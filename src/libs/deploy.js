@@ -187,38 +187,69 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
 /**
  * AirWatch Deployment
  *
- * @param {String} signedApp The name of the signed app
+ * @param {String} job The name of the signed app
+ * @param {String} platform Define if it's android or iOS app
+ * @param {String} awOrgID The airwatch organization group ID to distribute the app
+ * @param {String} awFileName The name of the app to appear in airwatch
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
+export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
+  /*
+  Values for airwatch api v8_1:
+    DeviceType: android -> '5'; Apple -> '2'
+    ModelId: android -> 5; iPhone -> 1; iPad -> 2
+    ApplicationName: android -> apk; Apple -> ipa
+  */
+
+  let deviceType = '';
+  let applicationName = '';
+  let modelId = 0;
+
+  switch (platform) {
+    case 'ios':
+    {
+      applicationName = awFileName + '.ipa';
+      deviceType = '2';
+      modelId = 1;
+      break;
+    }
+    case 'android':
+    {
+      applicationName = awFileName + '.apk';
+      deviceType = '5';
+      modelId = 5;
+      break;
+    }
+    default:
+      throw new Error('Unsupported application type for airWatch deployment');
+  }
+
+  // The constant url for api:
   const awHost = 'https://mobileconsole.gov.bc.ca';
   const awUploadAPI = '/API/mam/blobs/uploadblob';
   const awInstallAPI = '/API/mam/apps/internal/begininstall';
-  const awTenantCode = await exec('security find-generic-password -w -s awCode');
-  // Swtich the user credential to basic auth after system admin updates:
-  const awUsername = '';
-  const awPassword = '';
+
+  // Update the user account to a device-account:
+  const awUsernameF = await exec('security find-generic-password -w -s awUsername');
+  const awPasswordF = await exec('security find-generic-password -w -s awPassword');
+  const awTenantCodeF = await exec('security find-generic-password -w -s awCode');
+
+  // Extract value from stdout:
+  const awUsername = awUsernameF.stdout.trim().split('\n')[0];
+  const awPassword = awPasswordF.stdout.trim().split('\n')[0];
+  const awTenantCode = awTenantCodeF.stdout.trim().split('\n')[0];
+  
+  console.log(awUsername);
+  console.log(awPassword);
+  console.log(awTenantCode);
 
   // Get app binary:
   const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
   const appBinary = require('fs').readFileSync(signedAppPath);
 
-  const groupID = '848'; // This is the ID for Citizen Service, need to get ID for general app.
-  const deviceType = '5';
-  const applicationName = 'testapp';
-  const modelId = 5;
-
-  /* Fields to be determind from the project metadata:
-    DeviceType: android -> 5; Apple -> 2
-    ModelId: android -> 5; iPhone -> 1; iPad -> 2
-    ApplicationName: Get from project name
-  */
-  // const groupID = await getProjectID(signedApp);
-  // const applicationName = await getProjectName(signedApp);
-  // const deviceType = await getProjectPlatform(signedApp);
-  // const modelId = await getProjectDevice(signedApp);
+  console.log('Start to deploy to airwatch..');
 
   // Step 1: Upload app as blob
   const uploadOptions = {
@@ -237,7 +268,7 @@ export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
     body: appBinary,
     qs: {
       filename: signedApp,
-      organizationgroupid: groupID,
+      organizationgroupid: awOrgID,
     },
   };
 
@@ -246,6 +277,7 @@ export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
 
     // get the blob id:
     const blobID = JSON.parse(awUploadRes.toString()).Value;
+    console.log('The blob id is ' + blobID);
 
     // Step 2: Install app to an Organization Group
     const installOptions = {
@@ -274,6 +306,7 @@ export const deployAirWatch = async (signedApp, workspace = '/tmp/') => {
     };
 
     await request(installOptions);
+    console.log('Finished deploying to airwatch...');
     return signedAppPath;
   } catch (err) {
     const message = 'Unable to deploy to AirWatch';
