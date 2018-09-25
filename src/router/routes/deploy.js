@@ -40,22 +40,21 @@ import shared from '../../libs/shared';
 
 const router = new Router();
 const dm = new DataManager();
-const { db, Job } = dm;
+const { db, Job, Project } = dm;
 const bucket = config.get('minio:bucket');
 
 router.post(
   '/:jobId',
   asyncMiddleware(async (req, res) => {
     const { jobId } = req.params;
-
-    const { deploymentPlatform } = req.query;
+    const { deploymentPlatform, projectId } = req.query;
     const expirationInDays = config.get('expirationInDays');
 
     if (!bucketExists(shared.minio, bucket)) {
       throw errorWithCode('Unable to store or accesss attached file.', 500);
     }
 
-    if (!jobId || !deploymentPlatform) {
+    if (!jobId || !deploymentPlatform || !projectId) {
       throw errorWithCode('Required parameters missing', 400);
     }
 
@@ -64,16 +63,38 @@ router.post(
       logger.info(`Checking the package name from job ${jobId}`);
 
       const signedJob = await Job.findById(db, jobId);
+      const appProject = await Project.findById(db, projectId);
+      const airwatchParameters = {};
 
       if (!signedJob) {
         throw errorWithCode('No such job', 404);
       }
 
+      if (!appProject) {
+        throw errorWithCode('Cannot find a project to deploy the app', 404);
+      }
+
       if (signedJob && !signedJob.deliveryFileName) {
-        // The signing job was not successfully completed!
         throw errorWithCode('Cannot find a signed package with this job!', 404);
       }
 
+      // Check for airwatch deployment: (keep console output as using fake data)
+      if (deploymentPlatform.toLocaleLowerCase() == 'enterprise') {
+        try {
+          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);       
+          Object.assign(airwatchParameters, {awOrgID: airwatchOrgID, awFileName: appProject.projectName});
+          
+          console.log('Airwatch para are: ' + airwatchParameters);
+          console.log('project id is: ' + projectId);
+
+        } catch (error) {
+          const message = `Unable to fetch airwatch graoup ID for project ${projectId}`;
+          logger.error(`${message}, err = ${error.message}`);
+          throw errorWithCode(`${message}, err = ${error.message}`, 500);
+        }
+      }
+
+      // Check the package from minio:
       const stat = await statObject(shared.minio, bucket, signedJob.deliveryFileName);
 
       if (isExpired(stat, expirationInDays)) {
@@ -84,8 +105,10 @@ router.post(
       const job = await Job.create(db, {
         originalFileName: signedJob.deliveryFileName,
         platform: signedJob.platform.toLocaleLowerCase(),
-        originalFileEtag: signedJob.etag,
+        originalFileEtag: signedJob.originalFileEtag,
         deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
+        projectId: projectId,
+        status: 'Created',
       });
 
       logger.info(`Created deployment job with ID ${job.id}`);
@@ -97,9 +120,11 @@ router.post(
         body: {
           ...job,
           ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` },
+          ...airwatchParameters,
         },
         json: true,
       };
+
       const status = await request(options);
       if (status !== 'OK') {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);

@@ -22,28 +22,17 @@
 
 import Model from './model';
 
-export default class Job extends Model {
+export default class Project extends Model {
   static get fields() {
     // primary key *must* be first!
     return [
       'id',
-      'platform',
-      'original_file_name',
-      'original_file_etag',
-      'delivery_file_name',
-      'delivery_file_etag',
-      'deployment_platform',
-      'status',
-      'project_id',
+      'project_name',
+      'aw_group_id',
     ].map(field => `${this.table}.${field}`);
   }
 
   static get table() {
-    return 'job';
-  }
-
-  get duration() {
-    const delta = this.createdAt - this.updatedAt;
-    return Math.abs(delta / 1000);
+    return 'project';
   }
 }

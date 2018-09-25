@@ -23,6 +23,7 @@
 import knex from 'knex';
 import config from '../../config';
 import Job from './models/job';
+import Project from './models/project';
 
 export default class DataManager {
   constructor() {
@@ -48,5 +49,6 @@ export default class DataManager {
 
     this.db = k;
     this.Job = Job;
+    this.Project = Project;
   }
 }
