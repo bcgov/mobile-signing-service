@@ -47,7 +47,6 @@ router.post(
   '/:jobId',
   asyncMiddleware(async (req, res) => {
     const { jobId } = req.params;
-
     const { deploymentPlatform, projectId } = req.query;
     const expirationInDays = config.get('expirationInDays');
 
