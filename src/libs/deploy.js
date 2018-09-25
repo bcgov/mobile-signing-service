@@ -63,7 +63,7 @@ const fetchFileFromStorage = async (signedApp, workspace) => {
  * @param {String} apkPackage The name of the signed app
  * @returns The bundle ID
  */
-const getApkBundleID = async (apkPackage) => {
+const getApkBundleID = async apkPackage => {
   try {
     // Use Android Asset Packaging Tool to get package bundle ID:
     const apkBundle = await exec(`
@@ -135,19 +135,14 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
-    const key = require(`${keyPath}`);
+    // eslint-disable-next-line import/no-dynamic-require
+    const key = require(`${keyPath}`); // TODO:(jl) This require should go.
 
     // Set up Google publisher:
     const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
     const editID = String(new Date().getTime()); // unique id using timestamp
     const oauth2Client = new google.auth.OAuth2();
-    const jwtClient = new google.auth.JWT(
-      key.client_email,
-      null,
-      key.private_key,
-      scopes,
-      null,
-    );
+    const jwtClient = new google.auth.JWT(key.client_email, null, key.private_key, scopes, null);
     const publisher = google.androidpublisher({
       version: 'v3',
       auth: oauth2Client,
@@ -177,11 +172,9 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns The status of the deployment
  */
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line no-unused-vars
 export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
-
   // TODO
-
 };
 
 /**

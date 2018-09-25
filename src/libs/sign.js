@@ -58,7 +58,7 @@ const currentValidSigningIdentities = async () => {
  * @param {string} apath
  * @returns
  */
-const extractCurrentSigningIdentifier = async (apath) => {
+const extractCurrentSigningIdentifier = async apath => {
   const { stdout } = await exec(`
     cd "${apath}" && \
     codesign -d --verbose=4 Payload/*.app 2>&1 | \
@@ -76,7 +76,7 @@ const extractCurrentSigningIdentifier = async (apath) => {
  * @param {string} value
  * @returns
  */
-const uniqueSigningIdentifierForValue = async (value) => {
+const uniqueSigningIdentifierForValue = async value => {
   const cids = await currentValidSigningIdentities();
   const matches = await cids.find(item => item.includes(value));
   if (matches.length === 0) {
@@ -149,7 +149,7 @@ const packageForDelivery = async (apath, items) => {
  * @param {String} apkPackage The name of the signed app
  * @returns The bundle ID
  */
-const getApkBundleID = async (apkPackage) => {
+const getApkBundleID = async apkPackage => {
   try {
     // Use Android Asset Packaging Tool to get package bundle ID:
     const apkBundle = await exec(`
@@ -182,14 +182,16 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
       throw new Error('Unable to find xcarchive(s) or options.plist in package');
     }
 
-    const promises = findResult
-      .stdout
+    const promises = findResult.stdout
       .trim()
       .split('\n')
       .filter(item => !item.includes('__MACOSX'))
-      .map(async (element) => {
-        const exppath = `${path.join(apath, outputDir, path.basename(element).split('.')[0])}`
-          .replace(/ /g, '_');
+      .map(async element => {
+        const exppath = `${path.join(
+          apath,
+          outputDir,
+          path.basename(element).split('.')[0]
+        )}`.replace(/ /g, '_');
         return exec(`
           xcodebuild \
           -exportArchive \
@@ -202,7 +204,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
     const response = await Promise.all(promises);
 
     const items = [];
-    response.forEach((value) => {
+    response.forEach(value => {
       const { stdout } = value;
       if (stdout.includes('EXPORT SUCCEEDED')) {
         const lines = stdout.trim().split('\n');
@@ -217,7 +219,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
     return packageForDelivery(path.join(apath, outputDir), items);
   } catch (err) {
-    console.log(err.message);
+    logger.error(err.message);
     throw err;
   }
 };
@@ -294,9 +296,15 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
   // Fetch signing keystore, key alias and password from keyChain:
   const apkBundleID = await getApkBundleID(apkPath);
-  const keyPasswordFull = await exec(`security find-generic-password -w -s keyPassword -a ${apkBundleID}`);
-  const keyAliasFull = await exec(`security find-generic-password -w -s keyAlias -a ${apkBundleID}`);
-  const keyStoreFull = await exec(`security find-generic-password -w -s keyStorePath -a ${apkBundleID}`);
+  const keyPasswordFull = await exec(
+    `security find-generic-password -w -s keyPassword -a ${apkBundleID}`
+  );
+  const keyAliasFull = await exec(
+    `security find-generic-password -w -s keyAlias -a ${apkBundleID}`
+  );
+  const keyStoreFull = await exec(
+    `security find-generic-password -w -s keyStorePath -a ${apkBundleID}`
+  );
 
   if (keyPasswordFull.stderr || keyAliasFull.stderr || keyStoreFull.stderr) {
     throw new Error('Cannot find key to sign this package.');
