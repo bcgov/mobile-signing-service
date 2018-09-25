@@ -65,6 +65,7 @@ router.post(
 
       const signedJob = await Job.findById(db, jobId);
       const appProject = await Project.findById(db, projectId);
+      const airwatchParameters = {};
 
       if (!signedJob) {
         throw errorWithCode('No such job', 404);
@@ -78,10 +79,15 @@ router.post(
         throw errorWithCode('Cannot find a signed package with this job!', 404);
       }
 
-      // Check for airwatch deployment:
+      // Check for airwatch deployment: (keep console output as using fake data)
       if (deploymentPlatform.toLocaleLowerCase() == 'enterprise') {
         try {
-          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);
+          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);       
+          Object.assign(airwatchParameters, {awOrgID: airwatchOrgID, awFileName: appProject.projectName});
+          
+          console.log('Airwatch para are: ' + airwatchParameters);
+          console.log('project id is: ' + projectId);
+
         } catch (error) {
           const message = `Unable to fetch airwatch graoup ID for project ${projectId}`;
           logger.error(`${message}, err = ${error.message}`);
@@ -100,7 +106,7 @@ router.post(
       const job = await Job.create(db, {
         originalFileName: signedJob.deliveryFileName,
         platform: signedJob.platform.toLocaleLowerCase(),
-        originalFileEtag: signedJob.etag,
+        originalFileEtag: signedJob.originalFileEtag,
         deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
         projectId: projectId,
         status: 'Created',
@@ -113,9 +119,9 @@ router.post(
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
         body: {
-          // what to pass in???
           ...job,
           ...{ ref: `http://${config.get('host')}:${config.get('port')}/v1/job/${job.id}` },
+          ...airwatchParameters,
         },
         json: true,
       };
