@@ -6,6 +6,7 @@
 const table = 'ref_aw_deployment_group';
 
 exports.seed = async (knex) => {
+  // this is fake data:
   const ref = [
     {
       aw_code: '848',
