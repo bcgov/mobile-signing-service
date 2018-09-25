@@ -8,7 +8,6 @@
   },
   "main": "index.js",
   "dependencies": {
-
     "@bcgov/nodejs-common-utils": "0.0.15",
     "archiver": "^2.1.1",
     "babel-runtime": "^6.26.0",
