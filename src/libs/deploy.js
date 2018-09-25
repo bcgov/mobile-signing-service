@@ -131,7 +131,7 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the bundle ID for the apk:
     const apkBundleId = await getApkBundleID(signedApkPath);
     // Turn data stream into a package-archive file for deployment:
-    const signedAPK = require('fs').readFileSync(signedApkPath);
+    const signedAPK = fs.readFileSync(signedApkPath);
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
@@ -139,7 +139,7 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     const key = require(`${keyPath}`); // TODO:(jl) This require should go.
 
     // Set up Google publisher:
-    const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
+    const scopes = [process.env.ANDROID_PUBLISHER_URL];
     const editID = String(new Date().getTime()); // unique id using timestamp
     const oauth2Client = new google.auth.OAuth2();
     const jwtClient = new google.auth.JWT(key.client_email, null, key.private_key, scopes, null);
@@ -190,6 +190,7 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
 // eslint-disable-next-line import/prefer-default-export
 export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
   /*
+  TODO:(sh) Move these to constant
   Values for airwatch api v8_1:
     DeviceType: android -> '5'; Apple -> '2'
     ModelId: android -> 5; iPhone -> 1; iPad -> 2
@@ -220,9 +221,9 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   }
 
   // The constant url for api:
-  const awHost = 'https://mobileconsole.gov.bc.ca';
-  const awUploadAPI = '/API/mam/blobs/uploadblob';
-  const awInstallAPI = '/API/mam/apps/internal/begininstall';
+  const awHost = process.env.AIRWATCH_HOST;
+  const awUploadAPI = process.env.AIRWATCH_UPLOAD_ROUTE;
+  const awInstallAPI = process.env.AIRWATCH_INSTALL_ROUTE;
 
   // Update the user account to a device-account:
   const awUsernameF = await exec('security find-generic-password -w -s awUsername');
@@ -233,16 +234,12 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   const awUsername = awUsernameF.stdout.trim().split('\n')[0];
   const awPassword = awPasswordF.stdout.trim().split('\n')[0];
   const awTenantCode = awTenantCodeF.stdout.trim().split('\n')[0];
-  
-  console.log(awUsername);
-  console.log(awPassword);
-  console.log(awTenantCode);
 
   // Get app binary:
   const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
-  const appBinary = require('fs').readFileSync(signedAppPath);
+  const appBinary = fs.readFileSync(signedAppPath);
 
-  console.log('Start to deploy to airwatch..');
+  logger.info('Start to deploy to airwatch..');
 
   // Step 1: Upload app as blob
   const uploadOptions = {
@@ -270,7 +267,7 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
 
     // get the blob id:
     const blobID = JSON.parse(awUploadRes.toString()).Value;
-    console.log('The blob id is ' + blobID);
+    logger.info(`The blob id is ${blobID}`);
 
     // Step 2: Install app to an Organization Group
     const installOptions = {
@@ -299,7 +296,7 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
     };
 
     await request(installOptions);
-    console.log('Finished deploying to airwatch...');
+    logger.info('Finished deploying to airwatch...');
     return signedAppPath;
   } catch (err) {
     const message = 'Unable to deploy to AirWatch';

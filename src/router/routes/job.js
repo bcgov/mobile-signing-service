@@ -176,7 +176,7 @@ const handleDeploymentJob = async (job, clean = true) => {
         switch (job.platform) {
           case 'ios':
           {
-            throw new Error('Temporally not supported');
+            throw new Error('Temporarily not supported');
           }
           case 'android': {
             deployedAppPath = await deployGoogle(job.originalFileName);
