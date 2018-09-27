@@ -165,16 +165,18 @@ const handleDeploymentJob = async (job, clean = true) => {
 
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
-      case 'enterprise': {
-        throw new Error('Unsupported platform');
-        // deployedAppPath = await deployAirWatch(job.originalFileName);
-        // break;
+
+      case 'enterprise':
+      {
+        deployedAppPath = await deployAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
+        break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public': {
         switch (job.platform) {
-          case 'ios': {
-            throw new Error('Temploray not supported');
+          case 'ios':
+          {
+            throw new Error('Temporarily not supported');
           }
           case 'android': {
             deployedAppPath = await deployGoogle(job.originalFileName);
