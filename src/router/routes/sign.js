@@ -147,8 +147,8 @@ router.get(
 
       const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
       const bstream = new PassThrough().end(obj);
-
       const [name] = job.originalFileName.split('.');
+
       res.set({
         'Content-Disposition': `attachment;filename=${name}-signed.zip`,
         'Content-Type': 'application/zip',

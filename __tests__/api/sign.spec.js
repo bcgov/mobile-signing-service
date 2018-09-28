@@ -68,9 +68,9 @@ describe('Test download route', () => {
       .expect(400); // Bad Request
   });
 
-  test.skip('Job 20 is OK and can be downloaded', async () => {
+  test('Job 20 is OK and can be downloaded', async () => {
     await request(app)
       .get('/api/v1/sign/20/download')
-      .expect(302); // Redirect
+      .expect(200); // Redirect
   });
 });

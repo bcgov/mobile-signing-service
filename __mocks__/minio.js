@@ -20,7 +20,15 @@
 
 'use strict';
 
+import sb from 'stream-buffers';
+
 const minio = jest.genMockFromModule('minio');
+const stream = new sb.ReadableStreamBuffer({
+  frequency: 10, // in milliseconds.
+  chunkSize: 8, // in bytes.
+});
+stream.put('Hello World', 'utf8');
+stream.stop();
 
 function statObject(bucket, file, cb) {
   const now = new Date();
@@ -44,8 +52,13 @@ function putObject(bucket, name, data, cb) {
   cb(undefined, '123456789');
 }
 
+function getObject(bucket, name, cb) {
+  cb(undefined, stream);
+}
+
 minio.Client.prototype.statObject = statObject;
 minio.Client.prototype.presignedGetObject = presignedGetObject;
 minio.Client.prototype.putObject = putObject;
+minio.Client.prototype.getObject = getObject;
 
 module.exports = minio;
