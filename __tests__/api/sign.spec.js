@@ -22,13 +22,13 @@ import path from 'path';
 import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
 
-if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
-  process.on('unhandledRejection', reason => {
-    throw reason;
-  });
-  // Avoid memory leak by adding too many listeners
-  process.env.LISTENING_TO_UNHANDLED_REJECTION = true;
-}
+// if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
+//   process.on('unhandledRejection', reason => {
+//     throw reason;
+//   });
+//   // Avoid memory leak by adding too many listeners
+//   process.env.LISTENING_TO_UNHANDLED_REJECTION = true;
+// }
 
 jest.mock('../../src/libs/db/models/job');
 
@@ -51,7 +51,7 @@ describe('Test signing route', () => {
       .expect('Content-Type', /json/);
   });
 
-  test.skip('All valid parameters are accepted', async () => {
+  test('All valid parameters are accepted', async () => {
     await request(app)
       .post('/api/v1/sign')
       .query({ platform: 'ios' })
