@@ -25,6 +25,7 @@ import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
 import shared from './shared';
+import { fetchKeychainValue } from './utils';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
@@ -132,6 +133,7 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     const apkBundleId = await getApkBundleID(signedApkPath);
     // Turn data stream into a package-archive file for deployment:
     const signedAPK = fs.readFileSync(signedApkPath);
+    // shelly: use fetchKeychainValue:
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
@@ -224,16 +226,21 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   const awHost = process.env.AIRWATCH_HOST;
   const awUploadAPI = process.env.AIRWATCH_UPLOAD_ROUTE;
   const awInstallAPI = process.env.AIRWATCH_INSTALL_ROUTE;
+  const awAccountName = process.env.AIRWATCH_SECRET;
+  const awKeys = ['awUsername', 'awPassword', 'awCode'];
 
+  // shelly: use fetchKeychainValue
   // Update the user account to a device-account:
-  const awUsernameF = await exec('security find-generic-password -w -s awUsername');
-  const awPasswordF = await exec('security find-generic-password -w -s awPassword');
-  const awTenantCodeF = await exec('security find-generic-password -w -s awCode');
+  const awKeyPairs = await fetchKeychainValue(awKeys, awAccountName);
 
-  // Extract value from stdout:
-  const awUsername = awUsernameF.stdout.trim().split('\n')[0];
-  const awPassword = awPasswordF.stdout.trim().split('\n')[0];
-  const awTenantCode = awTenantCodeF.stdout.trim().split('\n')[0];
+  // const awUsernameF = await exec('security find-generic-password -w -s awUsername');
+  // const awPasswordF = await exec('security find-generic-password -w -s awPassword');
+  // const awTenantCodeF = await exec('security find-generic-password -w -s awCode');
+
+  // // Extract value from stdout:
+  // const awUsername = awUsernameF.stdout.trim().split('\n')[0];
+  // const awPassword = awPasswordF.stdout.trim().split('\n')[0];
+  // const awTenantCode = awTenantCodeF.stdout.trim().split('\n')[0];
 
   // Get app binary:
   const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
@@ -242,15 +249,16 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   logger.info('Start to deploy to airwatch..');
 
   // Step 1: Upload app as blob
+  // TODO (sh): code refactor for options
   const uploadOptions = {
     headers: {
       'Content-Type': 'application/octet-stream',
-      'aw-tenant-code': awTenantCode,
+      'aw-tenant-code': awKeyPairs[awKeys[2]],
       Accept: 'application/json',
     },
     auth: {
-      user: awUsername,
-      password: awPassword,
+      user: awKeyPairs[awKeys[0]],
+      password: awKeyPairs[awKeys[1]],
     },
     method: 'POST',
     uri: url.resolve(awHost, awUploadAPI),
@@ -273,11 +281,11 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
     const installOptions = {
       headers: {
         'content-type': 'application/json',
-        'aw-tenant-code': awTenantCode,
+        'aw-tenant-code': awKeyPairs[awKeys[2]],
       },
       auth: {
-        user: awUsername,
-        password: awPassword,
+        user: awKeyPairs[awKeys[0]],
+        password: awKeyPairs[awKeys[1]],
       },
       method: 'POST',
       uri: url.resolve(awHost, awInstallAPI),
