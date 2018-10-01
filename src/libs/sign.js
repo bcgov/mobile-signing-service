@@ -166,6 +166,70 @@ const getApkBundleID = async apkPackage => {
 };
 
 /**
+ * Check if the android keystore pair exists in agent keychain,
+ * if non-existing, create one and return the pair
+ * 
+ * @param {String} apkBundleID The bundle of app
+ * @returns keyPairs
+ */
+const getKeyStore = async apkBundleID => {
+  const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
+
+  // 1. Use security to check for android keystore in keychain:
+  try {
+    await exec(`security find-generic-password -w -a ${apkBundleID}`);
+  } catch (err) {
+    logger.info('--No keystore for this app...start to create one now:');
+
+    // 2. Create a pair of keystore:
+    await createKeyStore(keystoreKeys, apkBundleID);
+    logger.info('--Done creating a new keystore');
+  }
+
+  return fetchKeychainValue(keystoreKeys, apkBundleID);
+};
+
+/**
+ * Create a keystore pair for android app if not existing,
+ * and save in the keychain on agent
+ * 
+ * @param {String} apkBundleID The bundle of app
+ * @param {Object} keystoreKeys The keywords for keystore pair
+ * 
+ */
+const createKeyStore = async (keystoreKeys, apkBundleID) => {
+  const keystorePassword = Math.random().toString(36).substring(7);
+
+  try {
+    // 1. create keystore:
+    await exec(`
+      keytool -genkey -v \
+      -keystore ${apkBundleID}-ks.jks \
+      -keyalg RSA -keysize 2048 -validity 10000 \
+      -alias ${apkBundleID} \
+      -storepass ${keystorePassword} -keypass ${keystorePassword} \
+      -dname "cn=BCGOV, ou=BCGOV, o=BCGOV, c=CA"
+    `);
+
+    // 1.1 Verify success creation and get the jks path:
+    const keystoreResult = await exec(`ls "$(pwd)" | grep ${apkBundleID}-ks.jks`);
+    if (keystoreResult.stdout == '') {
+      throw new Error('Unable to create new keystore pair!');
+    }
+
+    // 2. Save into keychain:
+    await exec(`
+      security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[0]} -p ${apkBundleID} -T /usr/bin/security -U
+      security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[1]} -p ${keystorePassword} -T /usr/bin/security -U
+      security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[2]} -p "$(pwd)"/${apkBundleID}-ks.jks -T /usr/bin/security -U
+    `);
+
+  } catch (err) {
+    throw new Error(`Unable to generate and save keystore for this app: ${error}`);
+  }
+};
+
+/**
  * Sign an xcode xcarchive file.
  *
  * @param {string} archiveFilePath The path to the xcarchive file
@@ -286,10 +350,12 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
   const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
 
-  // Get the package:
+  // Get the package from minio:
   const buffer = await getObject(shared.minio, bucket, archiveFilePath);
   await exec(`mkdir -p ${packagePath}`);
   await writeFile(outFileName, buffer, 'utf8');
+
+  // Get the path of package locally:
   const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
   if (apkPathFull.stderr) {
     throw new Error('Cannot find the package.');
@@ -298,7 +364,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
   // Fetch signing keystore, key alias and password from keyChain:
   const apkBundleID = await getApkBundleID(apkPath);
-  const keystorePairs = await fetchKeychainValue(keystoreKeys, apkBundleID);
+  const keystorePairs = await getKeyStore(apkBundleID);
 
   // Sign the apk:
   const response = await exec(`
