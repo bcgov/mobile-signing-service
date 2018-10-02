@@ -88,8 +88,7 @@ router.post(
           console.log('project id is: ' + projectId);
 
         } catch (error) {
-          const message = `Unable to fetch airwatch graoup ID for project ${projectId}`;
-          logger.error(`${message}, err = ${error.message}`);
+          const message = `Unable to fetch airwatch group ID for project ${projectId}`;
           throw errorWithCode(`${message}, err = ${error.message}`, 500);
         }
       }
@@ -132,8 +131,10 @@ router.post(
 
       res.status(202).json({ id: job.id }); // Accepted
     } catch (error) {
+      if (error.code) {
+        throw error;
+      }
       const message = 'Unable to create deployment job';
-      logger.error(`${message}, err = ${error.message}`);
       throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
   })
