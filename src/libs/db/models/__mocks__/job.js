@@ -29,10 +29,17 @@ export default class Model {
 
   static async findById(db, id) {
     if (Number(id) === 10) return { id: 10 }; // Processing
-    if (Number(id) === 20) return { id: 20, deliveryFileName: 'notExpiredFile' }; // Done
-    if (Number(id) === 30) return { id: 30, deliveryFileName: 'expiredFile' }; // Done
+    if (Number(id) === 20)
+      return { id: 20, originalFileName: 'hello-file.zip', deliveryFileName: 'notExpiredFile' }; // Done
+    if (Number(id) === 30)
+      return { id: 30, originalFileName: 'hello-file.zip', deliveryFileName: 'expiredFile' }; // Done
     if (Number(id) === 21)
-      return { id: 21, platform: 'android', deliveryFileName: 'notExpiredFile' }; // Deployment api test
+      return {
+        id: 21,
+        platform: 'android',
+        originalFileName: 'hello-file.zip',
+        deliveryFileName: 'notExpiredFile',
+      }; // Deployment api test
 
     return undefined;
   }

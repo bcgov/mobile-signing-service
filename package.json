@@ -59,6 +59,7 @@
     "jest": "^23.6.0",
     "nodemon": "^1.18.4",
     "prettier": "^1.14.2",
+    "stream-buffers": "^3.0.2",
     "supertest": "^3.3.0",
     "swagger-cli": "^2.1.0"
   },
