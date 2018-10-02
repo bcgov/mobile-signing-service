@@ -24,29 +24,14 @@
 
 import Model from '../model';
 
-export default class Job extends Model {
-  static async update() {
-    return {};
-  }
+export default class Project extends Model {
 
   static async findById(db, id) {
-    if (Number(id) === 10) return { id: 10 }; // Processing
-    if (Number(id) === 20)
-      return { id: 20, originalFileName: 'hello-file.zip', deliveryFileName: 'notExpiredFile' }; // Done
-    if (Number(id) === 30)
-      return { id: 30, originalFileName: 'hello-file.zip', deliveryFileName: 'expiredFile' }; // Done
-    if (Number(id) === 21)
-      return {
-        id: 21,
-        platform: 'android',
-        originalFileName: 'hello-file.zip',
-        deliveryFileName: 'notExpiredFile',
-      }; // Deployment api test
-
+    if (Number(id) === 1) return { id: 1, project_name: 'hello', aw_group_id: 'ABC'};
     return undefined;
   }
 
-  static async create(db, values) {
-    return this.findById(db, 21);
+  static async getAirwatchGroupCode(db, values) {
+    return '123';
   }
 }
