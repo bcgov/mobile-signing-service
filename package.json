@@ -54,6 +54,8 @@
     "nodemon": "^1.17.5",
     "prettier": "^1.14.2",
     "sinon": "^5.1.1",
+    "stream-buffers": "^3.0.2",
+    "supertest": "^3.3.0",
     "swagger-cli": "^2.1.0"
   },
   "scripts": {
@@ -61,10 +63,30 @@
     "dev": "NODE_ENV=development nodemon src --exec babel-node --inspect=9228",
     "build": "NODE_ENV=production gulp",
     "build:doc": "bootprint openapi doc/api.yaml public/doc/api",
-    "test": "NODE_ENV=test jest _test_",
+    "test": "NODE_ENV=test jest __test__",
     "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=test jest _test_/*_spec.js --watch",
     "test:lint": "eslint --env node --ext .js src"
+  },
+  "jest": {
+    "verbose": true,
+    "testURL": "http://localhost/",
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "globals": {
+      "NODE_ENV": "test"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "src/libs",
+      "src/router"
+    ]
   },
   "repository": {
     "type": "git",
