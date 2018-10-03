@@ -19,12 +19,16 @@
 //
 
 import { default as request } from 'supertest'; // eslint-disable-line
-import app from '../src';
+import app from '../../src';
 
-describe('Test monitoring routes', () => {
-  test('The readiness probe should respond with 200 ', async () => {
-    await request(app)
-      .get('/ehlo')
-      .expect(200);
+jest.mock('request-promise-native');
+jest.mock('minio');
+jest.mock('passport');
+
+describe('Test job routes', () => {
+  test('Test jobId must be present', async () => {
+
+    const response = await request(app).post('/v1/job/sign');
+    expect(response.body).toBe("400"); // Required parameters missing
   });
 });
