@@ -22,6 +22,7 @@ import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
 
 jest.mock('../../src/libs/db/models/job');
+jest.mock('../../src/libs/db/models/project');
 jest.mock('request-promise-native');
 jest.mock('minio');
 
@@ -36,11 +37,36 @@ describe('Test deployment routes', () => {
     expect(response.statusCode).toBe(400); // Bad request
   });
 
-  test.skip('Test deployment request is accepted', async () => {
+  test('test deployment request must have a project', async () => {
     const response = await request(app)
       .post('/api/v1/deploy/21')
-      .query({ deploymentPlatform: 'public' })
+      .query({
+        deploymentPlatform: 'public',
+        projectId: 2,
+      })
+      .set('content-type', 'application/json');
+    expect(response.statusCode).toBe(404); // Required parameters missing
+  })
+
+  test('Test public deployment request is accepted', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/21')
+      .query({
+        deploymentPlatform: 'public',
+        projectId: 1,
+      })
       .set('content-type', 'application/json');
     expect(response.statusCode).toBe(202); // OK
   });
+
+  test('test enterprise deployment request is accepted', async () => {
+    const response = await request(app)
+      .post('/api/v1/deploy/21')
+      .query({
+        deploymentPlatform: 'enterprise',
+        projectId: 1,
+      })
+      .set('content-type', 'application/json');
+    expect(response.statusCode).toBe(202); // OK
+  })
 });
