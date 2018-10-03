@@ -64,7 +64,7 @@ router.post(
 
       const signedJob = await Job.findById(db, jobId);
       const appProject = await Project.findById(db, projectId);
-      const airwatchParameters = {};
+      let airwatchParameters = {};
 
       if (!signedJob) {
         throw errorWithCode('No such job', 404);
@@ -82,9 +82,9 @@ router.post(
       if (deploymentPlatform.toLocaleLowerCase() == 'enterprise') {
         try {
           const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);       
-          Object.assign(airwatchParameters, {awOrgID: airwatchOrgID, awFileName: appProject.projectName});
+          airwatchParameters = {...airwatchParameters, ...{awOrgID: airwatchOrgID, awFileName: appProject.projectName}};
           
-          console.log('Airwatch para are: ' + airwatchParameters);
+          console.log('Airwatch para: ' + airwatchParameters.awFileName);
           console.log('project id is: ' + projectId);
 
         } catch (error) {
@@ -113,7 +113,10 @@ router.post(
       logger.info(`Created deployment job with ID ${job.id}`);
 
       const options = {
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await shared.sso.accessToken}`,
+        },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
         body: {
