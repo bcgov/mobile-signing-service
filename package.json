@@ -59,8 +59,8 @@
     "swagger-cli": "^2.1.0"
   },
   "scripts": {
-    "start": "node build/src",
-    "dev": "NODE_ENV=development nodemon src --exec babel-node --inspect=9228",
+    "start": "node build/src/server.js",
+    "dev": "NODE_ENV=development nodemon src/server.js --exec babel-node --inspect=9228",
     "build": "NODE_ENV=production gulp",
     "build:doc": "bootprint openapi doc/api.yaml public/doc/api",
     "test": "NODE_ENV=test jest __test__",
