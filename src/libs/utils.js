@@ -98,25 +98,22 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
  * @returns An object with the keychain name:value pairs
  */
 export const fetchKeychainValue = async (keyNames, keyAccount) => {
-  var keyPairs = {};
-
-  // Modeify foreach function https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
-  async function asyncForEach(array, callback) {
-    for (let index = 0; index < array.length; index++) {
-      await callback(array[index], index, array)
-    }
-  }
-
   try {
-    await asyncForEach(keyNames, async (name) => {
-      // Use security to check for key pairs in keychain:
-      var tmp = await exec(`security find-generic-password -w -s ${name} -a ${keyAccount}`);
+    const keyPairs = await keyNames.reduce(async (accumulator, currentValue) => {
+      const keyValue = {};
+
+      // use macos security to fetch keychain value:
+      var tmp = await exec(`security find-generic-password -w -s ${currentValue} -a ${keyAccount}`);
       tmp = tmp.stdout.trim().split('\n');
-      keyPairs[name] = tmp[0];
-    });
+      keyValue[currentValue] = tmp[0];
+
+      return { ...(await accumulator), ...keyValue };
+    }, {});
+  
+    console.log(keyPairs);
+    return keyPairs;
 
   } catch (error) {
     throw new Error(`Unable to find the keychain! ${error}`);
   }
-  return keyPairs;
 };
