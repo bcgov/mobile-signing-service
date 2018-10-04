@@ -30,6 +30,7 @@ import { AW, PACKAGE_FORMAT } from '../constants';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFileSync);
 const bucket = config.get('minio:bucket');
 
 /* eslint-disable global-require */
@@ -133,11 +134,11 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the bundle ID for the apk:
     const apkBundleId = await getApkBundleID(signedApkPath);
     // Turn data stream into a package-archive file for deployment:
-    const signedAPK = fs.readFileSync(signedApkPath);
+    const signedAPK = await readFile(signedApkPath);
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
-    const key = JSON.parse(fs.readFileSync(`${keyPath}`));
+    const key = JSON.parse(await readFile(`${keyPath}`));
 
     // Set up Google publisher:
     const scopes = [process.env.ANDROID_PUBLISHER_URL];
