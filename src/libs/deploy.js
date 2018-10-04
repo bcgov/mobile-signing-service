@@ -138,7 +138,7 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
-    const key = JSON.parse(await readFile(`${keyPath}`));
+    const key = JSON.parse(await readFile(keyPath));
 
     // Set up Google publisher:
     const scopes = [process.env.ANDROID_PUBLISHER_URL];
