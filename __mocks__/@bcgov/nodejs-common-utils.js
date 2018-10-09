@@ -23,14 +23,13 @@
 import * as ncu from '@bcgov/nodejs-common-utils';
 
 // public certificate
-const pem = `
------BEGIN RSA PUBLIC KEY-----
-MIIBCgKCAQEAs1adod1+laVtsql0olCs4zo/Ng4kJDdwHdzJQW6TlE61MlpskJPu
-lK+OTytOdi/hSSnKPwNsMrzqm60RuR4hnhMJBdrOjbBnr6yUKSIAv6SPXK0QrmN5
-Y0XuhV4kMkDJ0aN15UxRzSGdeaXAetmQEqSl/+lt33mTNsTfU6kzgKkwyZQSbITm
-jze8MVVtjfdly0DsMt/1tc6l+tUvaDzGgqUEF5dAUFq2MgdH7FM6quHml3ze3F8z
-Pmk6ia8tHZ4wJULOFiLvKuRNU8ZsPMuwyFPYtF+/b4HgVCco82EP51psNOXpq4YH
-3qjAgJjYw3Oe1ULU+xdzXWXhzSq6WWxBAQIDAQAB
+const pem = `-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEAgEXvVutslQC48+bA0xojbA3Wm7OLlrsPpESpgji5VDhOho00/AyE
+Fec4WFiuxdjajNHy+f6aF3I7+hV2lV9HMnNR2zWj83EsLXt5gHXxCyD/g+bz23/l
+ENtt7tVaf5W+nqrdIbyLCs9+uA09s8APYmOc2GOrjmUVC9yvJp+PG+jtIypA5nj9
+zZHZ5vm0iDYQ5rjdArMdxfv1Y5m2Cu5KjMVTZVQQBZnOjZ4r5tlprf3YB+TFrV4i
+FgrcqEhM8ZloxbTI69Yzok/rXUvfN4nufKwS1N73kqjcQF7LccoMMf6iU1YQhE76
+7D6p4ZLBv+QBm3lgG/cVBcb1naXYo5WdDwIDAQAB
 -----END RSA PUBLIC KEY-----`;
 
 const token = {
