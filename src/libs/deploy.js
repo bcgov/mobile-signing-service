@@ -26,9 +26,11 @@ import shortid from 'shortid';
 import config from '../config';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
+import { AW, PACKAGE_FORMAT } from '../constants';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFileSync);
 const bucket = config.get('minio:bucket');
 
 /* eslint-disable global-require */
@@ -132,11 +134,11 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the bundle ID for the apk:
     const apkBundleId = await getApkBundleID(signedApkPath);
     // Turn data stream into a package-archive file for deployment:
-    const signedAPK = fs.readFileSync(signedApkPath);
+    const signedAPK = await readFile(signedApkPath);
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
-    const key = JSON.parse(fs.readFileSync(`${keyPath}`));
+    const key = JSON.parse(await readFile(keyPath));
 
     // Set up Google publisher:
     const scopes = [process.env.ANDROID_PUBLISHER_URL];
@@ -190,12 +192,13 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
 // eslint-disable-next-line import/prefer-default-export
 export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
   // The urls for airwatch api:
-  const awHost = process.env.AIRWATCH_HOST;
-  const awUploadAPI = process.env.AIRWATCH_UPLOAD_ROUTE;
-  const awInstallAPI = process.env.AIRWATCH_INSTALL_ROUTE;
-  const awAccountName = process.env.AIRWATCH_SECRET;
+  const awHost = config.get('airwatch:host');
+  const awUploadAPI = config.get('airwatch:upload');
+  const awInstallAPI = config.get('airwatch:install');
+  const awAccountName = config.get('airwatch:account');
 
   // TODO: (sh) Update the user account to a device-account:
+  // This array serves as the constant key names
   const awKeys = ['awUsername', 'awPassword', 'awCode'];
   const awKeyPairs = await fetchKeychainValue(awKeys, awAccountName);
 
@@ -207,23 +210,23 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
     ApplicationName: android -> apk; Apple -> ipa
   */
 
-  let deviceType = '';
+  let deviceType = AW.AW_DEVICE_TYPES.UNKNOWN;
   let applicationName = '';
-  let modelId = 0;
+  let modelId = AW.AW_DEVICE_MODELS.UNKNOWN;
 
   switch (platform) {
     case 'ios':
     {
-      applicationName = awFileName + '.ipa';
-      deviceType = '2';
-      modelId = 1;
+      applicationName = awFileName + PACKAGE_FORMAT.IOS;
+      deviceType = AW.AW_DEVICE_TYPES.IPHONE;
+      modelId = AW.AW_DEVICE_MODELS.IOS;
       break;
     }
     case 'android':
     {
-      applicationName = awFileName + '.apk';
-      deviceType = '5';
-      modelId = 5;
+      applicationName = awFileName + PACKAGE_FORMAT.ANDROID;
+      deviceType = AW.AW_DEVICE_TYPES.ANDROID;
+      modelId = AW.AW_DEVICE_MODELS.ANDROID;
       break;
     }
     default:

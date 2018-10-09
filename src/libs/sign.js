@@ -179,11 +179,11 @@ const getKeyStore = async apkBundleID => {
   try {
     await exec(`security find-generic-password -w -a ${apkBundleID}`);
   } catch (err) {
-    logger.info('--No keystore for this app...start to create one now:');
+    logger.info('No keystore for this app...start to create one now:');
 
     // 2. Create a pair of keystore:
     await createKeyStore(keystoreKeys, apkBundleID);
-    logger.info('--Done creating a new keystore');
+    logger.info('Done creating a new keystore');
   }
 
   return fetchKeychainValue(keystoreKeys, apkBundleID);

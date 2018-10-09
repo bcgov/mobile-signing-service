@@ -31,3 +31,23 @@ export const JOB_STATUS = {
   PROCESSING: 'Processing',
   COMPLETED: 'Completed',
 };
+
+export const PACKAGE_FORMAT = {
+  ANDROID: '.apk',
+  IOS: '.ipa',
+  UNKNOWN: '',
+};
+
+export const AW = {
+  AW_DEVICE_TYPES: {
+    ANDROID: '5',
+    IPHONE: '2',
+    IPAD: '1',
+    UNKNOWN: '0',
+  },
+  AW_DEVICE_MODELS: {
+    ANDROID: 5,
+    IOS: 1,
+    UNKNOWN: 0,
+  },
+};

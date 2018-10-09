@@ -31,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle } from '../../libs/deploy';
+import { deployGoogle, deployAirWatch, deployAppleStore } from '../../libs/deploy';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();

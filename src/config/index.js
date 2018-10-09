@@ -55,6 +55,12 @@ nconf.overrides({
   session: {
     key: process.env.SESSION_SECRET,
   },
+  airwatch: {
+    host: process.env.AIRWATCH_HOST,
+    upload: process.env.AIRWATCH_UPLOAD_ROUTE,
+    install: process.env.AIRWATCH_INSTALL_ROUTE,
+    account: process.env.AIRWATCH_SECRET,
+  },
 });
 
 // load other properties from file.
