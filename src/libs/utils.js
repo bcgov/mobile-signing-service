@@ -120,3 +120,17 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
   }
   return keyPairs;
 };
+
+/**
+ * Check if the object is empty
+ *
+ * @param {object} object The object to be checked
+ * @returns Boolean
+ */
+export const isEmpty = obj => {
+  for(var key in obj) {
+    if(obj.hasOwnProperty(key))
+      return false;
+  }
+  return true;
+}

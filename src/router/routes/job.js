@@ -32,6 +32,7 @@ import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
 import { deployGoogle } from '../../libs/deploy';
+import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -214,7 +215,7 @@ router.post(
   asyncMiddleware(async (req, res) => {
     const job = req.body;
 
-    if (!job) {
+    if (!job || isEmpty(job)) {
       throw errorWithCode('No such job exists', 400);
     }
 
@@ -230,7 +231,7 @@ router.post(
   asyncMiddleware(async (req, res) => {
     const job = req.body;
 
-    if (!job) {
+    if (!job || isEmpty(job)) {
       throw errorWithCode('No such job exists', 400);
     }
 
