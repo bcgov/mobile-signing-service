@@ -22,28 +22,21 @@
 
 'use strict';
 
-import jest from 'jest';
-// import { isValid } from '../server/libs/utils'
+import { fetchKeychainValue, isEmpty } from '../src/libs/utils'
 
-describe('utility helpers', function() {
+describe('Test isEmpty()', () => {
+  test('isEmpty handles a not null object', async () => {
+    const testObject = new Object({a:1, b:2});
 
-    beforeEach(() => {
-      // nothig to do
-    });
-  
-    afterEach(() => {
-      // nothig to do
-    });
-  
-    test.skip('isValid handles a valid string', async () => {
-        let testString = 'a-b_c%123';
+    expect(isEmpty(testObject)).toBe(false);
+  });
 
-        expect(isValid(testString)).toBe(true); 
-    });
+  test('isValid handles null object', async () => {
+    const testObject = new Object();
+    const testObject2 = new Object({});
 
-    test.skip('isValid handles string with invalid characters', async () => {
-        let testString = 'a-b_c#123';
-
-        expect(isValid(testString)).toBe(false); 
-    });
+    expect(isEmpty(testObject)).toBe(true);
+    expect(isEmpty(testObject2)).toBe(true);
+  });
 });
+

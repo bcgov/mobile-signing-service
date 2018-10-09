@@ -25,7 +25,6 @@ describe('Test job routes', () => {
       });
   });
 
-
   test('The signing route should respond with 200', async () => {
     await signingAgent
       .send({
