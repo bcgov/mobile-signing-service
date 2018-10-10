@@ -22,29 +22,15 @@
 
 'use strict';
 
-let passportMock = jest.genMockFromModule('passport');
+const passport = jest.requireActual('passport');
 
 function authenticate(strategy, options) {
-  return (req, res, next) => { 
+  return (req, res, next) => {
     req.isAuthenticated = () => true; // Skip calling jwtStrategy, auth the request straight
     next();
-  }
+  };
 }
 
-function initialize() {
-  return (req, res, next) => { 
-    next();
-  }
-}
+passport.authenticate = authenticate;
 
-function session() {
-  return (req, res, next) => { 
-    next();
-  }
-}
-
-passportMock.authenticate = authenticate;
-passportMock.initialize = initialize;
-passportMock.session = session;
-
-module.exports = passportMock;
+module.exports = passport;
