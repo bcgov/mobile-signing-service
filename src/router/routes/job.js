@@ -236,7 +236,7 @@ router.post(
     }
 
     if (!job.platform || !job.deploymentPlatform) {
-      throw errorWithCode('No platform specified', 400);
+      throw errorWithCode('Missing platforms', 400);
     }
 
     res.sendStatus(200).end();
