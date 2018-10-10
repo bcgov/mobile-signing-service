@@ -22,7 +22,9 @@
 
 'use strict';
 
-import { fetchKeychainValue, isEmpty } from '../src/libs/utils'
+import { fetchKeychainValue, isEmpty } from '../src/libs/utils';
+
+jest.mock('child_process');
 
 describe('Test isEmpty()', () => {
   test('isEmpty handles a not null object', async () => {
@@ -40,3 +42,12 @@ describe('Test isEmpty()', () => {
   });
 });
 
+describe('Test fetchKeychainValue()', () => {
+  test('fetchKeychainValue handles multiple keychain fetch', async () => {
+    const testInput = ['a', 'b', 'c'];
+    const expectedOutput = JSON.stringify({'a':'standard output', 'b':'standard output', 'c':'standard output'});
+    const actualOutput = JSON.stringify(await fetchKeychainValue(testInput, 'testAccount'));
+
+    expect(actualOutput).toBe(expectedOutput);
+  });
+});

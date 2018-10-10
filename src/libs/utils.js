@@ -110,7 +110,6 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
       return { ...(await accumulator), ...keyValue };
     }, {});
   
-    console.log(keyPairs);
     return keyPairs;
 
   } catch (error) {
