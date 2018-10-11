@@ -166,36 +166,10 @@ const getApkBundleID = async apkPackage => {
 };
 
 /**
- * Check if the android keystore pair exists in agent keychain,
- * if non-existing, create one and return the pair
- * 
- * @param {String} apkBundleID The bundle of app
- * @returns keyPairs
- */
-const getKeyStore = async apkBundleID => {
-  const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
-
-  // 1. Use security to check for android keystore in keychain:
-  try {
-    await exec(`security find-generic-password -w -a ${apkBundleID}`);
-  } catch (err) {
-    logger.info('No keystore for this app...start to create one now:');
-
-    // 2. Create a pair of keystore:
-    await createKeyStore(keystoreKeys, apkBundleID);
-    logger.info('Done creating a new keystore');
-  }
-
-  return fetchKeychainValue(keystoreKeys, apkBundleID);
-};
-
-/**
  * Create a keystore pair for android app if not existing,
  * and save in the keychain on agent
- * 
  * @param {String} apkBundleID The bundle of app
  * @param {Object} keystoreKeys The keywords for keystore pair
- * 
  */
 const createKeyStore = async (keystoreKeys, apkBundleID) => {
   const keystorePassword = Math.random().toString(36).substring(7);
@@ -223,10 +197,32 @@ const createKeyStore = async (keystoreKeys, apkBundleID) => {
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[1]} -p ${keystorePassword} -T /usr/bin/security -U
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[2]} -p "$(pwd)"/${apkBundleID}-ks.jks -T /usr/bin/security -U
     `);
-
   } catch (err) {
-    throw new Error(`Unable to generate and save keystore for this app: ${error}`);
+    throw new Error(`Unable to generate and save keystore for this app: ${err}`);
   }
+};
+
+/**
+ * Check if the android keystore pair exists in agent keychain,
+ * if non-existing, create one and return the pair
+ * @param {String} apkBundleID The bundle of app
+ * @returns keyPairs
+ */
+const getKeyStore = async apkBundleID => {
+  const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
+
+  // 1. Use security to check for android keystore in keychain:
+  try {
+    await exec(`security find-generic-password -w -a ${apkBundleID}`);
+  } catch (err) {
+    logger.info('No keystore for this app...start to create one now:');
+
+    // 2. Create a pair of keystore:
+    await createKeyStore(keystoreKeys, apkBundleID);
+    logger.info('Done creating a new keystore');
+  }
+
+  return fetchKeychainValue(keystoreKeys, apkBundleID);
 };
 
 /**
