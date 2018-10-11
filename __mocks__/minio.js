@@ -23,12 +23,6 @@
 import sb from 'stream-buffers';
 
 const minio = jest.genMockFromModule('minio');
-const stream = new sb.ReadableStreamBuffer({
-  frequency: 10, // in milliseconds.
-  chunkSize: 8, // in bytes.
-});
-stream.put('Hello World', 'utf8');
-stream.stop();
 
 function statObject(bucket, file, cb) {
   const now = new Date();
@@ -53,6 +47,12 @@ function putObject(bucket, name, data, cb) {
 }
 
 function getObject(bucket, name, cb) {
+  const stream = new sb.ReadableStreamBuffer({
+    frequency: 10, // in milliseconds.
+    chunkSize: 8, // in bytes.
+  });
+  stream.put('Hello World', 'utf8');
+  stream.stop();
   cb(undefined, stream);
 }
 
