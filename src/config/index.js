@@ -27,6 +27,7 @@ import nconf from 'nconf';
 import path from 'path';
 
 const env = process.env.NODE_ENV || 'development';
+const defaultPort = 8000;
 
 if (env === 'development') {
   dotenv.config();
@@ -42,7 +43,7 @@ if (env === 'development') {
 nconf.overrides({
   environment: env,
   host: process.env.HOST || '127.0.0.1',
-  port: process.env.PORT || 8000,
+  port: process.env.PORT || defaultPort,
   minio: {
     host: process.env.MINIO_HOST,
     accessKey: process.env.MINIO_ACCESS_KEY,
@@ -53,6 +54,12 @@ nconf.overrides({
   },
   session: {
     key: process.env.SESSION_SECRET,
+  },
+  airwatch: {
+    host: process.env.AIRWATCH_HOST,
+    upload: process.env.AIRWATCH_UPLOAD_ROUTE,
+    install: process.env.AIRWATCH_INSTALL_ROUTE,
+    account: process.env.AIRWATCH_SECRET,
   },
 });
 

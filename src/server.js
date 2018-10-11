@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -20,34 +20,21 @@
 
 'use strict';
 
-// eslint-disable-next-line import/prefer-default-export
-export const ENVIRONMENTS = {
-  DEVELOPMENT: 'development',
-  PRODUCTION: 'production',
-};
+import { logger, started } from '@bcgov/nodejs-common-utils';
+import config from './config';
+import app from './index';
 
-export const JOB_STATUS = {
-  CREATED: 'Created',
-  PROCESSING: 'Processing',
-  COMPLETED: 'Completed',
-};
+const env = config.get('environment');
+const port = config.get('port');
 
-export const PACKAGE_FORMAT = {
-  ANDROID: '.apk',
-  IOS: '.ipa',
-  UNKNOWN: '',
-};
+app.listen(port, '0.0.0.0', err => {
+  if (err) {
+    return logger.error(`There was a problem starting the server, ${err.message}`);
+  }
+  if (env !== 'production') {
+    return started(port);
+  }
+  return logger.info(`Production server running on port: ${port}`);
+});
 
-export const AW = {
-  AW_DEVICE_TYPES: {
-    ANDROID: '5',
-    IPHONE: '2',
-    IPAD: '1',
-    UNKNOWN: '0',
-  },
-  AW_DEVICE_MODELS: {
-    ANDROID: 5,
-    IOS: 1,
-    UNKNOWN: 0,
-  },
-};
+module.exports = app;

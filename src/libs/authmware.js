@@ -53,7 +53,7 @@ export const authmware = async app => {
   opts.passReqToCallback = true;
   // For development purposes only ignore the expiration
   // time of tokens.
-  if (config.get('environment') === 'development') {
+  if (config.get('environment') !== 'production') {
     opts.ignoreExpiration = true;
   }
 

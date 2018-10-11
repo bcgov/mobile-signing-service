@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { logger, started } from '@bcgov/nodejs-common-utils';
+import { logger } from '@bcgov/nodejs-common-utils';
 import bodyParser from 'body-parser';
 import flash from 'connect-flash';
 import express from 'express';
@@ -86,16 +86,6 @@ app.use((err, req, res, next) => {
   const message = err.message ? err.message : 'Internal Server Error';
 
   res.status(code).json({ error: message, success: false });
-});
-
-app.listen(port, '0.0.0.0', err => {
-  if (err) {
-    return logger.error(`There was a problem starting the server, ${err.message}`);
-  }
-  if (env !== 'production') {
-    return started(port);
-  }
-  return logger.info(`Production server running on port: ${port}`);
 });
 
 module.exports = app;
