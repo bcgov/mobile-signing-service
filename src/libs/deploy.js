@@ -215,15 +215,13 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   let modelId = AW.AW_DEVICE_MODELS.UNKNOWN;
 
   switch (platform) {
-    case 'ios':
-    {
+    case 'ios': {
       applicationName = awFileName + PACKAGE_FORMAT.IOS;
       deviceType = AW.AW_DEVICE_TYPES.IPHONE;
       modelId = AW.AW_DEVICE_MODELS.IOS;
       break;
     }
-    case 'android':
-    {
+    case 'android': {
       applicationName = awFileName + PACKAGE_FORMAT.ANDROID;
       deviceType = AW.AW_DEVICE_TYPES.ANDROID;
       modelId = AW.AW_DEVICE_MODELS.ANDROID;
@@ -285,9 +283,11 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
         ApplicationName: applicationName,
         PushMode: 'OnDemand',
         SupportedModels: {
-          Model: [{
-            ModelId: modelId,
-          }],
+          Model: [
+            {
+              ModelId: modelId,
+            },
+          ],
         },
       },
       json: true,

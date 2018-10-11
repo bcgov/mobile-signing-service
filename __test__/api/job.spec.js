@@ -43,7 +43,7 @@ describe('Test job routes', () => {
       .send({
         deploymentPlatform: 'cake',
       });
-      
+
     expect(response.statusCode).toBe(400);
     expect(response.body.error).toBe('Missing platforms');
   });

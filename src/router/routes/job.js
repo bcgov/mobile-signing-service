@@ -31,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch, deployAppleStore } from '../../libs/deploy';
+import { deployGoogle, deployAirWatch } from '../../libs/deploy';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
@@ -167,16 +167,14 @@ const handleDeploymentJob = async (job, clean = true) => {
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
 
-      case 'enterprise':
-      {
+      case 'enterprise': {
         deployedAppPath = await deployAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
         break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public': {
         switch (job.platform) {
-          case 'ios':
-          {
+          case 'ios': {
             throw new Error('Temporarily not supported');
           }
           case 'android': {
