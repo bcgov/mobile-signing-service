@@ -103,16 +103,16 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
       const keyValue = {};
 
       // use macos security to fetch keychain value:
-      var tmp = await exec(`security find-generic-password -w -s ${currentValue} -a ${keyAccount}`);
-      tmp = tmp.stdout.trim().split('\n');
-      keyValue[currentValue] = tmp[0];
+      let result = await exec(`security find-generic-password -w -s ${currentValue} -a ${keyAccount}`);
+      result = result.stdout.trim().split('\n');
+
+      const tmp = result[0];
+      keyValue[currentValue] = tmp;
 
       return { ...(await accumulator), ...keyValue };
     }, {});
-  
-    console.log(keyPairs);
-    return keyPairs;
 
+    return keyPairs;
   } catch (error) {
     throw new Error(`Unable to find the keychain! ${error}`);
   }
