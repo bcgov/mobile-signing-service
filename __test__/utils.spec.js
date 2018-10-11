@@ -28,14 +28,14 @@ jest.mock('child_process');
 
 describe('Test isEmpty()', () => {
   test('isEmpty handles a not null object', async () => {
-    const testObject = new Object({a:1, b:2});
+    const testObject = { a: 1, b: 2 };
 
     expect(isEmpty(testObject)).toBe(false);
   });
 
   test('isValid handles null object', async () => {
-    const testObject = new Object();
-    const testObject2 = new Object({});
+    const testObject = null;
+    const testObject2 = {};
 
     expect(isEmpty(testObject)).toBe(true);
     expect(isEmpty(testObject2)).toBe(true);
@@ -45,7 +45,11 @@ describe('Test isEmpty()', () => {
 describe('Test fetchKeychainValue()', () => {
   test('fetchKeychainValue handles multiple keychain fetch', async () => {
     const testInput = ['a', 'b', 'c'];
-    const expectedOutput = JSON.stringify({'a':'standard output', 'b':'standard output', 'c':'standard output'});
+    const expectedOutput = JSON.stringify({
+      a: 'standard output',
+      b: 'standard output',
+      c: 'standard output',
+    });
     const actualOutput = JSON.stringify(await fetchKeychainValue(testInput, 'testAccount'));
 
     expect(actualOutput).toBe(expectedOutput);

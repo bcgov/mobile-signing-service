@@ -103,15 +103,16 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
       const keyValue = {};
 
       // use macos security to fetch keychain value:
-      var tmp = await exec(`security find-generic-password -w -s ${currentValue} -a ${keyAccount}`);
-      tmp = tmp.stdout.trim().split('\n');
-      keyValue[currentValue] = tmp[0];
+      let result = await exec(`security find-generic-password -w -s ${currentValue} -a ${keyAccount}`);
+      result = result.stdout.trim().split('\n');
+
+      const tmp = result[0];
+      keyValue[currentValue] = tmp;
 
       return { ...(await accumulator), ...keyValue };
     }, {});
-  
-    return keyPairs;
 
+    return keyPairs;
   } catch (error) {
     throw new Error(`Unable to find the keychain! ${error}`);
   }
@@ -120,13 +121,18 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
 /**
  * Check if the object is empty
  *
- * @param {object} object The object to be checked
+ * @param {object} obj The object to be checked
  * @returns Boolean
  */
 export const isEmpty = obj => {
-  for(var key in obj) {
-    if(obj.hasOwnProperty(key))
-      return false;
+  let result = true;
+  if (obj !== null) {
+    Object.keys(obj).forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // return false;
+        result = false;
+      }
+    });
   }
-  return true;
+  return result;
 };
