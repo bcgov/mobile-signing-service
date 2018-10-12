@@ -110,6 +110,10 @@ router.post(
         body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
         json: true,
       };
+
+      console.log('------------optons');
+      console.log(options);
+
       const status = await request(options);
 
       if (status !== 'OK') {

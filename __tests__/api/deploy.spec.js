@@ -46,7 +46,7 @@ describe('Test deployment routes', () => {
       })
       .set('content-type', 'application/json');
     expect(response.statusCode).toBe(404); // Required parameters missing
-  })
+  });
 
   test('Test public deployment request is accepted', async () => {
     const response = await request(app)
