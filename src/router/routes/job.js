@@ -32,6 +32,7 @@ import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
 import { deployGoogle, deployAirWatch } from '../../libs/deploy';
+import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
 const bucket = config.get('minio:bucket');
@@ -212,7 +213,7 @@ router.post(
   asyncMiddleware(async (req, res) => {
     const job = req.body;
 
-    if (!job) {
+    if (!job || isEmpty(job)) {
       throw errorWithCode('No such job exists', 400);
     }
 
@@ -228,12 +229,12 @@ router.post(
   asyncMiddleware(async (req, res) => {
     const job = req.body;
 
-    if (!job) {
+    if (!job || isEmpty(job)) {
       throw errorWithCode('No such job exists', 400);
     }
 
     if (!job.platform || !job.deploymentPlatform) {
-      throw errorWithCode('No platform specified', 400);
+      throw errorWithCode('Missing platforms', 400);
     }
 
     res.sendStatus(200).end();

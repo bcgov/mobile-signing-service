@@ -22,28 +22,36 @@
 
 'use strict';
 
-import jest from 'jest';
-import { isValid } from '../server/libs/utils'
+import { fetchKeychainValue, isEmpty } from '../src/libs/utils';
 
-describe('utility helpers', function() {
+jest.mock('child_process');
 
-    beforeEach(() => {
-      // nothig to do
+describe('Test isEmpty()', () => {
+  test('isEmpty handles a not null object', async () => {
+    const testObject = { a: 1, b: 2 };
+
+    expect(isEmpty(testObject)).toBe(false);
+  });
+
+  test('isValid handles null object', async () => {
+    const testObject = null;
+    const testObject2 = {};
+
+    expect(isEmpty(testObject)).toBe(true);
+    expect(isEmpty(testObject2)).toBe(true);
+  });
+});
+
+describe('Test fetchKeychainValue()', () => {
+  test('fetchKeychainValue handles multiple keychain fetch', async () => {
+    const testInput = ['a', 'b', 'c'];
+    const expectedOutput = JSON.stringify({
+      a: 'standard output',
+      b: 'standard output',
+      c: 'standard output',
     });
-  
-    afterEach(() => {
-      // nothig to do
-    });
-  
-    test('isValid handles a valid string', async () => {
-        let testString = 'a-b_c%123';
+    const actualOutput = JSON.stringify(await fetchKeychainValue(testInput, 'testAccount'));
 
-        expect(isValid(testString)).toBe(true); 
-    });
-
-    test('isValid handles string with invalid characters', async () => {
-        let testString = 'a-b_c#123';
-
-        expect(isValid(testString)).toBe(false); 
-    });
+    expect(actualOutput).toBe(expectedOutput);
+  });
 });

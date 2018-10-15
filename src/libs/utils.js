@@ -117,3 +117,22 @@ export const fetchKeychainValue = async (keyNames, keyAccount) => {
     throw new Error(`Unable to find the keychain! ${error}`);
   }
 };
+
+/**
+ * Check if the object is empty
+ *
+ * @param {object} obj The object to be checked
+ * @returns Boolean
+ */
+export const isEmpty = obj => {
+  let result = true;
+  if (obj !== null) {
+    Object.keys(obj).forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        // return false;
+        result = false;
+      }
+    });
+  }
+  return result;
+};
