@@ -47,8 +47,6 @@ The `options.plist` contain the answers to the questions xcode normally asks you
 	<string>automatic</string>
 	<key>stripSwiftSymbols</key>
 	<true/>
-	<key>teamID</key>
-	<string>P83QAVS3C</string>
 	<key>uploadSymbols</key>
 	<true/>
 </dict>
