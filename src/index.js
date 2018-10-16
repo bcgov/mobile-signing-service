@@ -26,13 +26,10 @@ import flash from 'connect-flash';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import config from './config';
 import { authmware } from './libs/authmware';
 import { router } from './router';
 
 // Config
-const env = config.get('environment');
-const port = config.get('port');
 const app = express();
 const options = {
   inflate: true,
