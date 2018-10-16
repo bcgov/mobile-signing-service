@@ -31,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch } from '../../libs/deploy';
+import { deployGoogle, deployAirWatch, deployAppStore } from '../../libs/deploy';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
@@ -175,7 +175,8 @@ const handleDeploymentJob = async (job, clean = true) => {
       case 'public': {
         switch (job.platform) {
           case 'ios': {
-            throw new Error('Temporarily not supported');
+            deployedAppPath = await deployAppStore(job.originalFileName);
+            break;
           }
           case 'android': {
             deployedAppPath = await deployGoogle(job.originalFileName);

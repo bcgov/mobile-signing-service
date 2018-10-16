@@ -23,6 +23,7 @@ import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
+import xml2js from 'xml2js';
 import config from '../config';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
@@ -168,15 +169,57 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
 };
 
 /**
- * Apple Store Deployment
+ * App Store Deployment
  *
- * @param {String} signedApp The name of the signed app
+ * @param {String} signedApp The name of the signed app, ONLY accepts .ipa / .pkg format
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns The status of the deployment
  */
-// eslint-disable-next-line no-unused-vars
-export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
-  // TODO
+// eslint-disable-next-line import/prefer-default-export
+export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
+  // Get app:
+  const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
+  const signedAPP = require('fs').readFileSync(signedAppPath);
+
+  // Get altool access:
+  const iosKeys = ['appleAccount', 'appleKey'];
+  const iosKeyPairs = await fetchKeychainValue(iosKeys, 'altool');
+
+  try {
+    // Step 1. Use altool to validate the app:
+    // TODO: (sh) only accepting iOS apps, could provide more option for tvOS, OS X and macOS apps
+    await exec(`
+    xcrun altool --validate-app \
+    -t ios \
+    -f ${signedAPP} \
+    -u ${iosKeyPairs[iosKeys[0]]} \
+    -p ${iosKeyPairs[iosKeys[1]]} \
+    --output-format xml`);
+
+    // Step 2. Use altool to upload the app to Apple Store Connect:
+    await exec(`
+    xcrun altool --upload-app \
+    -t ios \
+    -f ${signedAPP} \
+    -u ${iosKeyPairs[iosKeys[0]]} \
+    -p ${iosKeyPairs[iosKeys[1]]} \
+    --output-format xml`);
+
+    return signedAppPath;
+  } catch (err) {
+    const message = 'Unable to deploy to Apple Store';
+    let errMsg = '';
+
+    // Use xml parser to read error message from altool, at specific path:
+    const parser = new xml2js.Parser();
+    parser.parseString(err.stdout, (error, result) => {
+      errMsg = result.plist.dict[0].array[0].dict[0].string;
+    });
+
+    logger.error(`${message}, err = ${errMsg[0]}`);
+  }
+
+  return Promise.reject();
 };
 
 /**
