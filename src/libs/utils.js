@@ -129,7 +129,6 @@ export const isEmpty = obj => {
   if (obj !== null) {
     Object.keys(obj).forEach(key => {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        // return false;
         result = false;
       }
     });
