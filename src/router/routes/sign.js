@@ -111,9 +111,6 @@ router.post(
         json: true,
       };
 
-      console.log('------------optons');
-      console.log(options);
-
       const status = await request(options);
 
       if (status !== 'OK') {

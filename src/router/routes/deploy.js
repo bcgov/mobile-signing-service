@@ -78,7 +78,7 @@ router.post(
         throw errorWithCode('Cannot find a signed package with this job!', 404);
       }
 
-      // Check for airwatch deployment: (keep console output as using fake data)
+      // Check for airwatch deployment:
       if (deploymentPlatform.toLocaleLowerCase() === 'enterprise') {
         try {
           const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);
