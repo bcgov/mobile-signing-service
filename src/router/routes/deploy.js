@@ -79,14 +79,13 @@ router.post(
       }
 
       // Check for airwatch deployment: (keep console output as using fake data)
-      if (deploymentPlatform.toLocaleLowerCase() == 'enterprise') {
+      if (deploymentPlatform.toLocaleLowerCase() === 'enterprise') {
         try {
-          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);       
-          airwatchParameters = {...airwatchParameters, ...{awOrgID: airwatchOrgID, awFileName: appProject.projectName}};
-          
-          console.log('Airwatch para: ' + airwatchParameters.awFileName);
-          console.log('project id is: ' + projectId);
-
+          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);
+          airwatchParameters = {
+            ...airwatchParameters,
+            ...{ awOrgID: airwatchOrgID, awFileName: appProject.projectName },
+          };
         } catch (error) {
           const message = `Unable to fetch airwatch group ID for project ${projectId}`;
           throw errorWithCode(`${message}, err = ${error.message}`, 500);
@@ -106,7 +105,7 @@ router.post(
         platform: signedJob.platform.toLocaleLowerCase(),
         originalFileEtag: signedJob.originalFileEtag,
         deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
-        projectId: projectId,
+        projectId,
         status: 'Created',
       });
 
