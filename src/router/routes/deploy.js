@@ -64,7 +64,7 @@ router.post(
 
       const signedJob = await Job.findById(db, jobId);
       const appProject = await Project.findById(db, projectId);
-      const airwatchParameters = {};
+      let airwatchParameters = {};
 
       if (!signedJob) {
         throw errorWithCode('No such job', 404);
@@ -78,15 +78,14 @@ router.post(
         throw errorWithCode('Cannot find a signed package with this job!', 404);
       }
 
-      // Check for airwatch deployment: (keep console output as using fake data)
-      if (deploymentPlatform.toLocaleLowerCase() == 'enterprise') {
+      // Check for airwatch deployment:
+      if (deploymentPlatform.toLocaleLowerCase() === 'enterprise') {
         try {
-          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);       
-          Object.assign(airwatchParameters, {awOrgID: airwatchOrgID, awFileName: appProject.projectName});
-          
-          console.log('Airwatch para are: ' + airwatchParameters);
-          console.log('project id is: ' + projectId);
-
+          const airwatchOrgID = await Project.getAirwatchGroupCode(db, appProject.awGroupId);
+          airwatchParameters = {
+            ...airwatchParameters,
+            ...{ awOrgID: airwatchOrgID, awFileName: appProject.projectName },
+          };
         } catch (error) {
           const message = `Unable to fetch airwatch group ID for project ${projectId}`;
           throw errorWithCode(`${message}, err = ${error.message}`, 500);
@@ -106,14 +105,17 @@ router.post(
         platform: signedJob.platform.toLocaleLowerCase(),
         originalFileEtag: signedJob.originalFileEtag,
         deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
-        projectId: projectId,
+        projectId,
         status: 'Created',
       });
 
       logger.info(`Created deployment job with ID ${job.id}`);
 
       const options = {
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await shared.sso.accessToken}`,
+        },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:deployPath')),
         body: {
