@@ -83,6 +83,25 @@ const getApkBundleID = async apkPackage => {
 };
 
 /**
+ * Parse the error message from apple application loader
+ *
+ * @param {String} altoolError The error message from altool stdout
+ * @returns The bundle ID
+ */
+const handleAltoolErrorResponse = async altoolError => {
+  try {
+    // Use xml parser to read error message from altool, at specific path:
+    const parser = new xml2js.Parser();
+    const parseString = util.promisify(parser.parseString);
+    const result = parseString(altoolError);
+    const errorMessages = result.plist.dict[0].array[0].dict[0].string;
+    throw errorMessages;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+/**
  * Google Edit to uploading apk for deployment
  *
  * @param {*} publisher The google android publisher
@@ -177,15 +196,16 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line import/prefer-default-export
 export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
-  // Get app:
-  const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
-  const signedAPP = require('fs').readFileSync(signedAppPath);
-
-  // Get altool access:
-  const iosKeys = ['appleAccount', 'appleKey'];
-  const iosKeyPairs = await fetchKeychainValue(iosKeys, 'altool');
-
   try {
+    // Get app binary:
+    const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
+    const signedAPP = fs.readFileSync(signedAppPath);
+
+    // Get altool access:
+    // This array serves as the constant key names
+    const iosKeys = ['appleAccount', 'appleKey'];
+    const iosKeyPairs = await fetchKeychainValue(iosKeys, 'altool');
+
     // Step 1. Use altool to validate the app:
     // TODO: (sh) only accepting iOS apps, could provide more option for tvOS, OS X and macOS apps
     await exec(`
@@ -207,19 +227,12 @@ export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
 
     return signedAppPath;
   } catch (err) {
-    const message = 'Unable to deploy to Apple Store';
-    let errMsg = '';
+    if (err.stdout) {
+      await handleAltoolErrorResponse(err.stdout);
+    }
 
-    // Use xml parser to read error message from altool, at specific path:
-    const parser = new xml2js.Parser();
-    parser.parseString(err.stdout, (error, result) => {
-      errMsg = result.plist.dict[0].array[0].dict[0].string;
-    });
-
-    logger.error(`${message}, err = ${errMsg[0]}`);
+    throw err;
   }
-
-  return Promise.reject();
 };
 
 /**
