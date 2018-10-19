@@ -6,7 +6,10 @@ const table = 'job';
 
 exports.up = async knex =>
   knex.schema.table(table, async t => {
-    t.integer('project_id').unsigned().references('id').inTable('project');
+    t.integer('project_id')
+      .unsigned()
+      .references('id')
+      .inTable('project');
   });
 
 exports.down = async knex =>

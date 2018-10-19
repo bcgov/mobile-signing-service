@@ -25,9 +25,8 @@
 import Model from '../model';
 
 export default class Project extends Model {
-
   static async findById(db, id) {
-    if (Number(id) === 1) return { id: 1, project_name: 'hello', aw_group_id: 'ABC'};
+    if (Number(id) === 1) return { id: 1, project_name: 'hello', aw_group_id: 'ABC' };
     return undefined;
   }
 
