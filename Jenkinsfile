@@ -28,6 +28,7 @@ def PIRATE_ICO = 'http://icons.iconarchive.com/icons/aha-soft/torrent/64/pirate-
 def JENKINS_ICO = 'https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png'
 def OPENSHIFT_ICO = 'https://commons.wikimedia.org/wiki/File:OpenShift-LogoType.svg'
 def SLACK_CHANNEL = '${SLACK_CHANNEL}x'
+def GIT_BRANCH_NAME = 'master'
 
 def notifySlack(text, channel, url, attachments, icon) {
     def slackURL = url
@@ -77,12 +78,12 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       GIT_COMMIT_AUTHOR = sh (
         script: """git show -s --pretty=%an""",
         returnStdout: true).trim()
-      GIT_BRANCH_NAME = sh (
-        script: """git branch -a -v --no-abbrev --contains ${GIT_COMMIT_SHORT_HASH} | \
-        grep 'remotes' | \
-        awk -F ' ' '{print \$1}' | \
-        awk -F '/' '{print \$3}'""",
-        returnStdout: true).trim()
+      // GIT_BRANCH_NAME = sh (
+      //   script: """git branch -a -v --no-abbrev --contains ${GIT_COMMIT_SHORT_HASH} | \
+      //   grep 'remotes' | \
+      //   awk -F ' ' '{print \$1}' | \
+      //   awk -F '/' '{print \$3}'""",
+      //   returnStdout: true).trim()
     }
     
     stage('Steup') {
@@ -231,14 +232,14 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
 
         notifySlack("${env.JOB_NAME}", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], JENKINS_ICO)
 
-        if( "master" == GIT_BRANCH_NAME.toLowerCase() ) {
-          openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[2], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
-          echo "Applying tag ${TAG_NAMES[2]} to image ${IMAGE_HASH}"
-        } else {
+        // if( "master" == GIT_BRANCH_NAME.toLowerCase() ) {
           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[0], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          echo "Applying tag ${TAG_NAMES[0]} to image ${IMAGE_HASH}"
-        }
+          notifySlack("Promotion Completed\n Build #${BUILD_ID} is promoted to the *prod* environment.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+        //   echo "Applying tag ${TAG_NAMES[2]} to image ${IMAGE_HASH}"
+        // } else {
+        //   openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[0], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+        //   echo "Applying tag ${TAG_NAMES[0]} to image ${IMAGE_HASH}"
+        // }
       } catch (error) {
         echo "Unable complete build, error = ${error}"
 
@@ -253,17 +254,17 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       }
     }
   }
-  if( "master" != GIT_BRANCH_NAME.toLowerCase() ) {
-    stage('Approval') {
-      timeout(time: 1, unit: 'DAYS') {
-        input message: "Deploy to test?", submitter: 'jleach-admin'
-      }
-      node ('master') {
-        stage('Promotion') {
-          openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[1], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
-        }
-      }  
-    }
-  }
+  // if( "master" != GIT_BRANCH_NAME.toLowerCase() ) {
+  //   stage('Approval') {
+  //     timeout(time: 1, unit: 'DAYS') {
+  //       input message: "Deploy to test?", submitter: 'jleach-admin'
+  //     }
+  //     node ('master') {
+  //       stage('Promotion') {
+  //         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: TAG_NAMES[1], srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+  //         notifySlack("Promotion Completed\n Build #${BUILD_ID} was promoted to *test*.", "${SLACK_CHANNEL}", "https://hooks.slack.com/services/${SLACK_TOKEN}", [], OPENSHIFT_ICO)
+  //       }
+  //     }  
+  //   }
+  // }
 }
