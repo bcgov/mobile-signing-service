@@ -15,22 +15,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-07-23.
+// Created by Jason Leach on 2018-05-06.
 //
 
 /* eslint-disable no-unused-vars */
 
 'use strict';
 
-import Model from '../model';
+const passport = jest.requireActual('passport');
 
-export default class Project extends Model {
-  static async findById(db, id) {
-    if (Number(id) === 1) return { id: 1, project_name: 'hello', aw_group_id: 'ABC' };
-    return undefined;
-  }
-
-  static async getAirwatchGroupCode(db, values) {
-    return '123';
-  }
+function authenticate(strategy, options) {
+  return (req, res, next) => {
+    req.isAuthenticated = () => true; // Skip calling jwtStrategy, auth the request straight
+    next();
+  };
 }
+
+passport.authenticate = authenticate;
+
+module.exports = passport;

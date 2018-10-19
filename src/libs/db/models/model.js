@@ -1,5 +1,3 @@
-import { SSL_OP_NO_QUERY_MTU } from "constants";
-
 //
 // Code Signing
 //
@@ -20,7 +18,7 @@ import { SSL_OP_NO_QUERY_MTU } from "constants";
 // Created by Jason Leach on 2018-05-06.
 //
 
-/* eslint-env es6 */
+/* eslint-disable no-unused-vars */
 
 'use strict';
 
@@ -231,7 +229,7 @@ export default class Model {
       const q = await db
         .select('aw_code')
         .from('ref_aw_deployment_group')
-        .where({'aw_group_id': where});
+        .where({ aw_group_id: where });
 
       return q.pop().aw_code;
     } catch (err) {
