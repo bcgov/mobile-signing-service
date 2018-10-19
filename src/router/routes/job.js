@@ -96,6 +96,29 @@ const reportJobStatus = async job => {
 };
 
 /**
+ * Call the corresponding deployment method based on the deployment platform
+ *
+ * @param {String} deployPlatform The deployment platform, ios/android
+ * @param {String} fileName The file to be deployed
+ */
+const switchDeploymentPlatform = async (deployPlatform, fileName) => {
+  try {
+    switch (deployPlatform) {
+      case 'ios': {
+        return await deployAppStore(fileName);
+      }
+      case 'android': {
+        return await deployGoogle(fileName);
+      }
+      default:
+        throw new Error('Unsupported application type');
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Start processing a signing `Job`
  *
  * @param {Job} job The `Job` to process
@@ -166,25 +189,13 @@ const handleDeploymentJob = async (job, clean = true) => {
 
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
-
       case 'enterprise': {
         deployedAppPath = await deployAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
         break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public': {
-        switch (job.platform) {
-          case 'ios': {
-            deployedAppPath = await deployAppStore(job.originalFileName);
-            break;
-          }
-          case 'android': {
-            deployedAppPath = await deployGoogle(job.originalFileName);
-            break;
-          }
-          default:
-            throw new Error('Unsupported application type');
-        }
+        deployedAppPath = await switchDeploymentPlatform(job.platform, job.originalFileName);
         break;
       }
       default:
