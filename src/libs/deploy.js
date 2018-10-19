@@ -228,6 +228,7 @@ export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
     return signedAppPath;
   } catch (err) {
     if (err.stdout) {
+      // only altool's error has stdout
       await handleAltoolErrorResponse(err.stdout);
     }
 
