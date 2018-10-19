@@ -54,7 +54,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
     workingDir: '/tmp',
     command: '',
     args: '${computer.jnlpmac} ${computer.name}',
-    alwaysPullImage: false,
+    alwaysPullImage: true,
     envVars: [
       envVar(key: 'NODE_ENV', value: 'test'),
       // envVar(key: 'SESSION_SECRET', value: 'helloworld'),
