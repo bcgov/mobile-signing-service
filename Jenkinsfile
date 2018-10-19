@@ -29,6 +29,7 @@ def JENKINS_ICO = 'https://wiki.jenkins-ci.org/download/attachments/2916393/logo
 def OPENSHIFT_ICO = 'https://commons.wikimedia.org/wiki/File:OpenShift-LogoType.svg'
 def SLACK_CHANNEL = '${SLACK_CHANNEL}x'
 def GIT_BRANCH_NAME = 'master'
+def POD_LABEL = "${APP_NAME}-${UUID.randomUUID().toString()}"
 
 def notifySlack(text, channel, url, attachments, icon) {
     def slackURL = url
@@ -43,7 +44,7 @@ def notifySlack(text, channel, url, attachments, icon) {
 }
 
 // See https://github.com/jenkinsci/kubernetes-plugin
-podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", serviceAccount: 'jenkins', cloud: 'openshift', containers: [
+podTemplate(label: "${POD_LABEL}", name: "${POD_LABEL}", serviceAccount: 'jenkins', cloud: 'openshift', containers: [
   containerTemplate(
     name: 'jnlp',
     image: 'docker-registry.default.svc:5000/openshift/jenkins-slave-nodejs:8',
@@ -62,7 +63,7 @@ podTemplate(label: "${APP_NAME}-node-build", name: "${APP_NAME}-node-build", ser
       ]
   )
 ]) {
-  node("${APP_NAME}-node-build") {
+  node("${POD_LABEL}") {
 
     SLACK_TOKEN = sh (
       script: """oc get secret/slack -o template --template="{{.data.token}}" | base64 --decode""",
