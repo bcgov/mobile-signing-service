@@ -23,24 +23,24 @@
 'use strict';
 
 import {
-  logger,
-  putObject,
-  isExpired,
-  getObject,
-  statObject,
   asyncMiddleware,
   errorWithCode,
+  getObject,
+  isExpired,
+  logger,
+  putObject,
+  statObject,
 } from '@bcgov/nodejs-common-utils';
-import url from 'url';
-import { PassThrough } from 'stream';
-import fs from 'fs';
-import request from 'request-promise-native';
 import { Router } from 'express';
+import fs from 'fs';
 import multer from 'multer';
+import request from 'request-promise-native';
+import { PassThrough } from 'stream';
+import url from 'url';
 import config from '../../config';
-import { cleanup } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
+import { cleanup } from '../../libs/utils';
 
 const router = new Router();
 const dm = new DataManager();
@@ -145,9 +145,10 @@ router.get(
         throw errorWithCode('This artifact is expired', 400);
       }
 
-      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
-      const bstream = new PassThrough().end(obj);
       const [name] = job.originalFileName.split('.');
+      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
+      const bstream = new PassThrough();
+      bstream.end(obj);
 
       res.set({
         'Content-Disposition': `attachment;filename=${name}-signed.zip`,
@@ -156,16 +157,14 @@ router.get(
       });
 
       bstream.pipe(res);
-
-      // const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 30);
-      // res.redirect(link);
     } catch (error) {
+      const message = `Unable to retrieve archive for job with ID ${jobId}`;
+      logger.error(`${message}, err = ${error.message}`);
+
       if (error.code) {
         throw error;
       }
 
-      const message = `Unable to retrieve arcive for job with ID ${jobId}`;
-      logger.error(`${message}, err = ${error.message}`);
       throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
   })
