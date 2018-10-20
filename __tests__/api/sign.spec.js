@@ -36,7 +36,7 @@ jest.mock('multer');
 jest.mock('request-promise-native');
 jest.mock('minio');
 
-const sample = path.join(__dirname, '../../', 'samples/test.zip');
+const sample = path.join(__dirname, '../', 'fixtures/test.zip');
 
 describe('Test signing route', () => {
   test('The platform parameter must be specified', async () => {
@@ -55,7 +55,7 @@ describe('Test signing route', () => {
       .expect('Content-Type', /json/);
   });
 
-  test.skip('All valid parameters are accepted', async () => {
+  test('All valid parameters are accepted', async () => {
     await request(app)
       .post('/api/v1/sign')
       .query({ platform: 'ios' })

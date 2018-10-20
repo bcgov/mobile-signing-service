@@ -18,9 +18,14 @@
 // Created by Jason Leach on 2018-10-20.
 //
 
+/* eslint-disable no-unused-vars */
+
 'use strict';
 
+import sb from 'stream-buffers';
+
 const fs = jest.requireActual('fs');
+const rs = fs.createReadStream;
 
 function access(path, flag, cb) {
   if (path === 'no-file-access') {
@@ -38,7 +43,26 @@ function readFile(path, options, cb) {
   return cb(undefined, Buffer.from('Hello World', 'utf8'));
 }
 
+function createWriteStream(path) {
+  const stream = new sb.WritableStreamBuffer({
+    initialSize: 100 * 1024 * 10, // start at 1000 kilobytes.
+    incrementAmount: 10 * 1024, // grow by 10 kilobytes each time buffer overflows.
+  });
+
+  return stream;
+}
+
+function createReadStream(path) {
+  if (path.includes('uploads')) {
+    return undefined;
+  }
+
+  return rs(path);
+}
+
 fs.readFile = readFile;
 fs.access = access;
+fs.createWriteStream = createWriteStream;
+fs.createReadStream = createReadStream;
 
 module.exports = fs;

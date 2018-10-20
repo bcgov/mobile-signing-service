@@ -89,7 +89,13 @@ router.post(
       const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
 
       if (etag) {
-        await cleanup(req.file.path);
+        // Don't let a failed cleanup disrupt the workflow.
+        try {
+          await cleanup(req.file.path);
+        } catch (err) {
+          const message = `Unable to cleanup file ${req.file.path}`;
+          logger.error(`${message}, err = ${err.message}`);
+        }
       }
 
       const job = await Job.create(db, {
@@ -98,6 +104,7 @@ router.post(
         originalFileEtag: etag,
         status: 'Created',
       });
+
       logger.info(`Created job with ID ${job.id}`);
 
       const options = {
@@ -120,12 +127,13 @@ router.post(
 
       return null;
     } catch (err) {
+      const message = 'Unable to create signing job';
+      logger.error(`${message}, err = ${err.message}`);
+
       if (err.code) {
         throw err;
       }
 
-      const message = 'Unable to create signing job';
-      logger.error(`${message}, err = ${err.message}`);
       throw errorWithCode(`${message}, err = ${err.message}`, 500);
     }
   })
