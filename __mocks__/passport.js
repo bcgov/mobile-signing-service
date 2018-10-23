@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Sign
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,39 +15,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-01-10.
+// Created by Jason Leach on 2018-05-06.
 //
+
+/* eslint-disable no-unused-vars */
 
 'use strict';
 
-// eslint-disable-next-line import/prefer-default-export
-export const ENVIRONMENTS = {
-  DEVELOPMENT: 'development',
-  PRODUCTION: 'production',
-};
+const passport = jest.requireActual('passport');
 
-export const JOB_STATUS = {
-  CREATED: 'Created',
-  PROCESSING: 'Processing',
-  COMPLETED: 'Completed',
-};
+function authenticate(strategy, options) {
+  return (req, res, next) => {
+    req.isAuthenticated = () => true; // Skip calling jwtStrategy, auth the request straight
+    next();
+  };
+}
 
-export const PACKAGE_FORMAT = {
-  ANDROID: '.apk',
-  IOS: '.ipa',
-  UNKNOWN: '',
-};
+passport.authenticate = authenticate;
 
-export const AW = {
-  AW_DEVICE_TYPES: {
-    ANDROID: '5',
-    IPHONE: '2',
-    IPAD: '1',
-    UNKNOWN: '0',
-  },
-  AW_DEVICE_MODELS: {
-    ANDROID: 5,
-    IOS: 1,
-    UNKNOWN: 0,
-  },
-};
+module.exports = passport;

@@ -1,5 +1,5 @@
 //
-// SecureImage
+// Code Signing
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,39 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-01-10.
+// Created by Jason Leach on 2018-07-20.
 //
 
-'use strict';
+import { default as request } from 'supertest'; // eslint-disable-line
+import app from '../../src';
 
-// eslint-disable-next-line import/prefer-default-export
-export const ENVIRONMENTS = {
-  DEVELOPMENT: 'development',
-  PRODUCTION: 'production',
-};
-
-export const JOB_STATUS = {
-  CREATED: 'Created',
-  PROCESSING: 'Processing',
-  COMPLETED: 'Completed',
-};
-
-export const PACKAGE_FORMAT = {
-  ANDROID: '.apk',
-  IOS: '.ipa',
-  UNKNOWN: '',
-};
-
-export const AW = {
-  AW_DEVICE_TYPES: {
-    ANDROID: '5',
-    IPHONE: '2',
-    IPAD: '1',
-    UNKNOWN: '0',
-  },
-  AW_DEVICE_MODELS: {
-    ANDROID: 5,
-    IOS: 1,
-    UNKNOWN: 0,
-  },
-};
+describe('Test monitoring routes', () => {
+  test('The readiness probe should respond with 200 ', async () => {
+    await request(app)
+      .get('/ehlo')
+      .expect(200);
+  });
+});

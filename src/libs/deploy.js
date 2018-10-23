@@ -25,9 +25,12 @@ import path from 'path';
 import shortid from 'shortid';
 import config from '../config';
 import shared from './shared';
+import { fetchKeychainValue } from './utils';
+import { AW, PACKAGE_FORMAT } from '../constants';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFileSync);
 const bucket = config.get('minio:bucket');
 
 /* eslint-disable global-require */
@@ -131,12 +134,11 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
     // Get the bundle ID for the apk:
     const apkBundleId = await getApkBundleID(signedApkPath);
     // Turn data stream into a package-archive file for deployment:
-    const signedAPK = fs.readFileSync(signedApkPath);
+    const signedAPK = await readFile(signedApkPath);
     // Get the Google client-service key to deployment:
     const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
     const keyPath = keyFull.stdout.trim().split('\n');
-    // eslint-disable-next-line import/no-dynamic-require
-    const key = require(`${keyPath}`); // TODO:(jl) This require should go.
+    const key = JSON.parse(await readFile(keyPath));
 
     // Set up Google publisher:
     const scopes = [process.env.ANDROID_PUBLISHER_URL];
@@ -189,6 +191,17 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
  */
 // eslint-disable-next-line import/prefer-default-export
 export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
+  // The urls for airwatch api:
+  const awHost = config.get('airwatch:host');
+  const awUploadAPI = config.get('airwatch:upload');
+  const awInstallAPI = config.get('airwatch:install');
+  const awAccountName = config.get('airwatch:account');
+
+  // TODO: (sh) Update the user account to a device-account:
+  // This array serves as the constant key names
+  const awKeys = ['awUsername', 'awPassword', 'awCode'];
+  const awKeyPairs = await fetchKeychainValue(awKeys, awAccountName);
+
   /*
   TODO:(sh) Move these to constant
   Values for airwatch api v8_1:
@@ -197,43 +210,26 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
     ApplicationName: android -> apk; Apple -> ipa
   */
 
-  let deviceType = '';
+  let deviceType = AW.AW_DEVICE_TYPES.UNKNOWN;
   let applicationName = '';
-  let modelId = 0;
+  let modelId = AW.AW_DEVICE_MODELS.UNKNOWN;
 
   switch (platform) {
-    case 'ios':
-    {
-      applicationName = awFileName + '.ipa';
-      deviceType = '2';
-      modelId = 1;
+    case 'ios': {
+      applicationName = awFileName + PACKAGE_FORMAT.IOS;
+      deviceType = AW.AW_DEVICE_TYPES.IPHONE;
+      modelId = AW.AW_DEVICE_MODELS.IOS;
       break;
     }
-    case 'android':
-    {
-      applicationName = awFileName + '.apk';
-      deviceType = '5';
-      modelId = 5;
+    case 'android': {
+      applicationName = awFileName + PACKAGE_FORMAT.ANDROID;
+      deviceType = AW.AW_DEVICE_TYPES.ANDROID;
+      modelId = AW.AW_DEVICE_MODELS.ANDROID;
       break;
     }
     default:
       throw new Error('Unsupported application type for airWatch deployment');
   }
-
-  // The constant url for api:
-  const awHost = process.env.AIRWATCH_HOST;
-  const awUploadAPI = process.env.AIRWATCH_UPLOAD_ROUTE;
-  const awInstallAPI = process.env.AIRWATCH_INSTALL_ROUTE;
-
-  // Update the user account to a device-account:
-  const awUsernameF = await exec('security find-generic-password -w -s awUsername');
-  const awPasswordF = await exec('security find-generic-password -w -s awPassword');
-  const awTenantCodeF = await exec('security find-generic-password -w -s awCode');
-
-  // Extract value from stdout:
-  const awUsername = awUsernameF.stdout.trim().split('\n')[0];
-  const awPassword = awPasswordF.stdout.trim().split('\n')[0];
-  const awTenantCode = awTenantCodeF.stdout.trim().split('\n')[0];
 
   // Get app binary:
   const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
@@ -245,12 +241,12 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
   const uploadOptions = {
     headers: {
       'Content-Type': 'application/octet-stream',
-      'aw-tenant-code': awTenantCode,
+      'aw-tenant-code': awKeyPairs[awKeys[2]],
       Accept: 'application/json',
     },
     auth: {
-      user: awUsername,
-      password: awPassword,
+      user: awKeyPairs[awKeys[0]],
+      password: awKeyPairs[awKeys[1]],
     },
     method: 'POST',
     uri: url.resolve(awHost, awUploadAPI),
@@ -273,11 +269,11 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
     const installOptions = {
       headers: {
         'content-type': 'application/json',
-        'aw-tenant-code': awTenantCode,
+        'aw-tenant-code': awKeyPairs[awKeys[2]],
       },
       auth: {
-        user: awUsername,
-        password: awPassword,
+        user: awKeyPairs[awKeys[0]],
+        password: awKeyPairs[awKeys[1]],
       },
       method: 'POST',
       uri: url.resolve(awHost, awInstallAPI),
@@ -287,9 +283,11 @@ export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, w
         ApplicationName: applicationName,
         PushMode: 'OnDemand',
         SupportedModels: {
-          Model: [{
-            ModelId: modelId,
-          }],
+          Model: [
+            {
+              ModelId: modelId,
+            },
+          ],
         },
       },
       json: true,
