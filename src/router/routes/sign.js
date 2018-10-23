@@ -23,24 +23,24 @@
 'use strict';
 
 import {
-  logger,
-  putObject,
-  isExpired,
-  getObject,
-  statObject,
   asyncMiddleware,
   errorWithCode,
+  getObject,
+  isExpired,
+  logger,
+  putObject,
+  statObject,
 } from '@bcgov/nodejs-common-utils';
-import url from 'url';
-import { PassThrough } from 'stream';
-import fs from 'fs';
-import request from 'request-promise-native';
 import { Router } from 'express';
+import fs from 'fs';
 import multer from 'multer';
+import request from 'request-promise-native';
+import { PassThrough } from 'stream';
+import url from 'url';
 import config from '../../config';
-import { cleanup } from '../../libs/utils';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
+import { cleanup } from '../../libs/utils';
 
 const router = new Router();
 const dm = new DataManager();
@@ -86,7 +86,9 @@ router.post(
       });
 
       const readStream = fs.createReadStream(req.file.path);
+      // readStream.on('end', () => readStream.destroy());
       const etag = await putObject(shared.minio, bucket, req.file.originalname, readStream);
+      // readStream.destroy();
 
       if (etag) {
         await cleanup(req.file.path);
