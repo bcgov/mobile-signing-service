@@ -385,10 +385,13 @@
                   "name": "NODE_ENV",
                   "value": "${NODE_ENV}"
                 },
-
                 {
                   "name": "API_URL",
                   "value": "${API_URL}"
+                },
+                {
+                  "name": "AGENT_URL",
+                  "value": "${AGENT_URL}"
                 }
               ],
               "resources": {
@@ -752,6 +755,12 @@
       "displayName": "Public API URL",
       "description": "The fully qualified external URL to access this service.",
       "value": "http://example.com/",
+      "required": true
+    },
+    {
+      "name": "AGENT_URL",
+      "displayName": "Public API URL",
+      "description": "The fully qualified external URL to access this service.",
       "required": true
     }
   ]
