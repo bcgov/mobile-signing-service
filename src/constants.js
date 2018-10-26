@@ -30,4 +30,5 @@ export const JOB_STATUS = {
   CREATED: 'Created',
   PROCESSING: 'Processing',
   COMPLETED: 'Completed',
+  FAILED: 'Failed',
 };
