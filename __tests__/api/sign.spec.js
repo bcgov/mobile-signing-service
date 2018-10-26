@@ -31,8 +31,12 @@ import app from '../../src';
 // }
 
 jest.mock('../../src/libs/db/models/job');
+jest.mock('fs');
+jest.mock('multer');
+jest.mock('request-promise-native');
+jest.mock('minio');
 
-const sample = path.join(__dirname, '../../', 'samples/test.zip');
+const sample = path.join(__dirname, '../', 'fixtures/test.zip');
 
 describe('Test signing route', () => {
   test('The platform parameter must be specified', async () => {

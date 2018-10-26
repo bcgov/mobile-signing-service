@@ -91,7 +91,13 @@ router.post(
       // readStream.destroy();
 
       if (etag) {
-        await cleanup(req.file.path);
+        // Don't let a failed cleanup disrupt the workflow.
+        try {
+          await cleanup(req.file.path);
+        } catch (err) {
+          const message = `Unable to cleanup file ${req.file.path}`;
+          logger.error(`${message}, err = ${err.message}`);
+        }
       }
 
       const job = await Job.create(db, {
@@ -100,6 +106,7 @@ router.post(
         originalFileEtag: etag,
         status: 'Created',
       });
+
       logger.info(`Created job with ID ${job.id}`);
 
       const options = {
@@ -122,12 +129,13 @@ router.post(
 
       return null;
     } catch (err) {
+      const message = 'Unable to create signing job';
+      logger.error(`${message}, err = ${err.message}`);
+
       if (err.code) {
         throw err;
       }
 
-      const message = 'Unable to create signing job';
-      logger.error(`${message}, err = ${err.message}`);
       throw errorWithCode(`${message}, err = ${err.message}`, 500);
     }
   })
@@ -147,9 +155,10 @@ router.get(
         throw errorWithCode('This artifact is expired', 400);
       }
 
-      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
-      const bstream = new PassThrough().end(obj);
       const [name] = job.originalFileName.split('.');
+      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
+      const bstream = new PassThrough();
+      bstream.end(obj);
 
       res.set({
         'Content-Disposition': `attachment;filename=${name}-signed.zip`,
@@ -158,16 +167,14 @@ router.get(
       });
 
       bstream.pipe(res);
-
-      // const link = await presignedGetObject(shared.minio, bucket, job.deliveryFileName, 30);
-      // res.redirect(link);
     } catch (error) {
+      const message = `Unable to retrieve archive for job with ID ${jobId}`;
+      logger.error(`${message}, err = ${error.message}`);
+
       if (error.code) {
         throw error;
       }
 
-      const message = `Unable to retrieve arcive for job with ID ${jobId}`;
-      logger.error(`${message}, err = ${error.message}`);
       throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
   })
