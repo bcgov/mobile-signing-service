@@ -12,10 +12,10 @@ module.exports = {
   development: {
     client: 'postgresql',
     connection: {
-      host: process.env.POSTGRES_HOST,
-      database: process.env.POSTGRES_DB,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
+      host: process.env.POSTGRESQL_HOST,
+      database: process.env.POSTGRESQL_DB,
+      user: process.env.POSTGRESQL_USER,
+      password: process.env.POSTGRESQL_PASSWORD,
     },
     pool: {
       min: 2,
@@ -36,10 +36,10 @@ module.exports = {
   staging: {
     client: 'postgresql',
     connection: {
-      host: process.env.POSTGRES_HOST,
-      database: process.env.POSTGRES_DATABASE,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
+      host: process.env.POSTGRESQL_HOST,
+      database: process.env.POSTGRESQL_DATABASE,
+      user: process.env.POSTGRESQL_USER,
+      password: process.env.POSTGRESQL_PASSWORD,
     },
     pool: {
       min: 2,
@@ -54,10 +54,10 @@ module.exports = {
   production: {
     client: 'postgresql',
     connection: {
-      host: process.env.POSTGRES_HOST,
-      database: process.env.POSTGRES_DATABASE,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
+      host: process.env.POSTGRESQL_HOST,
+      database: process.env.POSTGRESQL_DATABASE,
+      user: process.env.POSTGRESQL_USER,
+      password: process.env.POSTGRESQL_PASSWORD,
     },
     pool: {
       min: 2,
