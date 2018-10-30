@@ -22,12 +22,12 @@
 
 'use strict';
 
-import url from 'url';
 import { asyncMiddleware, errorWithCode, logger } from '@bcgov/nodejs-common-utils';
 import { Router } from 'express';
+import url from 'url';
+import config from '../../config';
 import { JOB_STATUS } from '../../constants';
 import DataManager from '../../libs/db';
-import config from '../../config';
 
 const router = new Router();
 const dm = new DataManager();
