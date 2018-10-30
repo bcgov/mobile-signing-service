@@ -105,7 +105,7 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${ROUTE_NAME}",
+        "name": "${API_NAME}",
         "labels": {
           "app": "${API_NAME}"
         }
@@ -114,6 +114,31 @@
         "port": {
           "targetPort": "8080-tcp"
         },
+        "path": "",
+        "to": {
+          "kind": "Service",
+          "name": "${API_NAME}",
+          "weight": 100
+        },  
+        "tls": {
+          "termination": "edge"
+        }
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${API_NAME}-web",
+        "labels": {
+          "app": "${API_NAME}"
+        }
+      },
+      "spec": {
+        "port": {
+          "targetPort": "8080-tcp"
+        },
+        "host": "${WEBAPP_HOST}",
         "path": "/api",
         "to": {
           "kind": "Service",
@@ -627,12 +652,6 @@
       "value": "1"
     },
     {
-      "name": "ROUTE_NAME",
-      "displayName": "Application Route",
-      "description": "The name of the default route use to access this service.",
-      "value": "api"
-    },
-    {
       "name": "SSO_SECRET_NAME",
       "displayName": "SSO secret name",
       "description": "The secret name of sso-credentials.",
@@ -680,7 +699,7 @@
       "name": "POSTGRESQL_DATABASE",
       "displayName": "The PostgreSQL database for the health check probe",
       "required": true,
-      "value": "signing"
+      "value": "cicd"
     },
     {
       "name": "POSTGRES_VOLUME_NAME",
@@ -755,6 +774,12 @@
       "displayName": "Public API URL",
       "description": "The fully qualified external URL to access this service.",
       "value": "http://example.com/",
+      "required": true
+    },
+    {
+      "name": "WEBAPP_HOST",
+      "displayName": "Public API URL",
+      "description": "The fully qualified external URL to access this service.",
       "required": true
     },
     {
