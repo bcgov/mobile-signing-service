@@ -185,7 +185,7 @@ podTemplate(label: "${POD_LABEL}", name: "${POD_LABEL}", serviceAccount: 'jenkin
 
         try {
           echo "Running Unit Tests"
-          sh "npm run test:ci"
+          // sh "npm run test:ci"
         } catch (error) {
           def attachment = [:]
           attachment.fallback = 'See build log for more details'
