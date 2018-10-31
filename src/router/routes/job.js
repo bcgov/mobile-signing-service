@@ -43,7 +43,10 @@ router.put(
       throw errorWithCode('Required parameters missing', 400);
     }
 
-    if (
+    // if the job has error message, then log; else check for delivery file info:
+    if (job.errmsg) {
+      logger.error(`Job ${jobId} failed due to: ${job.errmsg}`);
+    } else if (
       !Object.prototype.hasOwnProperty.call(job, 'deliveryFileName') ||
       !Object.prototype.hasOwnProperty.call(job, 'deliveryFileEtag')
     ) {
@@ -57,8 +60,9 @@ router.put(
         db,
         { id: jobId },
         {
-          deliveryFileName: job.deliveryFileName,
-          deliveryFileEtag: job.deliveryFileEtag,
+          deliveryFileName: job.deliveryFileName || null,
+          deliveryFileEtag: job.deliveryFileEtag || null,
+          status: job.status,
         }
       );
 
