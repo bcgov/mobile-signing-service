@@ -1,6 +1,13 @@
 #!/bin/bash
 
+[[ ! -f .env ]] \
+  && echo "WARNING: Environment source not found."
+
 source .env
+
+[[ -z "$KEYCHAIN_PWD" ]] \
+  && echo "ERROR: Missing keychain password." && exit 1
+
 ./scripts/mkc.sh $KEYCHAIN_PWD
 
 if [ $? -eq 0 ]; then
