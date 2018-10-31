@@ -31,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch } from '../../libs/deploy';
+import { deployToGooglePlayStore, deployToAirWatch, deployToiTunesStore } from '../../libs/deploy';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
@@ -92,6 +92,29 @@ const reportJobStatus = async job => {
     }
 
     throw err;
+  }
+};
+
+/**
+ * Call the corresponding deployment method based on the deployment platform
+ *
+ * @param {String} deployPlatform The deployment platform, ios/android
+ * @param {String} fileName The file to be deployed
+ */
+const selectDeploymentPath = async (deployPlatform, fileName) => {
+  try {
+    switch (deployPlatform) {
+      case 'ios': {
+        return await deployToiTunesStore(fileName);
+      }
+      case 'android': {
+        return await deployToGooglePlayStore(fileName);
+      }
+      default:
+        throw new Error('Unsupported application type');
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -166,24 +189,13 @@ const handleDeploymentJob = async (job, clean = true) => {
 
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
-
       case 'enterprise': {
-        deployedAppPath = await deployAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
+        deployedAppPath = await deployToAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
         break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public': {
-        switch (job.platform) {
-          case 'ios': {
-            throw new Error('Temporarily not supported');
-          }
-          case 'android': {
-            deployedAppPath = await deployGoogle(job.originalFileName);
-            break;
-          }
-          default:
-            throw new Error('Unsupported application type');
-        }
+        deployedAppPath = await selectDeploymentPath(job.platform, job.originalFileName);
         break;
       }
       default:

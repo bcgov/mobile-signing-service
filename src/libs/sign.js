@@ -187,7 +187,7 @@ const createKeyStore = async (keystoreKeys, apkBundleID) => {
 
     // 1.1 Verify success creation and get the jks path:
     const keystoreResult = await exec(`ls "$(pwd)" | grep ${apkBundleID}-ks.jks`);
-    if (keystoreResult.stdout == '') {
+    if (keystoreResult.stdout === '') {
       throw new Error('Unable to create new keystore pair!');
     }
 

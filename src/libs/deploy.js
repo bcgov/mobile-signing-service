@@ -23,6 +23,7 @@ import cp from 'child_process';
 import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
+import xml2js from 'xml2js';
 import config from '../config';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
@@ -82,6 +83,25 @@ const getApkBundleID = async apkPackage => {
 };
 
 /**
+ * Parse the error message from apple application loader
+ *
+ * @param {String} altoolError The error message from altool stdout
+ * @returns The bundle ID
+ */
+const handleAltoolErrorResponse = async altoolError => {
+  try {
+    // Use xml parser to read error message from altool, at specific path:
+    const parser = new xml2js.Parser();
+    const parseString = util.promisify(parser.parseString);
+    const result = parseString(altoolError);
+    const errorMessages = result.plist.dict[0].array[0].dict[0].string;
+    throw errorMessages;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+/**
  * Google Edit to uploading apk for deployment
  *
  * @param {*} publisher The google android publisher
@@ -127,7 +147,7 @@ const googleDeployEdit = async (publisher, editID, signedAPK) => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
+export const deployToGooglePlayStore = async (signedApp, workspace = '/tmp/') => {
   try {
     // Get apk:
     const signedApkPath = await fetchFileFromStorage(signedApp, workspace);
@@ -168,15 +188,52 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
 };
 
 /**
- * Apple Store Deployment
+ * App Store Deployment
  *
- * @param {String} signedApp The name of the signed app
+ * @param {String} signedApp The name of the signed app, ONLY accepts .ipa / .pkg format
  * @param {string} [workspace='/tmp/'] The workspace to use
  * @returns The status of the deployment
  */
-// eslint-disable-next-line no-unused-vars
-export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
-  // TODO
+// eslint-disable-next-line import/prefer-default-export
+export const deployToiTunesStore = async (signedApp, workspace = '/tmp/') => {
+  try {
+    // Get app binary:
+    const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
+    const signedAPP = fs.readFileSync(signedAppPath);
+
+    // Get altool access:
+    // This array serves as the constant key names
+    const iosKeys = ['appleAccount', 'appleKey'];
+    const iosKeyPairs = await fetchKeychainValue(iosKeys, 'altool');
+
+    // Step 1. Use altool to validate the app:
+    // TODO: (sh) only accepting iOS apps, could provide more option for tvOS, OS X and macOS apps
+    await exec(`
+    xcrun altool --validate-app \
+    -t ios \
+    -f ${signedAPP} \
+    -u ${iosKeyPairs[iosKeys[0]]} \
+    -p ${iosKeyPairs[iosKeys[1]]} \
+    --output-format xml`);
+
+    // Step 2. Use altool to upload the app to Apple Store Connect:
+    await exec(`
+    xcrun altool --upload-app \
+    -t ios \
+    -f ${signedAPP} \
+    -u ${iosKeyPairs[iosKeys[0]]} \
+    -p ${iosKeyPairs[iosKeys[1]]} \
+    --output-format xml`);
+
+    return signedAppPath;
+  } catch (err) {
+    if (err.stdout) {
+      // only altool's error has stdout
+      await handleAltoolErrorResponse(err.stdout);
+    }
+
+    throw err;
+  }
 };
 
 /**
@@ -190,7 +247,7 @@ export const deployAppleStore = async (signedApp, workspace = '/tmp/') => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
+export const deployToAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
   // The urls for airwatch api:
   const awHost = config.get('airwatch:host');
   const awUploadAPI = config.get('airwatch:upload');
