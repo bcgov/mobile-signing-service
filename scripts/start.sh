@@ -4,8 +4,9 @@ source .env
 ./scripts/mkc.sh $KEYCHAIN_PWD
 
 if [ $? -eq 0 ]; then
-  echo "Starting agent"
-  npm run dev
+  echo "Building and Starting Agent"
+  npm run build && \
+  npm start
 fi
 
 exit 0
