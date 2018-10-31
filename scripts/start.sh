@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[[ ! -f .env ]] \
+[[ ! -f x ]] \
   && echo "WARNING: Environment source not found."
 
 source .env
