@@ -13,6 +13,8 @@ source .env
 if [ $? -eq 0 ]; then
   echo "Building and Starting Agent"
   npm run build && \
+  pushd build && \
+  npm i --prod-only && \
   npm start
 fi
 
