@@ -11,10 +11,18 @@ source .env
 ./scripts/mkc.sh $KEYCHAIN_PWD
 
 if [ $? -eq 0 ]; then
-  echo "Building and Starting Agent"
-  npm run build && \
-  pushd build && \
-  npm i --prod-only && \
+  echo "Checking for updates"
+  if [ $(git status -uno | grep -q "Your branch is up to date") ] ||
+  [ ! -d build ]; then
+    echo "Fetching updates and rebuilding"
+    git pull && \
+    npm run build && \
+    pushd build && \
+    npm i --prod-only && \
+    popd
+  fi
+
+  echo "Starting Agent"
   npm start
 fi
 
