@@ -147,7 +147,7 @@ const googleDeployEdit = async (publisher, editID, signedAPK) => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
+export const deployToGooglePlayStore = async (signedApp, workspace = '/tmp/') => {
   try {
     // Get apk:
     const signedApkPath = await fetchFileFromStorage(signedApp, workspace);
@@ -195,7 +195,7 @@ export const deployGoogle = async (signedApp, workspace = '/tmp/') => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
+export const deployToiTunesStore = async (signedApp, workspace = '/tmp/') => {
   try {
     // Get app binary:
     const signedAppPath = await fetchFileFromStorage(signedApp, workspace);
@@ -247,7 +247,7 @@ export const deployAppStore = async (signedApp, workspace = '/tmp/') => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
+export const deployToAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
   // The urls for airwatch api:
   const awHost = config.get('airwatch:host');
   const awUploadAPI = config.get('airwatch:upload');

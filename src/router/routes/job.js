@@ -31,7 +31,7 @@ import path from 'path';
 import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployGoogle, deployAirWatch, deployAppStore } from '../../libs/deploy';
+import { deployToGooglePlayStore, deployToAirWatch, deployToiTunesStore } from '../../libs/deploy';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
@@ -101,14 +101,14 @@ const reportJobStatus = async job => {
  * @param {String} deployPlatform The deployment platform, ios/android
  * @param {String} fileName The file to be deployed
  */
-const switchDeploymentPlatform = async (deployPlatform, fileName) => {
+const selectDeploymentPath = async (deployPlatform, fileName) => {
   try {
     switch (deployPlatform) {
       case 'ios': {
-        return await deployAppStore(fileName);
+        return await deployToiTunesStore(fileName);
       }
       case 'android': {
-        return await deployGoogle(fileName);
+        return await deployToGooglePlayStore(fileName);
       }
       default:
         throw new Error('Unsupported application type');
@@ -190,12 +190,12 @@ const handleDeploymentJob = async (job, clean = true) => {
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
       case 'enterprise': {
-        deployedAppPath = await deployAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
+        deployedAppPath = await deployToAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
         break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
       case 'public': {
-        deployedAppPath = await switchDeploymentPlatform(job.platform, job.originalFileName);
+        deployedAppPath = await selectDeploymentPath(job.platform, job.originalFileName);
         break;
       }
       default:
