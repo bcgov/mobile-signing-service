@@ -32,6 +32,7 @@ import config from '../../config';
 import shared from '../../libs/shared';
 import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
 import { deployToGooglePlayStore, deployToAirWatch, deployToiTunesStore } from '../../libs/deploy';
+import { JOB_STATUS } from '../../constants';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();
@@ -165,13 +166,19 @@ const handleJob = async (job, clean = true) => {
 
       cleanup(workSpace);
     }
-
-    await reportJobStatus({ ...job, ...{ deliveryFileName: filename, deliveryFileEtag: etag } });
+    // Instead of updating the job, return a job object with delivery file info:
+    return {
+      ...job,
+      ...{ deliveryFileName: filename, deliveryFileEtag: etag, status: JOB_STATUS.COMPLETED },
+    };
   } catch (error) {
     const message = 'Unable to sign archive';
     logger.error(`${message}, err = ${error.message}`);
-
-    throw new Error(`${message}, err = ${error.message}`);
+    // Instead of throwing an error, return a job object with error message:
+    return {
+      ...job,
+      ...{ status: JOB_STATUS.FAILED, errmsg: `${message}, err = ${error.message}` },
+    };
   }
 };
 
@@ -190,7 +197,12 @@ const handleDeploymentJob = async (job, clean = true) => {
     switch (job.deploymentPlatform) {
       // Enterprise deployment refer to Airwatch:
       case 'enterprise': {
-        deployedAppPath = await deployToAirWatch(job.originalFileName, job.platform, job.awOrgID, job.awFileName); // Pass in extra parameters for AW
+        deployedAppPath = await deployToAirWatch(
+          job.originalFileName,
+          job.platform,
+          job.awOrgID,
+          job.awFileName
+        ); // Pass in extra parameters for AW
         break;
       }
       // Public deployment refer to Apple or Google Store, depends on application type:
@@ -231,7 +243,13 @@ router.post(
 
     res.sendStatus(200).end();
 
-    await handleJob(job);
+    try {
+      // result is the updated job object:
+      const result = await handleJob(job);
+      await reportJobStatus(result);
+    } catch (err) {
+      throw err;
+    }
   })
 );
 
