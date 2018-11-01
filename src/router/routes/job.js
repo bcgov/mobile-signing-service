@@ -93,7 +93,7 @@ router.get(
         });
       }
 
-      const deliveryUrl = url.resolve(config.get('apiUrl'), `/api/v1/sign/${job.id}/download`);
+      const deliveryUrl = url.resolve(config.get('apiUrl'), `/api/v1/delivery/${job.id}`);
 
       return res.status(200).json({
         status: JOB_STATUS.COMPLETED,
