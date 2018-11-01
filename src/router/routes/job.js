@@ -93,9 +93,11 @@ router.get(
         });
       }
 
+      const deliveryUrl = url.resolve(config.get('apiUrl'), `/api/v1/sign/${job.id}/download`);
+
       return res.status(200).json({
         status: JOB_STATUS.COMPLETED,
-        url: url.resolve(config.get('apiUrl'), `/api/v1/sign/${job.id}/download`),
+        url: `${deliveryUrl}?token=${job.token}`,
         durationInSeconds: job.duration,
       });
     } catch (error) {

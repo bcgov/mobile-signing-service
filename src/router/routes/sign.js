@@ -31,6 +31,7 @@ import {
   putObject,
   statObject,
 } from '@bcgov/nodejs-common-utils';
+import crypto from 'crypto';
 import { Router } from 'express';
 import fs from 'fs';
 import multer from 'multer';
@@ -104,6 +105,7 @@ router.post(
         originalFileName: req.file.originalname,
         platform: platform.toLocaleLowerCase(),
         originalFileEtag: etag,
+        token: crypto.randomBytes(8).toString('hex'),
         status: 'Created',
       });
 
@@ -145,11 +147,16 @@ router.get(
   '/:jobId/download',
   asyncMiddleware(async (req, res) => {
     const { jobId } = req.params;
+    const { token } = req.query;
     const expirationInDays = config.get('expirationInDays');
 
     try {
       const job = await Job.findById(db, jobId);
       const stat = await statObject(shared.minio, bucket, job.deliveryFileName);
+
+      if (!token || job.token !== token) {
+        throw errorWithCode('You are not able to download this artifact', 400);
+      }
 
       if (isExpired(stat, expirationInDays)) {
         throw errorWithCode('This artifact is expired', 400);

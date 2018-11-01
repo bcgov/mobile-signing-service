@@ -1,5 +1,5 @@
 //
-// Code Sign
+// MyRA
 //
 // Copyright © 2018 Province of British Columbia
 //
@@ -15,36 +15,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Created by Jason Leach on 2018-05-06.
+// Created by Jason Leach on 2018-11-01.
 //
 
 'use strict';
 
-import Model from './model';
+/* eslint-disable no-unused-vars */
 
-export default class Job extends Model {
-  static get fields() {
-    // primary key *must* be first!
-    return [
-      'id',
-      'platform',
-      'original_file_name',
-      'original_file_etag',
-      'delivery_file_name',
-      'delivery_file_etag',
-      'deployment_platform',
-      'token',
-      'status',
-      'project_id',
-    ].map(field => `${this.table}.${field}`);
-  }
+const table = 'job';
 
-  static get table() {
-    return 'job';
-  }
+exports.up = async knex =>
+  knex.schema.table(table, async t => {
+    t.string('token', 16);
+  });
 
-  get duration() {
-    const delta = this.createdAt - this.updatedAt;
-    return Math.abs(delta / 1000);
-  }
-}
+exports.down = async knex =>
+  knex.schema.table(table, async t => {
+    t.dropColumn('token');
+  });
