@@ -22,20 +22,12 @@
 
 'use strict';
 
-import {
-  asyncMiddleware,
-  errorWithCode,
-  getObject,
-  isExpired,
-  logger,
-  putObject,
-  statObject,
-} from '@bcgov/nodejs-common-utils';
+import { asyncMiddleware, errorWithCode, logger, putObject } from '@bcgov/nodejs-common-utils';
+import crypto from 'crypto';
 import { Router } from 'express';
 import fs from 'fs';
 import multer from 'multer';
 import request from 'request-promise-native';
-import { PassThrough } from 'stream';
 import url from 'url';
 import config from '../../config';
 import DataManager from '../../libs/db';
@@ -104,6 +96,7 @@ router.post(
         originalFileName: req.file.originalname,
         platform: platform.toLocaleLowerCase(),
         originalFileEtag: etag,
+        token: crypto.randomBytes(8).toString('hex'),
         status: 'Created',
       });
 
@@ -137,45 +130,6 @@ router.post(
       }
 
       throw errorWithCode(`${message}, err = ${err.message}`, 500);
-    }
-  })
-);
-
-router.get(
-  '/:jobId/download',
-  asyncMiddleware(async (req, res) => {
-    const { jobId } = req.params;
-    const expirationInDays = config.get('expirationInDays');
-
-    try {
-      const job = await Job.findById(db, jobId);
-      const stat = await statObject(shared.minio, bucket, job.deliveryFileName);
-
-      if (isExpired(stat, expirationInDays)) {
-        throw errorWithCode('This artifact is expired', 400);
-      }
-
-      const [name] = job.originalFileName.split('.');
-      const obj = await getObject(shared.minio, bucket, job.deliveryFileName);
-      const bstream = new PassThrough();
-      bstream.end(obj);
-
-      res.set({
-        'Content-Disposition': `attachment;filename=${name}-signed.zip`,
-        'Content-Type': 'application/zip',
-        'Content-Length': obj.byteLength,
-      });
-
-      bstream.pipe(res);
-    } catch (error) {
-      const message = `Unable to retrieve archive for job with ID ${jobId}`;
-      logger.error(`${message}, err = ${error.message}`);
-
-      if (error.code) {
-        throw error;
-      }
-
-      throw errorWithCode(`${message}, err = ${error.message}`, 500);
     }
   })
 );

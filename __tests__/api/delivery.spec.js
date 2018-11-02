@@ -18,17 +18,8 @@
 // Created by Jason Leach on 2018-07-20.
 //
 
-import path from 'path';
 import { default as request } from 'supertest'; // eslint-disable-line
 import app from '../../src';
-
-// if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
-//   process.on('unhandledRejection', reason => {
-//     throw reason;
-//   });
-//   // Avoid memory leak by adding too many listeners
-//   process.env.LISTENING_TO_UNHANDLED_REJECTION = true;
-// }
 
 jest.mock('../../src/libs/db/models/job');
 jest.mock('fs');
@@ -36,31 +27,30 @@ jest.mock('multer');
 jest.mock('request-promise-native');
 jest.mock('minio');
 
-const sample = path.join(__dirname, '../', 'fixtures/test.zip');
+// const sample = path.join(__dirname, '../', 'fixtures/test.zip');
 
-describe('Test signing route', () => {
-  test('The platform parameter must be specified', async () => {
+describe('Test download route', () => {
+  test('Job 30 is expired can can not be downloaded', async () => {
     await request(app)
-      .post('/api/v1/sign')
-      .attach('file', sample)
-      .expect(400)
-      .expect('Content-Type', /json/);
+      .get('/api/v1/delivery/30?token=123abc')
+      .expect(400); // Bad Request
   });
 
-  test('There must be a file attachment.', async () => {
+  test('A security token must be supplied', async () => {
     await request(app)
-      .post('/api/v1/sign')
-      .query({ platform: 'ios' })
-      .expect(400)
-      .expect('Content-Type', /json/);
+      .get('/api/v1/delivery/20')
+      .expect(400); // Bad Request
   });
 
-  test('All valid parameters are accepted', async () => {
+  test('An invalid security token is rejected', async () => {
     await request(app)
-      .post('/api/v1/sign')
-      .query({ platform: 'ios' })
-      .attach('file', sample)
-      .expect(202)
-      .expect('Content-Type', /json/);
+      .get('/api/v1/delivery/20?token=xxxxxx')
+      .expect(400); // Bad Request
+  });
+
+  test('Job 20 is OK and can be downloaded', async () => {
+    await request(app)
+      .get('/api/v1/delivery/20?token=123abc')
+      .expect(200);
   });
 });
