@@ -36,7 +36,19 @@ describe('Test download route', () => {
       .expect(400); // Bad Request
   });
 
-  test.skip('Job 20 is OK and can be downloaded', async () => {
+  test('A security token must be supplied', async () => {
+    await request(app)
+      .get('/api/v1/delivery/20')
+      .expect(400); // Bad Request
+  });
+
+  test('An invalid security token is rejected', async () => {
+    await request(app)
+      .get('/api/v1/delivery/20?token=xxxxxx')
+      .expect(400); // Bad Request
+  });
+
+  test('Job 20 is OK and can be downloaded', async () => {
     await request(app)
       .get('/api/v1/delivery/20?token=123abc')
       .expect(200);

@@ -32,9 +32,19 @@ export default class Job extends Model {
   static async findById(db, id) {
     if (Number(id) === 10) return { id: 10 }; // Processing
     if (Number(id) === 20)
-      return { id: 20, originalFileName: 'hello-file.zip', deliveryFileName: 'notExpiredFile' }; // Done
+      return {
+        id: 20,
+        originalFileName: 'hello-file.zip',
+        deliveryFileName: 'notExpiredFile',
+        token: '123abc',
+      }; // Done
     if (Number(id) === 30)
-      return { id: 30, originalFileName: 'hello-file.zip', deliveryFileName: 'expiredFile' }; // Done
+      return {
+        id: 30,
+        originalFileName: 'hello-file.zip',
+        deliveryFileName: 'expiredFile',
+        token: '123abc',
+      }; // Done
     if (Number(id) === 21)
       return {
         id: 21,
