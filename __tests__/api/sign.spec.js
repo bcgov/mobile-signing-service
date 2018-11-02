@@ -64,17 +64,3 @@ describe('Test signing route', () => {
       .expect('Content-Type', /json/);
   });
 });
-
-describe('Test download route', () => {
-  test('Job 30 is expired can can not be downloaded', async () => {
-    await request(app)
-      .get('/api/v1/sign/30/download')
-      .expect(400); // Bad Request
-  });
-
-  test('Job 20 is OK and can be downloaded', async () => {
-    await request(app)
-      .get('/api/v1/sign/20/download')
-      .expect(200); // Redirect
-  });
-});
