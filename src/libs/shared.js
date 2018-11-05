@@ -20,8 +20,8 @@
 
 'use strict';
 
-import * as minio from 'minio';
 import { JWTServiceManager } from '@bcgov/nodejs-common-utils';
+import * as minio from 'minio';
 import config from '../config';
 
 const mkey = Symbol.for('ca.bc.gov.pathfinder.signing-api.minio');
@@ -32,7 +32,7 @@ if (!(gs.indexOf(mkey) > -1)) {
   global[mkey] = new minio.Client({
     endPoint: config.get('minio:host'),
     port: config.get('minio:port'),
-    secure: config.get('minio:secure'),
+    useSSL: config.get('minio:useSSL'),
     accessKey: config.get('minio:accessKey'),
     secretKey: config.get('minio:secretKey'),
     region: config.get('minio:region'),
