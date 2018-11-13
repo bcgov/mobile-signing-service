@@ -94,20 +94,6 @@ podTemplate(label: 'secureimg-api-node-build', name: 'secureimg-api-node-build',
       echo "Testing: ${BUILD_ID}"
 
       script {
-        // Run a security check on our packages
-        // try {
-        //   sh "./node_modules/.bin/nsp check"
-        // } catch (error) {
-        //   // def output = readFile('nsp-report.txt').trim()
-        //   def attachment = [:]
-        //   attachment.fallback = 'See build log for more details'
-        //   attachment.title = "API Build ${BUILD_ID} WARNING! :unamused: :zany_face: :fox4:"
-        //   attachment.color = '#FFA500' // Orange
-        //   attachment.text = "There are security warnings related to your packages.\ncommit ${GIT_COMMIT_SHORT_HASH} by ${GIT_COMMIT_AUTHOR}"
-
-        //   notifySlack("${env.JOB_NAME}, Build #${BUILD_ID}", "#secure-image-app", "https://hooks.slack.com/services/${SLACK_TOKEN}", [attachment], PIRATE_ICO)
-        // }
-
         try {
           // Run our code quality tests et al.
           sh "npm run test:lint"
