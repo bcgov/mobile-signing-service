@@ -30,6 +30,7 @@ import multer from 'multer';
 import request from 'request-promise-native';
 import url from 'url';
 import config from '../../config';
+import { JOB_STATUS } from '../../constants';
 import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
 import { cleanup } from '../../libs/utils';
@@ -117,6 +118,14 @@ router.post(
       if (status !== 'OK') {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
       }
+
+      await Job.update(
+        db,
+        { id: job.id },
+        {
+          status: JOB_STATUS.PROCESSING,
+        }
+      );
 
       res.status(202).json({ id: job.id }); // Accepted
 

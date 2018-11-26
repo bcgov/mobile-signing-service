@@ -92,15 +92,20 @@ router.get(
       if (job && !job.deliveryFileName) {
         // The request has been accepted for processing,
         // but the processing has not been completed.
-        return res.status(202).json({
-          status: JOB_STATUS.PROCESSING,
+        let code = 200;
+        if (job.status === JOB_STATUS.CREATED || job.status === JOB_STATUS.PROCESSING) {
+          code = 202;
+        }
+
+        return res.status(code).json({
+          status: job.status,
         });
       }
 
       const deliveryUrl = url.resolve(config.get('apiUrl'), `/api/v1/delivery/${job.id}`);
 
       return res.status(200).json({
-        status: JOB_STATUS.COMPLETED,
+        status: job.status,
         url: `${deliveryUrl}?token=${job.token}`,
         durationInSeconds: job.duration,
       });
