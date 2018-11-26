@@ -247,8 +247,16 @@ router.post(
       // result is the updated job object:
       const result = await handleJob(job);
       await reportJobStatus(result);
-    } catch (err) {
-      throw err;
+    } catch (signErr) {
+      const signMessage = 'Unable to sign job';
+      logger.error(`${signMessage}, err = ${signErr.message}`);
+
+      try {
+        await reportJobStatus({ ...job, ...{ status: JOB_STATUS.FAILED } });
+      } catch (reportErr) {
+        const reportMessage = 'Unable to report job status';
+        logger.error(`${reportMessage}, err = ${reportErr.message}`);
+      }
     }
   })
 );
