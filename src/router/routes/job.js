@@ -88,11 +88,7 @@ const reportJobStatus = async job => {
     logger.info(`Updated status for job ${job.id}`);
   } catch (err) {
     const message = `Unable to report job ${job.id} status`;
-    if (err.code === 'ETIMEDOUT') {
-      throw new Error(`${message}, err = ${err.message}`);
-    }
-
-    throw err;
+    logger.error(`${message}, err = ${err.message}`);
   }
 };
 
@@ -177,7 +173,7 @@ const handleJob = async (job, clean = true) => {
     // Instead of throwing an error, return a job object with error message:
     return {
       ...job,
-      ...{ status: JOB_STATUS.FAILED, errmsg: `${message}, err = ${error.message}` },
+      ...{ status: JOB_STATUS.FAILED, message: error.message },
     };
   }
 };
@@ -251,12 +247,13 @@ router.post(
       const signMessage = 'Unable to sign job';
       logger.error(`${signMessage}, err = ${signErr.message}`);
 
-      try {
-        await reportJobStatus({ ...job, ...{ status: JOB_STATUS.FAILED } });
-      } catch (reportErr) {
-        const reportMessage = 'Unable to report job status';
-        logger.error(`${reportMessage}, err = ${reportErr.message}`);
-      }
+      await reportJobStatus({
+        ...job,
+        ...{
+          status: JOB_STATUS.FAILED,
+          message: signErr.message,
+        },
+      });
     }
   })
 );
