@@ -54,7 +54,6 @@ router.put(
     }
 
     logger.info(`Updating status of job jobId = ${jobId}`);
-    console.log(job);
     try {
       await Job.update(
         db,
@@ -90,15 +89,10 @@ router.get(
     }
 
     try {
-      if (job && !job.deliveryFileName) {
+      if (job && (job.status === JOB_STATUS.CREATED || job.status === JOB_STATUS.PROCESSING)) {
         // The request has been accepted for processing,
         // but the processing has not been completed.
-        let code = 200;
-        if (job.status === JOB_STATUS.CREATED || job.status === JOB_STATUS.PROCESSING) {
-          code = 202;
-        }
-
-        return res.status(code).json({
+        return res.status(202).json({
           status: job.status,
           statusMessage: job.statusMessage,
         });

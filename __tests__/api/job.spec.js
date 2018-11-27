@@ -65,24 +65,45 @@ describe('Test job routes', () => {
       })
       .expect(200); // Ok
   });
-
-  test('Job 10 status should be 202 ', async () => {
-    const response = await request(app)
+  test('Job 10 status should be Created', async () => {
+    await request(app)
       .get('/api/v1/job/10/status')
-      .expect(202); // Processing
-    expect(response.body.status).toBe('Processing');
+      .expect(202) // Processing
+      .expect(res => {
+        expect(res.body.status).toBe('Created');
+      });
   });
 
-  test('Job 20 status should be 200 ', async () => {
-    const response = await request(app)
+  test('Job 11 status should be Processing', async () => {
+    await request(app)
+      .get('/api/v1/job/11/status')
+      .expect(202) // Processing
+      .expect(res => {
+        expect(res.body.status).toBe('Processing');
+      });
+  });
+
+  test('Job 20 status should be Completed', async () => {
+    await request(app)
       .get('/api/v1/job/20/status')
-      .expect(200); // Ok
-    expect(response.body.status).toBe('Completed');
+      .expect(200)
+      .expect(res => {
+        expect(res.body.status).toBe('Completed');
+      });
   });
 
-  test('Job 40 status should be 404 ', async () => {
+  test('Job 40 status should be Failed', async () => {
     await request(app)
       .get('/api/v1/job/40/status')
+      .expect(200)
+      .expect(res => {
+        expect(res.body.status).toBe('Failed');
+      });
+  });
+
+  test('Job 50 to not exists', async () => {
+    await request(app)
+      .get('/api/v1/job/50/status')
       .expect(404); // Not Found
   });
 });
