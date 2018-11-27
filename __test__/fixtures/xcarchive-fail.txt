@@ -1,0 +1,5 @@
+xcodebuild           -exportArchive           -archivePath "/tmp/qq2caLVF37/secure-image-20181126/SecureImage 2018-11-23, 5.26 PM.xcarchive"           -exportPath "/tmp/qq2caLVF37/signed/SecureImage_2018-11-23,_5"            -exportOptionsPlist /tmp/qq2caLVF37/secure-image-20181126/options.plist 
+
+error: Couldn't load -exportOptionsPlist: The file “options.plist” couldn’t be opened because there is no such file.
+
+Error Domain=NSCocoaErrorDomain Code=260 "The file “options.plist” couldn’t be opened because there is no such file." UserInfo={NSFilePath=/tmp/qq2caLVF37/secure-image-20181126/options.plist, NSUnderlyingError=0x7fe8b7a7be00 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}}

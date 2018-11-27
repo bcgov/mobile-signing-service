@@ -229,7 +229,13 @@ const getKeyStore = async apkBundleID => {
   return fetchKeychainValue(keystoreKeys, apkBundleID);
 };
 
-const parseXcodebuildError = message => {
+/**
+ * Parse out the meaningful error message from a failed xcode build message
+ *
+ * @param {string} message Multiline message from xcode build
+ * @returns A `string` containing the meaningful error message
+ */
+export const parseXcodebuildError = message => {
   const key = 'error:';
   const aLine = message.split('\n').find(line => line.startsWith(key));
 
