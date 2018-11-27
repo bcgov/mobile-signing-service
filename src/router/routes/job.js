@@ -54,7 +54,7 @@ router.put(
     }
 
     logger.info(`Updating status of job jobId = ${jobId}`);
-
+    console.log(job);
     try {
       await Job.update(
         db,
@@ -63,6 +63,7 @@ router.put(
           deliveryFileName: job.deliveryFileName || null,
           deliveryFileEtag: job.deliveryFileEtag || null,
           status: job.status,
+          statusMessage: job.message || null,
         }
       );
 
@@ -99,6 +100,7 @@ router.get(
 
         return res.status(code).json({
           status: job.status,
+          statusMessage: job.statusMessage,
         });
       }
 
@@ -106,6 +108,7 @@ router.get(
 
       return res.status(200).json({
         status: job.status,
+        statusMessage: job.statusMessage || null,
         url: `${deliveryUrl}?token=${job.token}`,
         durationInSeconds: job.duration,
       });
