@@ -98,7 +98,7 @@ router.post(
         platform: platform.toLocaleLowerCase(),
         originalFileEtag: etag,
         token: crypto.randomBytes(8).toString('hex'),
-        status: 'Created',
+        status: JOB_STATUS.CREATED,
       });
 
       logger.info(`Created job with ID ${job.id}`);

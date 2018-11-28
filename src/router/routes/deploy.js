@@ -36,6 +36,7 @@ import request from 'request-promise-native';
 import url from 'url';
 import config from '../../config';
 import DataManager from '../../libs/db';
+import { JOB_STATUS } from '../../constants';
 import shared from '../../libs/shared';
 
 const router = new Router();
@@ -106,7 +107,7 @@ router.post(
         originalFileEtag: signedJob.originalFileEtag,
         deploymentPlatform: deploymentPlatform.toLocaleLowerCase(),
         projectId,
-        status: 'Created',
+        status: JOB_STATUS.CREATED,
       });
 
       logger.info(`Created deployment job with ID ${job.id}`);
