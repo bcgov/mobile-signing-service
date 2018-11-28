@@ -246,14 +246,6 @@ router.post(
     } catch (signErr) {
       const signMessage = 'Unable to sign job';
       logger.error(`${signMessage}, err = ${signErr.message}`);
-
-      await reportJobStatus({
-        ...job,
-        ...{
-          status: JOB_STATUS.FAILED,
-          message: signErr.message,
-        },
-      });
     }
   })
 );
