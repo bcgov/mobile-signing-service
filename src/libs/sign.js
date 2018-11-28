@@ -172,7 +172,9 @@ const getApkBundleID = async apkPackage => {
  * @param {Object} keystoreKeys The keywords for keystore pair
  */
 const createKeyStore = async (keystoreKeys, apkBundleID) => {
-  const keystorePassword = Math.random().toString(36).substring(7);
+  const keystorePassword = Math.random()
+    .toString(36)
+    .substring(7);
 
   try {
     // 1. create keystore:
@@ -192,11 +194,13 @@ const createKeyStore = async (keystoreKeys, apkBundleID) => {
     }
 
     // 2. Save into keychain:
+    /* eslint-disable */
     await exec(`
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[0]} -p ${apkBundleID} -T /usr/bin/security -U
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[1]} -p ${keystorePassword} -T /usr/bin/security -U
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[2]} -p "$(pwd)"/${apkBundleID}-ks.jks -T /usr/bin/security -U
     `);
+    /* eslint-enable */
   } catch (err) {
     throw new Error(`Unable to generate and save keystore for this app: ${err}`);
   }
@@ -223,6 +227,19 @@ const getKeyStore = async apkBundleID => {
   }
 
   return fetchKeychainValue(keystoreKeys, apkBundleID);
+};
+
+/**
+ * Parse out the meaningful error message from a failed xcode build message
+ *
+ * @param {string} message Multiline message from xcode build
+ * @returns A `string` containing the meaningful error message
+ */
+export const parseXcodebuildError = message => {
+  const key = 'error:';
+  const aLine = message.split('\n').find(line => line.startsWith(key));
+
+  return aLine.substr(key.length).trim();
 };
 
 /**
@@ -280,8 +297,11 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
     return packageForDelivery(path.join(apath, outputDir), items);
   } catch (err) {
-    logger.error(err.message);
-    throw err;
+    const errorMessage = parseXcodebuildError(err.message);
+    const message = 'Unable to sign xcarchive';
+    logger.error(`${message}, err = ${err.message}`);
+
+    throw new Error(errorMessage);
   }
 };
 
