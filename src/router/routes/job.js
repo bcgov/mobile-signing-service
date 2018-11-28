@@ -54,7 +54,6 @@ router.put(
     }
 
     logger.info(`Updating status of job jobId = ${jobId}`);
-
     try {
       await Job.update(
         db,
@@ -63,6 +62,7 @@ router.put(
           deliveryFileName: job.deliveryFileName || null,
           deliveryFileEtag: job.deliveryFileEtag || null,
           status: job.status,
+          statusMessage: job.message || null,
         }
       );
 
@@ -89,18 +89,20 @@ router.get(
     }
 
     try {
-      if (job && !job.deliveryFileName) {
+      if (job && (job.status === JOB_STATUS.CREATED || job.status === JOB_STATUS.PROCESSING)) {
         // The request has been accepted for processing,
         // but the processing has not been completed.
         return res.status(202).json({
-          status: JOB_STATUS.PROCESSING,
+          status: job.status,
+          statusMessage: job.statusMessage,
         });
       }
 
       const deliveryUrl = url.resolve(config.get('apiUrl'), `/api/v1/delivery/${job.id}`);
 
       return res.status(200).json({
-        status: JOB_STATUS.COMPLETED,
+        status: job.status,
+        statusMessage: job.statusMessage || null,
         url: `${deliveryUrl}?token=${job.token}`,
         durationInSeconds: job.duration,
       });

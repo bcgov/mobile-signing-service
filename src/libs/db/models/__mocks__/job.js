@@ -22,6 +22,7 @@
 
 'use strict';
 
+import { JOB_STATUS } from '../../../../constants';
 import Model from '../model';
 
 export default class Job extends Model {
@@ -30,20 +31,15 @@ export default class Job extends Model {
   }
 
   static async findById(db, id) {
-    if (Number(id) === 10) return { id: 10 }; // Processing
+    if (Number(id) === 10) return { id: 10, status: JOB_STATUS.CREATED };
+    if (Number(id) === 11) return { id: 11, status: JOB_STATUS.PROCESSING };
     if (Number(id) === 20)
       return {
         id: 20,
         originalFileName: 'hello-file.zip',
         deliveryFileName: 'notExpiredFile',
         token: '123abc',
-      }; // Done
-    if (Number(id) === 30)
-      return {
-        id: 30,
-        originalFileName: 'hello-file.zip',
-        deliveryFileName: 'expiredFile',
-        token: '123abc',
+        status: JOB_STATUS.COMPLETED,
       }; // Done
     if (Number(id) === 21)
       return {
@@ -51,7 +47,22 @@ export default class Job extends Model {
         platform: 'android',
         originalFileName: 'hello-file.zip',
         deliveryFileName: 'notExpiredFile',
+        status: JOB_STATUS.COMPLETED,
       }; // Deployment api test
+    if (Number(id) === 30)
+      return {
+        id: 30,
+        originalFileName: 'hello-file.zip',
+        deliveryFileName: 'expiredFile',
+        token: '123abc',
+        status: JOB_STATUS.COMPLETED,
+      }; // Done
+    if (Number(id) === 40)
+      return {
+        id: 21,
+        platform: 'ios',
+        status: JOB_STATUS.FAILED,
+      };
 
     return undefined;
   }

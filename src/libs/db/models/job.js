@@ -35,6 +35,7 @@ export default class Job extends Model {
       'deployment_platform',
       'token',
       'status',
+      'status_message',
       'project_id',
     ].map(field => `${this.table}.${field}`);
   }
