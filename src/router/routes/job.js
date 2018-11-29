@@ -168,7 +168,7 @@ const handleJob = async (job, clean = true) => {
       ...{ deliveryFileName: filename, deliveryFileEtag: etag, status: JOB_STATUS.COMPLETED },
     };
   } catch (error) {
-    const message = 'Unable to sign archive';
+    const message = 'Signing job not successful';
     logger.error(`${message}, err = ${error.message}`);
     // Instead of throwing an error, return a job object with error message:
     return {

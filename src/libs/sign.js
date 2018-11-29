@@ -243,6 +243,23 @@ export const parseXcodebuildError = message => {
 };
 
 /**
+ * Parse out the meaningful error message from a failed apksigner sign job
+ *
+ * @param {string} message Multiline message from apksigner build
+ * @returns A `string` containing the meaningful error message
+ */
+export const parseApksignerbuildError = message => {
+  const key = ':';
+  try {
+    const aLine = message.split(key)[1].split('\n')[0];
+    return aLine.substr(key.length).trim();
+  } catch (err) {
+    const hint = 'APK error is not read properly. Update error message paser';
+    return `${hint}, err = ${err.message}`;
+  }
+};
+
+/**
  * Sign an xcode xcarchive file.
  *
  * @param {string} archiveFilePath The path to the xcarchive file
@@ -361,43 +378,51 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
 // eslint-disable-next-line no-unused-vars
 /* eslint-disable global-require */
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
-  const apath = path.join(workspace, shortid.generate());
-  const packagePath = path.join(apath, shortid.generate());
-  const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
-  const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
+  try {
+    const apath = path.join(workspace, shortid.generate());
+    const packagePath = path.join(apath, shortid.generate());
+    const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
+    const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
 
-  // Get the package from minio:
-  const buffer = await getObject(shared.minio, bucket, archiveFilePath);
-  await exec(`mkdir -p ${packagePath}`);
-  await writeFile(outFileName, buffer, 'utf8');
+    // Get the package from minio:
+    const buffer = await getObject(shared.minio, bucket, archiveFilePath);
+    await exec(`mkdir -p ${packagePath}`);
+    await writeFile(outFileName, buffer, 'utf8');
 
-  // Get the path of package locally:
-  const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
-  if (apkPathFull.stderr) {
-    throw new Error('Cannot find the package.');
+    // Get the path of package locally:
+    const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
+    if (apkPathFull.stderr) {
+      throw new Error('Cannot find the package.');
+    }
+    const apkPath = apkPathFull.stdout.trim().split('\n');
+
+    // Fetch signing keystore, key alias and password from keyChain:
+    const apkBundleID = await getApkBundleID(apkPath);
+    const keystorePairs = await getKeyStore(apkBundleID);
+
+    // Sign the apk:
+    const response = await exec(`
+      apksigner sign \
+      -v \
+      --ks ${keystorePairs[keystoreKeys[2]]} \
+      --ks-key-alias ${keystorePairs[keystoreKeys[0]]} \
+      --ks-pass pass:${keystorePairs[keystoreKeys[1]]} \
+      --key-pass pass:${keystorePairs[keystoreKeys[1]]} \
+      --out ${outFileName} \
+      ${apkPath}`);
+
+    if (!response.stdout.includes('Signed')) {
+      throw new Error(response.stderr);
+    }
+
+    logger.info('Successfully signed package.');
+
+    return outFileName;
+  } catch (err) {
+    const errorMessage = parseApksignerbuildError(err.message);
+    const message = 'Unable to sign apk';
+    logger.error(`${message}, err = ${err.message}`);
+
+    throw new Error(errorMessage);
   }
-  const apkPath = apkPathFull.stdout.trim().split('\n');
-
-  // Fetch signing keystore, key alias and password from keyChain:
-  const apkBundleID = await getApkBundleID(apkPath);
-  const keystorePairs = await getKeyStore(apkBundleID);
-
-  // Sign the apk:
-  const response = await exec(`
-    apksigner sign \
-    -v \
-    --ks ${keystorePairs[keystoreKeys[2]]} \
-    --ks-key-alias ${keystorePairs[keystoreKeys[0]]} \
-    --ks-pass pass:${keystorePairs[keystoreKeys[1]]} \
-    --key-pass pass:${keystorePairs[keystoreKeys[1]]} \
-    --out ${outFileName} \
-    ${apkPath}`);
-
-  if (!response.stdout.includes('Signed')) {
-    throw new Error(response.stderr);
-  }
-
-  logger.info('Successfully signed package.');
-
-  return outFileName;
 };

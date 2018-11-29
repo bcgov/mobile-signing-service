@@ -24,7 +24,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { parseXcodebuildError } from '../src/libs/sign';
+import { parseXcodebuildError, parseApksignerbuildError } from '../src/libs/sign';
 
 const p0 = path.join(__dirname, 'fixtures/xcarchive-fail.txt');
 const xcodeBuildError = fs.readFileSync(p0, 'utf8');
@@ -35,5 +35,41 @@ describe('Signing helper functions', () => {
     const message = parseXcodebuildError(xcodeBuildError);
 
     expect(message).toBe(aResponse);
+  });
+
+  test('An apksigner build error is correctly parsed', async () => {
+    const signerFailErr = 'Keystore was tampered with, or password was incorrect';
+    const errorPath = path.join(__dirname, 'fixtures/apksigner-fail.txt');
+    const apksignerError = fs.readFileSync(errorPath, 'utf8');
+    const signerFailMsg = parseApksignerbuildError(apksignerError);
+
+    expect(signerFailMsg).toBe(signerFailErr);
+  });
+
+  test('An apksigner file-not-found error is correctly parsed', async () => {
+    const noFileErr = './app.apk (No such file or directory)';
+    const errorPath = path.join(__dirname, 'fixtures/apksigner-fai-no-file.txt');
+    const apksignerError = fs.readFileSync(errorPath, 'utf8');
+    const noFileMsg = parseApksignerbuildError(apksignerError);
+
+    expect(noFileMsg).toBe(noFileErr);
+  });
+
+  test('An apksigner wrong-key error is correctly parsed', async () => {
+    const noKeyErr = `./ca.bc.gov.appKey.jks entry "ca.bc.gov.appKey" does not contain a key`;
+    const errorPath = path.join(__dirname, 'fixtures/apksigner-fail-no-key.txt');
+    const apksignerError = fs.readFileSync(errorPath, 'utf8');
+    const noKeyMsg = parseApksignerbuildError(apksignerError);
+
+    expect(noKeyMsg).toBe(noKeyErr);
+  });
+
+  test('An apksigner error paser failure is correctly parsed', async () => {
+    const parserErr = `APK error is not read properly. Update error message paser, err = Cannot read property 'split' of undefined`;
+    const errorPath = path.join(__dirname, 'fixtures/apksigner-paser-fail.txt');
+    const apksignerParserError = fs.readFileSync(errorPath, 'utf8');
+    const parserMsg = parseApksignerbuildError(apksignerParserError);
+
+    expect(parserMsg).toBe(parserErr);
   });
 });
