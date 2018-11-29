@@ -65,9 +65,8 @@ export default class Model {
   static toCamelCase(str) {
     return str
       .replace(/_/g, ' ')
-      .replace(
-        /(?:^\w|[A-Z]|\b\w)/g,
-        (letter, index) => (index === 0 ? letter.toLowerCase() : letter.toUpperCase())
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) =>
+        index === 0 ? letter.toLowerCase() : letter.toUpperCase()
       )
       .replace(/\s+/g, '');
   }
