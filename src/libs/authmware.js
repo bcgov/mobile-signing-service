@@ -22,10 +22,40 @@
 
 'use strict';
 
-import { logger, getJwtCertificate } from '@bcgov/nodejs-common-utils';
+import { getJwtCertificate, logger } from '@bcgov/nodejs-common-utils';
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
+import { ACCESS_CONTROL } from '../constants';
+
+export const isAuthorized = jwtPayload => {
+  if (
+    jwtPayload.azp === ACCESS_CONTROL.AGENT_CLIENT_ID &&
+    jwtPayload.preferred_username === ACCESS_CONTROL.AGENT_USER
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const verify = (req, jwtPayload, done) => {
+  if (jwtPayload) {
+    if (!isAuthorized(jwtPayload)) {
+      const err = new Error('You do not have the proper role for signing');
+      err.code = 401;
+
+      return done(err, null);
+    }
+
+    return done(null, {}); // OK
+  }
+
+  const err = new Error('Unable to authenticate');
+  err.code = 401;
+
+  return done(err, false);
+};
 
 // eslint-disable-next-line import/prefer-default-export
 export const authmware = async app => {
@@ -57,13 +87,7 @@ export const authmware = async app => {
     opts.ignoreExpiration = true;
   }
 
-  const jwtStrategy = new JwtStrategy(opts, async (req, jwtPayload, done) => {
-    if (jwtPayload) {
-      return done(null, {}); // OK
-    }
-
-    return done(new Error('Failed'), false);
-  });
+  const jwtStrategy = new JwtStrategy(opts, verify);
 
   passport.use(jwtStrategy);
 };
