@@ -52,3 +52,8 @@ export const AW = {
     UNKNOWN: 0,
   },
 };
+
+export const ACCESS_CONTROL = {
+  AGENT_CLIENT_ID: 'signing-api',
+  AGENT_USER: 'service-account-signing-api',
+};
