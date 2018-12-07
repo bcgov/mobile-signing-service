@@ -26,14 +26,26 @@ import { getJwtCertificate, logger } from '@bcgov/nodejs-common-utils';
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
-import { AC_ROLE } from '../constants';
+import { AC_AGENT, AC_ROLE } from '../constants';
+
+const isAuthorized = jwtPayload => {
+  if (
+    (jwtPayload.azp === AC_AGENT.clientId &&
+      jwtPayload.preferred_username === AC_AGENT.preferredUsername) ||
+    jwtPayload.roles.includes(AC_ROLE)
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 export const verify = (req, jwtPayload, done) => {
   if (jwtPayload) {
-    if (!jwtPayload.roles.includes(AC_ROLE)) {
-      console.log(jwtPayload.roles);
+    if (!isAuthorized(jwtPayload)) {
       const err = new Error('You do not have the proper role for signing');
       err.code = 401;
+
       return done(err, null);
     }
 

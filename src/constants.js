@@ -33,3 +33,8 @@ export const JOB_STATUS = {
 };
 
 export const AC_ROLE = 'devhub_sign';
+
+export const AC_AGENT = {
+  clientId: 'signing-agent',
+  preferredUsername: 'service-account-signing-agent',
+};
