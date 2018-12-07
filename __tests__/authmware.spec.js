@@ -23,22 +23,53 @@
 
 import fs from 'fs';
 import path from 'path';
-import { verify } from '../src/libs/authmware';
+import { isAuthorized, verify } from '../src/libs/authmware';
 
 const path0 = path.join(__dirname, 'fixtures/jwt-decoded-norole-20181105.json');
-const decodedNoRole = JSON.parse(fs.readFileSync(path0, 'utf8'));
+const noRole = JSON.parse(fs.readFileSync(path0, 'utf8'));
 
 const path1 = path.join(__dirname, 'fixtures/jwt-decoded-roleok-20181105.json');
-const decodedWithRole = JSON.parse(fs.readFileSync(path1, 'utf8'));
+const withRole = JSON.parse(fs.readFileSync(path1, 'utf8'));
 
-describe('Test Authentication', () => {
+const path2 = path.join(__dirname, 'fixtures/jwt-decoded-sa-20181107.json');
+const saOk = JSON.parse(fs.readFileSync(path2, 'utf8'));
+
+const path3 = path.join(__dirname, 'fixtures/jwt-decoded-sa-badid-20181107.json');
+const saBadId = JSON.parse(fs.readFileSync(path3, 'utf8'));
+
+const path4 = path.join(__dirname, 'fixtures/jwt-decoded-sa-badname-20181107.json');
+const saBadName = JSON.parse(fs.readFileSync(path4, 'utf8'));
+
+describe('Authentication tests', () => {
+  test('A JWT without the correct role is not accepted', () => {
+    expect(isAuthorized(noRole)).toBeFalsy();
+  });
+
+  test('A JWT with the correct role is accepted', () => {
+    expect(isAuthorized(withRole)).toBeTruthy();
+  });
+
+  test('A service account JWT with valid accepted', () => {
+    expect(isAuthorized(saOk)).toBeTruthy();
+  });
+
+  test('A service account JWT with an invalid ID is rejected', () => {
+    expect(isAuthorized(saBadId)).toBeFalsy();
+  });
+
+  test('A service account JWT with an invalid name is rejected', () => {
+    expect(isAuthorized(saBadName)).toBeFalsy();
+  });
+});
+
+describe('Authentication integration tests', () => {
   test('A JWT without the correct role is not accepted', () => {
     const fn = (err, user) => {
       expect(err).toBeDefined();
       expect(user).toBeNull();
     };
 
-    verify({}, decodedNoRole, fn);
+    verify({}, noRole, fn);
   });
 
   test('A JWT with the correct role is accepted', () => {
@@ -52,6 +83,6 @@ describe('Test Authentication', () => {
       expect(user.email).toBeDefined();
     };
 
-    verify({}, decodedWithRole, fn);
+    verify({}, withRole, fn);
   });
 });
