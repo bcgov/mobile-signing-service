@@ -28,11 +28,11 @@ import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
 import { ACCESS_CONTROL } from '../constants';
 
-const isAuthorized = jwtPayload => {
+export const isAuthorized = jwtPayload => {
   if (
     (jwtPayload.azp === ACCESS_CONTROL.AGENT_CLIENT_ID &&
       jwtPayload.preferred_username === ACCESS_CONTROL.AGENT_USER) ||
-    jwtPayload.roles.includes(ACCESS_CONTROL.USER_ROLE)
+    (jwtPayload.roles && jwtPayload.roles.includes(ACCESS_CONTROL.USER_ROLE))
   ) {
     return true;
   }
