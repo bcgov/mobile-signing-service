@@ -20,7 +20,6 @@
 
 'use strict';
 
-// eslint-disable-next-line import/prefer-default-export
 export const ENVIRONMENTS = {
   DEVELOPMENT: 'development',
   PRODUCTION: 'production',
@@ -32,3 +31,5 @@ export const JOB_STATUS = {
   COMPLETED: 'Completed',
   FAILED: 'Failed',
 };
+
+export const AC_ROLE = 'devhub_sign';

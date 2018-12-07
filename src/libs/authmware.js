@@ -22,10 +22,11 @@
 
 'use strict';
 
-import { logger, getJwtCertificate } from '@bcgov/nodejs-common-utils';
+import { getJwtCertificate, logger } from '@bcgov/nodejs-common-utils';
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
+import { AC_ROLE } from '../constants';
 
 // eslint-disable-next-line import/prefer-default-export
 export const authmware = async app => {
@@ -59,10 +60,28 @@ export const authmware = async app => {
 
   const jwtStrategy = new JwtStrategy(opts, async (req, jwtPayload, done) => {
     if (jwtPayload) {
-      return done(null, {}); // OK
+      if (!jwtPayload.roles.includes(AC_ROLE)) {
+        const err = new Error('You do not have the proper role for signing');
+        err.code = 401;
+        return done(err, false);
+      }
+
+      const user = {
+        roles: jwtPayload.roles,
+        name: jwtPayload.name,
+        preferredUsername: jwtPayload.preferred_username,
+        givenName: jwtPayload.given_name,
+        familyName: jwtPayload.family_name,
+        email: jwtPayload.email,
+      };
+
+      return done(null, user); // OK
     }
 
-    return done(new Error('Failed'), false);
+    const err = new Error('Unable to authenticate');
+    err.code = 401;
+
+    return done(err, false);
   });
 
   passport.use(jwtStrategy);
