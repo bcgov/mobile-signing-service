@@ -26,13 +26,13 @@ import { getJwtCertificate, logger } from '@bcgov/nodejs-common-utils';
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import config from '../config';
-import { AC_AGENT, AC_ROLE } from '../constants';
+import { ACCESS_CONTROL } from '../constants';
 
 const isAuthorized = jwtPayload => {
   if (
-    (jwtPayload.azp === AC_AGENT.clientId &&
-      jwtPayload.preferred_username === AC_AGENT.preferredUsername) ||
-    jwtPayload.roles.includes(AC_ROLE)
+    (jwtPayload.azp === ACCESS_CONTROL.AGENT_CLIENT_ID &&
+      jwtPayload.preferred_username === ACCESS_CONTROL.AGENT_USER) ||
+    jwtPayload.roles.includes(ACCESS_CONTROL.USER_ROLE)
   ) {
     return true;
   }

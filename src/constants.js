@@ -32,9 +32,8 @@ export const JOB_STATUS = {
   FAILED: 'Failed',
 };
 
-export const AC_ROLE = 'devhub_sign';
-
-export const AC_AGENT = {
-  clientId: 'signing-agent',
-  preferredUsername: 'service-account-signing-agent',
+export const ACCESS_CONTROL = {
+  USER_ROLE: 'devhub_sign',
+  AGENT_CLIENT_ID: 'signing-agent',
+  AGENT_USER: 'service-account-signing-agent',
 };
