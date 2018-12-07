@@ -20,7 +20,6 @@
 
 'use strict';
 
-// eslint-disable-next-line import/prefer-default-export
 export const ENVIRONMENTS = {
   DEVELOPMENT: 'development',
   PRODUCTION: 'production',
@@ -31,4 +30,10 @@ export const JOB_STATUS = {
   PROCESSING: 'Processing',
   COMPLETED: 'Completed',
   FAILED: 'Failed',
+};
+
+export const ACCESS_CONTROL = {
+  USER_ROLE: 'devhub_sign',
+  AGENT_CLIENT_ID: 'signing-agent',
+  AGENT_USER: 'service-account-signing-agent',
 };
