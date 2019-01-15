@@ -292,7 +292,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
           -exportArchive \
           -archivePath "${element}" \
           -exportPath "${exppath}"  \
-          -exportOptionsPlist ${path.join(path.dirname(element), 'options.plist')} 
+          -exportOptionsPlist "${path.join(path.dirname(element), 'options.plist')}"
         `);
       });
 
