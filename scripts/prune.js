@@ -20,32 +20,56 @@
 
 'use strict';
 
-import config from '../server/config';
-import { expiredTopLevelObjects } from '../server/libs/bucket';
-import { logger } from '../server/libs/logger';
+import {
+  isExpired,
+  listBucket,
+  logger,
+  removeObject,
+  statObject,
+} from '@bcgov/nodejs-common-utils';
+import * as minio from 'minio';
+import config from '../src/config';
 
 const bucket = config.get('minio:bucket');
-const albumExpirationInDays = config.get('albumExpirationInDays');
+const albumExpirationInDays = config.get('expirationInDays');
 
 const main = async () => {
   try {
+    const client = new minio.Client({
+      endPoint: config.get('minio:host'),
+      port: config.get('minio:port'),
+      useSSL: config.get('minio:useSSL'),
+      accessKey: config.get('minio:accessKey'),
+      secretKey: config.get('minio:secretKey'),
+      region: config.get('minio:region'),
+    });
+
     const prefix = '';
-    const old = await expiredTopLevelObjects(bucket, prefix, albumExpirationInDays);
-    const promises = old.map(o => removeObject(bucket, o.prefix));
+    const contents = await listBucket(client, bucket, prefix);
+    const objectStats = contents.map(async e => [
+      await statObject(client, bucket, e.name),
+      { prefix: e.name },
+    ]);
 
-    await Promise.all(promises);
+    const results = (await Promise.all(objectStats))
+      .map(i => {
+        const [a, b] = i;
+        return { ...a, ...b };
+      })
+      .filter(i => isExpired(i, albumExpirationInDays))
+      .map(o => removeObject(client, bucket, o.prefix));
 
-    let message;
-    if (promises.length === 0) {
-      message = 'No objects to prune.';
+    await Promise.all(results);
+
+    if (results.length === 0) {
+      logger.info('No objects to prune.');
     } else {
-      message = `Pruned ${promises.length} objects and related contents`;
-      logger.info(message);
+      logger.info(`Pruned ${results.length} objects.`);
     }
 
     process.exit();
   } catch (error) {
-    const message = 'There was a error purning old container objects';
+    const message = 'There was a error pruning objects';
     logger.error(`${message}, err = ${error.message}`);
 
     process.exit(1);

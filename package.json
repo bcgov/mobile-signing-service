@@ -77,7 +77,8 @@
     "test:ci": "CI=true NODE_ENV=test jest __tests__",
     "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=development jest __tests__ --watch",
-    "test:lint": "eslint --env node --ext .js src"
+    "test:lint": "eslint --env node --ext .js src",
+    "prune": "node build/scripts/prune.js"
   },
   "jest": {
     "verbose": false,
