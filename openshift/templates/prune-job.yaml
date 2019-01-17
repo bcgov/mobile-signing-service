@@ -32,9 +32,26 @@ objects:
             spec:
               containers:
                 - name: '${JOB_NAME}'
-                  image: '${IMAGE_NAME}'
+                  image: 'docker-registry.default.svc:5000/${IMAGE_NAMESPACE}/${IMAGE_NAME}'
                   command:
-                    - npm run prune
+                    - 'npm'
+                    - 'run'
+                    - 'prune'
+                  env:
+                    - name: PATH
+                      value: /opt/rh/rh-nodejs8/root/usr/bin:/opt/app-root/src/node_modules/.bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+                    - name: MINIO_HOST
+                      value: 'minio.${NAMESPACE}.svc'
+                    - name: MINIO_ACCESS_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: minio
+                          key: accessKey
+                    - name: MINIO_SECRET_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: minio
+                          key: secretKey
               restartPolicy: 'Never'
               terminationGracePeriodSeconds: 30
               activeDeadlineSeconds: 90
@@ -51,16 +68,21 @@ parameters:
     description: 'Name of the Scheduled Job to Create.'
     value: 'minio-pruner'
     required: true
+  - name: 'IMAGE_NAMESPACE'
+    displayName: 'Image Namespace'
+    description: 'The locate of the image to use for this cron job.'
+    value: 'devhub-tools'
+    required: true
   - name: 'IMAGE_NAME'
     displayName: 'Image Name'
     description: 'The image name to use for this cron job.'
-    value: 'devhub-tools/signing-api:latest'
+    value: 'signing-api:latest'
     required: true
   - name: 'SCHEDULE'
     displayName: 'Cron Schedule'
     description: 'Cron Schedule to Execute the Job (in UTC)'
-    # Currently targeting 4:00 AM monthly
-    value: '0 14 1 * *'
+    # Currently targeting 4:00 AM weekley
+    value: '0 14 * * 0'
     required: true
   # - name: 'JOB_SERVICE_ACCOUNT'
   #   displayName: 'Service Account Name'
