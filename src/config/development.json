@@ -1,6 +1,6 @@
 {
   "temporaryUploadPath": "uploads",
-  "expirationInDays": 90,
+  "expirationInDays": 7,
   "minio": {
     "bucket": "secode-sign",
     "port": 9000,
