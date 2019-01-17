@@ -31,7 +31,7 @@ import * as minio from 'minio';
 import config from '../src/config';
 
 const bucket = config.get('minio:bucket');
-const albumExpirationInDays = config.get('expirationInDays');
+const fileExpirationInDays = config.get('expirationInDays');
 
 const main = async () => {
   try {
@@ -56,7 +56,7 @@ const main = async () => {
         const [a, b] = i;
         return { ...a, ...b };
       })
-      .filter(i => isExpired(i, albumExpirationInDays))
+      .filter(i => isExpired(i, fileExpirationInDays))
       .map(o => removeObject(client, bucket, o.prefix));
 
     await Promise.all(results);
