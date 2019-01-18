@@ -39,10 +39,10 @@ const corsOptions = {
 export const router = app => {
   app.use(cors(corsOptions));
   app.use('/api/v1/ehlo', ehlo); // probes
+  app.use('/api/v1/delivery', delivery); // secured by shared secret
   // Any routes following the authentication middleware line below
   // will require authentication.
   app.use(passport.authenticate('jwt', { session: false }));
-  app.use('/api/v1/delivery', delivery); // secured by shared secret
   app.use('/api/v1/sign', sign);
   app.use('/api/v1/job', job);
   app.use('/api/v1/deploy', deploy);
