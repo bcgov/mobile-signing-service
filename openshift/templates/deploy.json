@@ -454,6 +454,7 @@
         "name": "${POSTGRES_VOLUME_NAME}"
       },
       "spec": {
+        "storageClassName": "${POSTGRES_PERSISTENT_VOLUME_CLASS}",
         "accessModes": [
           "ReadWriteOnce"
         ],
@@ -720,6 +721,13 @@
       "displayName": "Volume Capacity",
       "description": "Volume space available for data, e.g. 512Mi, 2Gi",
       "value": "1Gi",
+      "required": true
+    },
+    {
+      "name": "POSTGRES_PERSISTENT_VOLUME_CLASS",
+      "displayName": "Persistent Volume Class name",
+      "description": "The class of the volume: gluster-file, gluster-block, gluster-file-db",
+      "value": "gluster-file-db",
       "required": true
     },
     {
