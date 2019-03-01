@@ -21,11 +21,11 @@
 'use strict';
 
 import { getObject, logger } from '@bcgov/nodejs-common-utils';
-import fs from 'fs';
 import cp from 'child_process';
-import util from 'util';
+import fs from 'fs';
 import path from 'path';
 import shortid from 'shortid';
+import util from 'util';
 import config from '../config';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
@@ -359,6 +359,7 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
   // Force re-sign the .app and package it back into an IPA.
   await exec(`
     cd "${outBasePath}" && \
+    xattr -cr Payload && \
     rm -rf Payload/*.app/_CodeSignature && \
     codesign -f -s "${signingIdentifier}" Payload/*.app && \
     zip -qr "${outFileName}" *
