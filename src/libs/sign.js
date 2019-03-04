@@ -359,6 +359,7 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
   // Force re-sign the .app and package it back into an IPA.
   await exec(`
     cd "${outBasePath}" && \
+    xattr -cr Payload && \
     rm -rf Payload/*.app/_CodeSignature && \
     codesign -f -s "${signingIdentifier}" Payload/*.app && \
     zip -qr "${outFileName}" *
