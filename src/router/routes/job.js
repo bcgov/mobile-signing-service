@@ -22,17 +22,17 @@
 
 'use strict';
 
-import { logger, asyncMiddleware, errorWithCode, putObject } from '@bcgov/nodejs-common-utils';
-import request from 'request-promise-native';
-import util from 'util';
+import { asyncMiddleware, errorWithCode, logger, putObject } from '@bcgov/common-nodejs-utils';
 import { Router } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
+import request from 'request-promise-native';
+import util from 'util';
 import config from '../../config';
-import shared from '../../libs/shared';
-import { signipaarchive, signxcarchive, signapkarchive } from '../../libs/sign';
-import { deployToGooglePlayStore, deployToAirWatch, deployToiTunesStore } from '../../libs/deploy';
 import { JOB_STATUS } from '../../constants';
+import { deployToAirWatch, deployToGooglePlayStore, deployToiTunesStore } from '../../libs/deploy';
+import shared from '../../libs/shared';
+import { signapkarchive, signipaarchive, signxcarchive } from '../../libs/sign';
 import { isEmpty } from '../../libs/utils';
 
 const router = new Router();

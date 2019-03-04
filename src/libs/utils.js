@@ -20,11 +20,11 @@
 
 'use strict';
 
-import { logger } from '@bcgov/nodejs-common-utils';
+import { logger } from '@bcgov/common-nodejs-utils';
 import cp from 'child_process';
-import util from 'util';
 import path from 'path';
 import shortid from 'shortid';
+import util from 'util';
 
 const exec = util.promisify(cp.exec);
 

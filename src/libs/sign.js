@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { getObject, logger } from '@bcgov/nodejs-common-utils';
+import { getObject, logger } from '@bcgov/common-nodejs-utils';
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
