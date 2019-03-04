@@ -20,12 +20,12 @@
 
 'use strict';
 
-import { getObject, logger } from '@bcgov/nodejs-common-utils';
-import fs from 'fs';
+import { getObject, logger } from '@bcgov/common-nodejs-utils';
 import cp from 'child_process';
-import util from 'util';
+import fs from 'fs';
 import path from 'path';
 import shortid from 'shortid';
+import util from 'util';
 import config from '../config';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';

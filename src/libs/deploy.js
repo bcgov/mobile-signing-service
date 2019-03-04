@@ -14,20 +14,20 @@
 
 'use strict';
 
-import { getObject, logger } from '@bcgov/nodejs-common-utils';
-import { google } from 'googleapis';
-import request from 'request-promise-native';
-import url from 'url';
-import fs from 'fs';
+import { getObject, logger } from '@bcgov/common-nodejs-utils';
 import cp from 'child_process';
-import util from 'util';
+import fs from 'fs';
+import { google } from 'googleapis';
 import path from 'path';
+import request from 'request-promise-native';
 import shortid from 'shortid';
+import url from 'url';
+import util from 'util';
 import xml2js from 'xml2js';
 import config from '../config';
+import { AW, PACKAGE_FORMAT } from '../constants';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
-import { AW, PACKAGE_FORMAT } from '../constants';
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
