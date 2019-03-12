@@ -23,20 +23,13 @@
 'use strict';
 
 // eslint-disable-next-line object-curly-newline
-import {
-  asyncMiddleware,
-  bucketExists,
-  errorWithCode,
-  isExpired,
-  logger,
-  statObject,
-} from '@bcgov/nodejs-common-utils';
+import { asyncMiddleware, bucketExists, errorWithCode, isExpired, logger, statObject } from '@bcgov/common-nodejs-utils';
 import { Router } from 'express';
 import request from 'request-promise-native';
 import url from 'url';
 import config from '../../config';
-import DataManager from '../../libs/db';
 import { JOB_STATUS } from '../../constants';
+import DataManager from '../../libs/db';
 import shared from '../../libs/shared';
 
 const router = new Router();

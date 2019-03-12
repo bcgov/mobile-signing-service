@@ -20,13 +20,7 @@
 
 'use strict';
 
-import {
-  isExpired,
-  listBucket,
-  logger,
-  removeObject,
-  statObject,
-} from '@bcgov/nodejs-common-utils';
+import { isExpired, listBucket, logger, removeObject, statObject } from '@bcgov/common-nodejs-utils';
 import * as minio from 'minio';
 import config from '../src/config';
 

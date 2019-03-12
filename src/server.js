@@ -20,7 +20,7 @@
 
 'use strict';
 
-import { createBucketIfRequired, logger, started } from '@bcgov/nodejs-common-utils';
+import { createBucketIfRequired, logger, started } from '@bcgov/common-nodejs-utils';
 import config from './config';
 import app from './index';
 import shared from './libs/shared';
