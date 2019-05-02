@@ -22,14 +22,7 @@
 
 'use strict';
 
-import {
-  asyncMiddleware,
-  errorWithCode,
-  getObject,
-  isExpired,
-  logger,
-  statObject,
-} from '@bcgov/nodejs-common-utils';
+import { asyncMiddleware, errorWithCode, getObject, isExpired, logger, statObject } from '@bcgov/common-nodejs-utils';
 import { Router } from 'express';
 import { PassThrough } from 'stream';
 import config from '../../config';
