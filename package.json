@@ -8,6 +8,7 @@
   },
   "main": "index.js",
   "dependencies": {
+    "@babel/runtime": "^7.4.4",
     "@bcgov/common-nodejs-utils": "0.1.17",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -71,26 +72,6 @@
     "test:schema": "swagger-cli validate doc/api.yaml",
     "test:watch": "NODE_ENV=test jest __test__/*.spec.js --watch",
     "test:lint": "eslint --env node --ext .js src"
-  },
-  "jest": {
-    "verbose": true,
-    "testURL": "http://localhost/",
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    },
-    "globals": {
-      "NODE_ENV": "test"
-    },
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "json"
-    ],
-    "moduleDirectories": [
-      "node_modules",
-      "src/libs",
-      "src/router"
-    ]
   },
   "repository": {
     "type": "git",
