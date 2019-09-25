@@ -57,3 +57,8 @@ export const ACCESS_CONTROL = {
   AGENT_CLIENT_ID: 'signing-api',
   AGENT_USER: 'service-account-signing-api',
 };
+
+export const LOCAL_PATHS = {
+  JKS_PATH: '/Users/xcode/apk-certs/',
+  SIGNED_PACKAGE_SUB_PATH: 'signed',
+};

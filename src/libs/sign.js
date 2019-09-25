@@ -24,9 +24,11 @@ import { getObject, logger } from '@bcgov/common-nodejs-utils';
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import randomize from 'randomatic';
 import shortid from 'shortid';
 import util from 'util';
 import config from '../config';
+import { LOCAL_PATHS } from '../constants';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
 
@@ -172,15 +174,13 @@ const getApkBundleID = async apkPackage => {
  * @param {Object} keystoreKeys The keywords for keystore pair
  */
 const createKeyStore = async (keystoreKeys, apkBundleID) => {
-  const keystorePassword = Math.random()
-    .toString(36)
-    .substring(7);
+  const keystorePassword = randomize('Aa0', 8);
 
   try {
     // 1. create keystore:
     await exec(`
       keytool -genkey -v \
-      -keystore ${apkBundleID}-ks.jks \
+      -keystore ${LOCAL_PATHS.JKS_PATH}${apkBundleID}-ks.jks \
       -keyalg RSA -keysize 2048 -validity 10000 \
       -alias ${apkBundleID} \
       -storepass ${keystorePassword} -keypass ${keystorePassword} \
@@ -198,7 +198,7 @@ const createKeyStore = async (keystoreKeys, apkBundleID) => {
     await exec(`
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[0]} -p ${apkBundleID} -T /usr/bin/security -U
       security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[1]} -p ${keystorePassword} -T /usr/bin/security -U
-      security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[2]} -p "$(pwd)"/${apkBundleID}-ks.jks -T /usr/bin/security -U
+      security add-generic-password -a ${apkBundleID} -s ${keystoreKeys[2]} -p ${LOCAL_PATHS.JKS_PATH}${apkBundleID}-ks.jks -T /usr/bin/security -U
     `);
     /* eslint-enable */
   } catch (err) {
@@ -219,7 +219,7 @@ const getKeyStore = async apkBundleID => {
   try {
     await exec(`security find-generic-password -w -a ${apkBundleID}`);
   } catch (err) {
-    logger.info('No keystore for this app...start to create one now:');
+    logger.info(`No keystore for this app...start to create new for ${apkBundleID}:`);
 
     // 2. Create a pair of keystore:
     await createKeyStore(keystoreKeys, apkBundleID);
@@ -380,22 +380,23 @@ export const signipaarchive = async (archiveFilePath, workspace = '/tmp/') => {
 /* eslint-disable global-require */
 export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
   try {
-    const apath = path.join(workspace, shortid.generate());
-    const packagePath = path.join(apath, shortid.generate());
-    const outFileName = `${path.join(packagePath, shortid.generate())}.apk`;
     const keystoreKeys = ['keyAlias', 'keyPassword', 'keyStorePath'];
+    // double folders in path to match clean up task
+    const appWorkspace = path.join(workspace, shortid.generate(), shortid.generate());
+    const randomFileName = shortid.generate();
+    const apkPath = `${path.join(appWorkspace, randomFileName)}.apk`;
+    const signedApkPath = `${path.join(appWorkspace, randomFileName)}-signed.apk`;
 
     // Get the package from minio:
     const buffer = await getObject(shared.minio, bucket, archiveFilePath);
-    await exec(`mkdir -p ${packagePath}`);
-    await writeFile(outFileName, buffer, 'utf8');
+    await exec(`mkdir -p ${appWorkspace}`);
+    await writeFile(apkPath, buffer, 'utf8');
 
-    // Get the path of package locally:
-    const apkPathFull = await exec(`find ${packagePath} -iname '*.apk'`);
-    if (apkPathFull.stderr) {
+    // Verify if apk has been loaded usccessfully:
+    const packageResult = await exec(`find ${apkPath}`);
+    if (packageResult.stderr) {
       throw new Error('Cannot find the package.');
     }
-    const apkPath = apkPathFull.stdout.trim().split('\n');
 
     // Fetch signing keystore, key alias and password from keyChain:
     const apkBundleID = await getApkBundleID(apkPath);
@@ -409,7 +410,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
       --ks-key-alias ${keystorePairs[keystoreKeys[0]]} \
       --ks-pass pass:${keystorePairs[keystoreKeys[1]]} \
       --key-pass pass:${keystorePairs[keystoreKeys[1]]} \
-      --out ${outFileName} \
+      --out ${signedApkPath} \
       ${apkPath}`);
 
     if (!response.stdout.includes('Signed')) {
@@ -418,7 +419,7 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
 
     logger.info('Successfully signed package.');
 
-    return outFileName;
+    return signedApkPath;
   } catch (err) {
     const errorMessage = parseApksignerbuildError(err.message);
     const message = 'Unable to sign apk';
