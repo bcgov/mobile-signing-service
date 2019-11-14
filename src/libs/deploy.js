@@ -25,7 +25,7 @@ import url from 'url';
 import util from 'util';
 import xml2js from 'xml2js';
 import config from '../config';
-import { AW, PACKAGE_FORMAT } from '../constants';
+import { AW, PACKAGE_FORMAT, LOCAL_PATHS } from '../constants';
 import shared from './shared';
 import { fetchKeychainValue } from './utils';
 
@@ -156,7 +156,11 @@ export const deployToGooglePlayStore = async (signedApp, workspace = '/tmp/') =>
     // Turn data stream into a package-archive file for deployment:
     const signedAPK = await readFile(signedApkPath);
     // Get the Google client-service key to deployment:
-    const keyFull = await exec(`security find-generic-password -w -s deployKey -a ${apkBundleId}`);
+    const keyFull = await exec(
+      `security find-generic-password -w -s deployKey -a ${apkBundleId} ${
+        LOCAL_PATHS.KEYCHAIN_NAME
+      }`
+    );
     const keyPath = keyFull.stdout.trim().split('\n');
     const key = JSON.parse(await readFile(keyPath));
 
@@ -247,7 +251,13 @@ export const deployToiTunesStore = async (signedApp, workspace = '/tmp/') => {
  * @returns The status of the deployment
  */
 // eslint-disable-next-line import/prefer-default-export
-export const deployToAirWatch = async (signedApp, platform, awOrgID, awFileName, workspace = '/tmp/') => {
+export const deployToAirWatch = async (
+  signedApp,
+  platform,
+  awOrgID,
+  awFileName,
+  workspace = '/tmp/'
+) => {
   // The urls for airwatch api:
   const awHost = config.get('airwatch:host');
   const awUploadAPI = config.get('airwatch:upload');

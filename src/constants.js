@@ -61,4 +61,5 @@ export const ACCESS_CONTROL = {
 export const LOCAL_PATHS = {
   JKS_PATH: '/Users/xcode/apk-certs/',
   SIGNED_PACKAGE_SUB_PATH: 'signed',
+  KEYCHAIN_NAME: 'cicd.keychain',
 };
