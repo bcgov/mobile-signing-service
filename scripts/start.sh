@@ -10,6 +10,8 @@ source .env
 
 ./scripts/mkc.sh $KEYCHAIN_PWD
 
+sleep 5
+
 if [ $? -eq 0 ]; then
   echo "Checking for updates"
   if [ $(git status -uno | grep -q "Your branch is up to date") ] ||

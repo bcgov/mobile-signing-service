@@ -22,15 +22,9 @@
 
 const gulp = require('gulp');
 const babel = require('gulp-babel');
-const clean = require('gulp-clean');
+const del = require('del');
 
-gulp.task('clean', () =>
-  gulp.src('build', { read: false, allowEmpty: true }).pipe(
-    clean({
-      force: true,
-    })
-  )
-);
+gulp.task('clean', () => del('build/**', { force: true }));
 
 gulp.task('transpile-src', () =>
   gulp

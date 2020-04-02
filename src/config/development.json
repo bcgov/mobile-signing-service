@@ -3,8 +3,8 @@
   "expirationInDays": 90,
   "minio": {
     "bucket": "secode-sign",
-    "port": 9000,
-    "useSSL": false,
+    "port": 443,
+    "useSSL": true,
     "expiry": 604800,
     "region": "us-east-1"
   },
@@ -16,8 +16,8 @@
     "grantType": "client_credentials",
     "clientId": "signing-agent",
     "callback": "/v1/auth/callback",
-    "authUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/auth",
-    "tokenUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/token",
-    "certsUrl": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/certs"
+    "authUrl": "https://sso.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/auth",
+    "tokenUrl": "https://sso.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/token",
+    "certsUrl": "https://sso.pathfinder.gov.bc.ca/auth/realms/devhub/protocol/openid-connect/certs"
   }
 }

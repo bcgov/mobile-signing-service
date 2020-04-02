@@ -396,6 +396,8 @@ export const signapkarchive = async (archiveFilePath, workspace = '/tmp/') => {
     const packageResult = await exec(`find ${apkPath}`);
     if (packageResult.stderr) {
       throw new Error('Cannot find the package.');
+    } else {
+      logger.info(`Package found here: ${packageResult.stdout}`);
     }
 
     // Fetch signing keystore, key alias and password from keyChain:
