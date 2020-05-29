@@ -157,9 +157,7 @@ export const deployToGooglePlayStore = async (signedApp, workspace = '/tmp/') =>
     const signedAPK = await readFile(signedApkPath);
     // Get the Google client-service key to deployment:
     const keyFull = await exec(
-      `security find-generic-password -w -s deployKey -a ${apkBundleId} ${
-        LOCAL_PATHS.KEYCHAIN_NAME
-      }`
+      `security find-generic-password -w -s deployKey -a ${apkBundleId}`
     );
     const keyPath = keyFull.stdout.trim().split('\n');
     const key = JSON.parse(await readFile(keyPath));

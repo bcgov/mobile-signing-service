@@ -161,6 +161,7 @@ const getApkBundleID = async apkPackage => {
     cut -d "'" -f2
     `);
     // Get rid of the linebreak at the end:
+    logger.info(`Package bundle id ${apkBundle.stdout}`);
     return apkBundle.stdout.replace(/(\r\n\t|\n|\r\t)/gm, '');
   } catch (error) {
     throw new Error(`Unable to find package name! ${error}`);
@@ -217,7 +218,7 @@ const getKeyStore = async apkBundleID => {
 
   // 1. Use security to check for android keystore in keychain:
   try {
-    await exec(`security find-generic-password -w -a ${apkBundleID} ${LOCAL_PATHS.KEYCHAIN_NAME}`);
+    await exec(`security find-generic-password -w -a ${apkBundleID}`);
   } catch (err) {
     logger.info(`No keystore for this app...start to create new for ${apkBundleID}:`);
 

@@ -14,14 +14,13 @@ sleep 5
 
 if [ $? -eq 0 ]; then
   echo "Checking for updates"
-  if [ $(git status -uno | grep -q "Your branch is up to date") ] ||
-  [ ! -d build ]; then
+  if [ $(git status -uno | grep -q "Your branch is up to date") ] || [ ! -d ../build ]; then
+    echo "Clean up build folder and previously installed dependencies..."
+    rm -rf build/ node_modules/
     echo "Fetching updates and rebuilding"
     git pull && \
-    npm run build && \
-    pushd build && \
-    npm i --prod-only && \
-    popd
+    npm i && \
+    npm run build 
   fi
 
   echo "Starting Agent"
