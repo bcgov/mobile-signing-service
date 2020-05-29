@@ -44,6 +44,11 @@ nconf.overrides({
   environment: env,
   host: process.env.HOST || '127.0.0.1',
   port: process.env.PORT || defaultPort,
+  tools: {
+    sdk: process.env.ANDROID_SDK_PATH || '$ANDROID_HOME',
+    aapt: path.join(process.env.ANDROID_SDK_PATH, 'aapt'),
+    apksigner: path.join(process.env.ANDROID_SDK_PATH, 'apksigner'),
+  },
   minio: {
     host: process.env.MINIO_HOST,
     accessKey: process.env.MINIO_ACCESS_KEY,

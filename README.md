@@ -53,19 +53,15 @@ oc create -f -
 
 See the [API documentation](https://github.com/bcdevops/mobile-cicd-api.git/README.md) on how to setup and run supplemental services like minio.
 
-Create an `.env` file on the root folder with the following variables:
-
-```console
-NODE_ENV=development
-MINIO_ACCESS_KEY="XXXXXXXX"
-MINIO_SECRET_KEY="YYYYYYYYYYYYYYYY"
-MINIO_HOST="localhost"
-PORT=8089
-```
+Create an `.env` file on the root folder based on the template `.env.sample`.
 
 Run the node application with the following command:
 
-```console
+```shell
+# Create an `.env` file on the root folder based on template
+cp .env.sample .env
+
+# Run
 npm run dev
 ```
 
