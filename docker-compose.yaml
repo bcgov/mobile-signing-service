@@ -1,0 +1,100 @@
+version: "3.6"
+x-env: &defaults
+  NODE_ENV: development
+  MINIO_ACCESS_KEY: "ue51o3jPiHNienbK" # openssl rand -base64 12
+  MINIO_SECRET_KEY: "jpayHvZFrnQ5bPFH" # openssl rand -base64 12
+  MINIO_HOST: minio
+  POSTGRESQL_USER: app_dv_sign
+  POSTGRESQL_DB: cicd
+  POSTGRESQL_HOST: postgres
+services:
+  api:
+    container_name: signing-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./api
+        target: /usr/src/app/
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 256m
+    ports:
+      - 8089:8089
+      - 9229:9229
+    depends_on:
+      - minio
+      - postgres
+    environment:
+      <<: *defaults
+      PORT: 8089
+      API_URL: "http://10.10.10.73:8089"
+      AGENT_URL: "http://10.10.10.73:8088"
+      SSO_CLIENT_SECRET: 1c2624d7-8239-45c7-8c21-720b38aa1983
+    command: >
+      bash -c "sleep 3
+      && npx babel-node ./node_modules/.bin/knex migrate:latest
+      && npm run dev"
+  web:
+    container_name: signing-web
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./web
+        target: /usr/src/app/
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
+    environment: *defaults
+  minio:
+    image: minio/minio:latest
+    container_name: signing-minio
+    volumes:
+      - type: bind
+        source: ./minio_data
+        target: /data
+    ports:
+      - 9000:9000
+    deploy:
+      restart_policy:
+        delay: 10s
+        max_attempts: 10
+        window: 60s
+    environment: *defaults
+    command: server /data
+  postgres:
+    image: postgres:latest
+    container_name: signing-pg
+    volumes:
+      - type: bind
+        source: ./pg_data
+        target: /var/lib/postgresql/data
+    # ports:
+    #   - 5432:5432
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "psql",
+          "-U",
+          "app_dv_sign",
+          "-h",
+          "localhost",
+          "-d",
+          "cicd",
+          "-p",
+          "5432",
+          "-c",
+          "SELECT 1 AS result FROM pg_database WHERE datname='cicd'",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    environment: *defaults
+# volumes:
+#   pg_data: ./minio_data
