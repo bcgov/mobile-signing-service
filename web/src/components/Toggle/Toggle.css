@@ -1,0 +1,20 @@
+.instruction {
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.instruction.on {
+  max-height: 100000px;
+}
+
+.toggle-header {
+  background-color: #cfe3f7;
+  border-radius: 25px;
+  padding: 14px 16px;
+  text-align: center;
+  align-items: center;
+  font-size: 17px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}

@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AuthButton Component matches snapshot when Logged in 1`] = `
+<span>
+  <button
+    className="auth-button"
+    onClick={[Function]}
+  >
+    Logout
+  </button>
+</span>
+`;
+
+exports[`AuthButton Component matches snapshot when Logged out 1`] = `
+<span>
+  <button
+    className="auth-button"
+    onClick={[Function]}
+  >
+    Login
+  </button>
+</span>
+`;

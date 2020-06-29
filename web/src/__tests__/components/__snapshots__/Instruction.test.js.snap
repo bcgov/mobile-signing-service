@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Instruction Component matches snapshot 1`] = `
+<div
+  className="instructions"
+>
+  <h3>
+    Steps to Upload Your App
+  </h3>
+  <Toggle
+    title="XcodeArchive"
+  >
+    <p>
+      To package up an xcarchive to submit for signing you need to:
+    </p>
+    <ol>
+      <li>
+        <p>
+          Create a folder to hold the xcarchive and options.plist
+        </p>
+      </li>
+      <li>
+        <p>
+          Copy the xcarchive from xcode into the folder from step 1
+        </p>
+      </li>
+      <li>
+        <p>
+          Create or copy your options.plist from step 1, you could update the content from sample below:
+        </p>
+        <pre>
+          
+  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  &lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+  &lt;plist version="1.0"&gt;
+    &lt;dict&gt;
+      &lt;key&gt;method&lt;/key&gt;
+      &lt;string&gt;app-store&lt;/string&gt;
+      &lt;key&gt;signingStyle&lt;/key&gt;
+      &lt;string&gt;automatic&lt;/string&gt;
+      &lt;key&gt;stripSwiftSymbols&lt;/key&gt;
+      &lt;true/&gt;
+      &lt;key&gt;uploadSymbols&lt;/key&gt;
+      &lt;true/&gt;
+    &lt;/dict&gt;
+  &lt;/plist&gt;
+  
+        </pre>
+      </li>
+      <li>
+        <p>
+          ZIP up the folder for submission
+        </p>
+      </li>
+    </ol>
+  </Toggle>
+  <Toggle
+    title="IPA"
+  >
+    <p>
+      Signing IPA files is currently Alpha. Please use xcarchive.
+    </p>
+  </Toggle>
+  <Toggle
+    title="APK"
+  >
+    <p>
+      To package up an android package to submit for signing you need to:
+    </p>
+    <ol>
+      <li>
+        <p>
+          Select RELEASE mode in the Build Variant, and build APK
+        </p>
+      </li>
+      <li>
+        <p>
+          Drag and drop the apk
+        </p>
+      </li>
+    </ol>
+  </Toggle>
+</div>
+`;
