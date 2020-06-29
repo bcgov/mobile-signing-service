@@ -1,0 +1,21 @@
+{
+  "jti": "0250fdde-fdde-430f-8cbc-e788bb4c25da",
+  "exp": 1544205648,
+  "nbf": 0,
+  "iat": 1544204748,
+  "iss": "https://example.com/auth/realms/myrealm",
+  "aud": "my-client-id",
+  "sub": "3ff0bb0a-9fb8-4461-9994-c89d96e2ac71",
+  "typ": "ID",
+  "azp": "my-client-id",
+  "nonce": "08c56e6aa5dafd17d56495c2c10ce4d3ed8dd4de788bb4c25daea59e62010600",
+  "auth_time": 1544204724,
+  "session_state": "9b77af84-e883-4bb8-9160-122f575a4178",
+  "acr": "0",
+  "roles": ["blarb"],
+  "name": "Jane Doe",
+  "preferred_username": "xxxx\\jdoe",
+  "given_name": "Jane",
+  "family_name": "Doe",
+  "email": "jdoe@example.com"
+}
