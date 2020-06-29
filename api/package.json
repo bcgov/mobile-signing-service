@@ -80,26 +80,6 @@
     "test:watch": "NODE_ENV=test jest --watch --notify --notifyMode=change --coverage",
     "prune": "node build/scripts/prune.js"
   },
-  "jest": {
-    "verbose": false,
-    "testURL": "http://localhost/",
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    },
-    "globals": {
-      "NODE_ENV": "test"
-    },
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "json"
-    ],
-    "moduleDirectories": [
-      "node_modules",
-      "src/frontend",
-      "src/shared"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:bcgov/code-sign-api.git"
