@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FileUpload Component matches snapshot 1`] = `
+<div
+  className="file-upload-container"
+>
+  <Dropzone
+    className="drop-zone"
+    disabled={true}
+    onDrop={[MockFunction]}
+  >
+    <Component />
+  </Dropzone>
+  <ul
+    className="file-list"
+  >
+    <li
+      key="file1"
+    >
+      <FontAwesomeIcon
+        border={false}
+        className="file-icon"
+        fixedWidth={false}
+        flip={null}
+        icon="file"
+        inverse={false}
+        listItem={false}
+        mask={null}
+        pull={null}
+        pulse={false}
+        rotation={null}
+        size={null}
+        spin={false}
+        symbol={false}
+        title=""
+        transform={null}
+      />
+      <span
+        className="file-name"
+      >
+        file1
+      </span>
+      <span
+        className="file-size"
+      >
+        <div>
+            
+          0
+          Mb
+        </div>
+      </span>
+    </li>
+  </ul>
+</div>
+`;

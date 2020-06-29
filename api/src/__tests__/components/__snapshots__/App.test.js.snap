@@ -1,0 +1,110 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App Component matches snapshot 1`] = `
+<div>
+  <Header
+    authentication={
+      Object {
+        "isAuthenticated": true,
+      }
+    }
+  />
+  <div
+    className="container"
+  >
+    <ul
+      className="flex-outer"
+    >
+      <li>
+        <label>
+          Drag and drop the archive you with to sign onto this area.
+        </label>
+        <FileUpload
+          files={Array []}
+          onFileAccepted={[Function]}
+        />
+      </li>
+      <li>
+        <label>
+          What is the deployment platform this archive is meant for?
+        </label>
+        <ul
+          className="flex-inner"
+        >
+          <li>
+            <input
+              id="platform-ios"
+              name="platform"
+              onChange={[Function]}
+              type="radio"
+              value="ios"
+            />
+            <label
+              htmlFor="platform-ios"
+            >
+              iOS
+            </label>
+          </li>
+          <li>
+            <input
+              id="platform-android"
+              name="platform"
+              onChange={[Function]}
+              type="radio"
+              value="android"
+            />
+            <label
+              htmlFor="platform-android"
+            >
+              Android
+            </label>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <label>
+          You must complete a STRA & PIA before your production release.
+        </label>
+        <ul
+          className="flex-inner"
+        >
+          <li>
+            <input
+              id="i-agree"
+              name="i-agree"
+              onChange={[Function]}
+              type="checkbox"
+              value="agree"
+            />
+            <label
+              htmlFor="i-agree"
+            >
+              Yes, I will
+            </label>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <button
+          onClick={[Function]}
+        >
+          Start
+        </button>
+      </li>
+    </ul>
+    <JobStatusIndicator
+      job={
+        Object {
+          "status": "testStatus",
+        }
+      }
+    />
+  </div>
+  <div
+    className="container"
+  >
+    <Instruction />
+  </div>
+  <Footer />
+</div>
+`;
