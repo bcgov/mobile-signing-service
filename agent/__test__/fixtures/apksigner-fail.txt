@@ -1,0 +1,16 @@
+Failed to load signer "signer #1"
+java.io.IOException: Keystore was tampered with, or password was incorrect
+        at sun.security.provider.JavaKeyStore.engineLoad(JavaKeyStore.java:780)
+        at sun.security.provider.JavaKeyStore$JKS.engineLoad(JavaKeyStore.java:56)
+        at sun.security.provider.KeyStoreDelegator.engineLoad(KeyStoreDelegator.java:224)
+        at sun.security.provider.JavaKeyStore$DualFormatJKS.engineLoad(JavaKeyStore.java:70)
+        at java.security.KeyStore.load(KeyStore.java:1445)
+        at com.android.apksigner.ApkSignerTool$SignerParams.loadKeyStoreFromFile(ApkSignerTool.java:833)
+        at com.android.apksigner.ApkSignerTool$SignerParams.loadPrivateKeyAndCertsFromKeyStore(ApkSignerTool.java:723)
+        at com.android.apksigner.ApkSignerTool$SignerParams.loadPrivateKeyAndCerts(ApkSignerTool.java:663)
+        at com.android.apksigner.ApkSignerTool$SignerParams.access$500(ApkSignerTool.java:615)
+        at com.android.apksigner.ApkSignerTool.sign(ApkSignerTool.java:269)
+        at com.android.apksigner.ApkSignerTool.main(ApkSignerTool.java:89)
+Caused by: java.security.UnrecoverableKeyException: Password verification failed
+        at sun.security.provider.JavaKeyStore.engineLoad(JavaKeyStore.java:778)
+        ... 10 more
