@@ -1,0 +1,52 @@
+.file-upload-container {
+  background-color: white;
+  /* margin: 0em 3em 0em 3em; */
+}
+
+.file-upload-container .drop-zone-content {
+  text-align: center;
+  height: 4em;
+  /* width: 16em; */
+  background-color: white;
+  border-style: dashed;
+  border-width: 1px;
+  border-color: lightgray;
+  border-radius: 0.5em;
+  color: darkgrey;
+  /* display: inline-block; */
+  padding: 0.5em 0.5em 0;
+}
+
+.file-icon {
+  color: #fcba19;
+  margin: 0 0.3em 0 0;
+}
+
+/* .file-upload-container:disabled {
+  background-color: lightcoral;
+} */
+
+.file-upload-container ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.drop-zone-content .title {
+  font-size: 1em;
+}
+
+.file-list li {
+  padding: 0.3em 0 0.3em 0.1em;
+  height: 2em;
+  /* background: yellow; */
+}
+
+.file-list li span {
+  padding: 0.2em 0;
+  color: darkslategrey;
+  /* background: blue; */
+  height: 1em;
+  text-align: left;
+}

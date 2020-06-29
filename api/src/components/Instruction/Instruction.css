@@ -1,0 +1,46 @@
+.instructions h3 {
+  font-size: 20px;
+  color: #00316b;
+  margin: 1.5em 0 1em;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.3em;
+}
+
+.instructions ol {
+  counter-reset: li;
+  list-style: none;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.instructions ol li {
+  padding: 5px 0 5px 60px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.instructions ol li::before {
+  content: counter(li);
+  counter-increment: li;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 30px;
+  padding: 0 10px 0 0;
+  color: #999;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  text-align: right;
+  border-right: 1px solid #ddd;
+}
+
+.instructions p {
+  margin: 5px 1em 15px;
+}
+
+.instructions pre {
+  color: white;
+  background-color: #494848;
+}

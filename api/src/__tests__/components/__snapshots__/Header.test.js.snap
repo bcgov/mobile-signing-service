@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Header Component matches snapshot when NOT authenticated 1`] = `
+<header>
+  <div
+    className="banner"
+  >
+    <img
+      alt="logo"
+      className="header-logo"
+      src="bcgovlogo.svg"
+    />
+    <h1>
+      Secure Sign
+    </h1>
+  </div>
+  <AuthButton
+    isAuthenticated={false}
+  />
+</header>
+`;
+
+exports[`Header Component matches snapshot when authenticated 1`] = `
+<header>
+  <div
+    className="banner"
+  >
+    <img
+      alt="logo"
+      className="header-logo"
+      src="bcgovlogo.svg"
+    />
+    <h1>
+      Secure Sign
+    </h1>
+  </div>
+  <AuthButton
+    isAuthenticated={true}
+  />
+</header>
+`;
