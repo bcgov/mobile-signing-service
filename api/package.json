@@ -1,10 +1,10 @@
 {
-  "name": "cosi-api",
+  "name": "signing-service-api",
   "version": "0.0.1",
   "description": "",
-  "engine": "node 8.4.0",
+  "engine": "node 10.0.0",
   "engines": {
-    "node": "8.4.0"
+    "node": "10.0.0"
   },
   "main": "index.js",
   "dependencies": {
