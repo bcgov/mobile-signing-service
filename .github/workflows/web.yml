@@ -20,7 +20,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Unit tests w/ coverage
-        run: SKIP_PREFLIGHT_CHECK=true npm run test -- --coverage
+        run: npm run test -- --coverage
+        env:
+          SKIP_PREFLIGHT_CHECK: "true"
+          CI: "true"
       # - name: LINTing
       #   run: npm run test:lint
       # - name: Upload coverage report
@@ -57,6 +60,7 @@ jobs:
           npm ci
           npm run build --if-present
         env:
+          SKIP_PREFLIGHT_CHECK: "true"
           CI: "true"
   # s2i-build:
   #   if: github.event_name == 'push' && github.ref == 'refs/heads/master'

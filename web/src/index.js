@@ -17,5 +17,4 @@ ReactDOM.render(
 );
 
 registerServiceWorker();
-
 faLoader();
