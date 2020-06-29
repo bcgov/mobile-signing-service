@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "agent"
+    },
+    {
+      "path": "api"
+    },
+    {
+      "path": "web"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true
+  }
+}
