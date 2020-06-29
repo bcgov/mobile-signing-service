@@ -1,0 +1,7 @@
+Exception in thread "main" java.io.FileNotFoundException: ./app.apk (No such file or directory)
+        at java.io.RandomAccessFile.open0(Native Method)
+        at java.io.RandomAccessFile.open(RandomAccessFile.java:316)
+        at java.io.RandomAccessFile.<init>(RandomAccessFile.java:243)
+        at com.android.apksig.ApkSigner.sign(ApkSigner.java:166)
+        at com.android.apksigner.ApkSignerTool.sign(ApkSignerTool.java:330)
+        at com.android.apksigner.ApkSignerTool.main(ApkSignerTool.java:89)

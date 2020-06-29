@@ -1,0 +1,112 @@
+openapi: 3.0.0
+info:
+  title: Code Signing
+  version: 1.0.0
+  description: All things code signing related
+servers:
+  - url: http://localhost:8000/v1/
+    description: Local development server
+  - url: http://localhost:8000/v1/
+    description: Production server
+security:
+  - bearerAuth: []
+paths:
+  /ehlo:
+    get:
+      operationId: getServerStatus
+      summary: Health and wellness probe
+      description: |-
+        This endpoint can be used to check that the server is
+        alive and well.
+      tags:
+        - health
+      responses:
+        200:
+          description: The server is OK.
+  /v1/job/sign:
+    post:
+      operationId: createNewJob
+      summary: Submit a new job for signing
+      description: |-
+        Use this endpoint to submit a job for processing. The job can be an
+        xcarchive, ipa or apk for processing. Packages can be for iOS or Android.
+        When submiting an xcarchive, ensure it is ZIPed and contains a file called
+        `options.plist` with all necessary export options.
+      tags:
+        - sign
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        200:
+          description: The job was accepted for signing
+        401:
+          description: You have not supplied a valid JWT
+        500:
+          description: Internal Error
+  /job/deploy:
+    post:
+      operationId: postNewDeploymentJob
+      summary: Submit a new job for deployment
+      description: |-
+        Use this endpoint to submit a job for deployment.
+        The job could be an xcarchive, ipa or apk for
+        deploying to Google Play or App Store.
+      tags:
+        - deploy
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        204:
+          description: The archive was deployed
+        401:
+          description: You have not supplied a valid google client authentication
+        500:
+          description: Internal Error
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Job:
+      title: Job Description
+      description: The job description / metadata
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The job id
+        platform:
+          type: string
+          enum: [ios, android]
+          description: The platform the job should be processed on
+        originalFileName:
+          type: string
+          description: The name of the file to be processed as part of this job
+        originalFileEtag:
+          type: string
+          description: The etag identifer of the file to be processed
+        ref:
+          type: string
+          description: The callback URL to use to report job status
+      required:
+        - id
+        - platform
+        - originalFileName
+        - ref
+      example:
+        id: 56
+        originalFileName: 'hello-world.zip'
+        originalFileEtag: '0370fa71540271e33b6fa5105e5caccb'
+        ref: 'http://127.0.0.1:8000/v1/job/56'
