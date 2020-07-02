@@ -23,7 +23,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: ${NAME}-api:${OUTPUT_IMAGE_TAG}
+        name: ${NAME}:${OUTPUT_IMAGE_TAG}
     resources:
       limits:
         cpu: ${CPU_LIMIT}
