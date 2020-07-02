@@ -2,7 +2,7 @@ apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   labels:
-    app: ${NAME}-api
+    app: ${NAME}
   name: ${NAME}-build
   namespace: devhub-dev
 objects:
@@ -17,7 +17,7 @@ objects:
   metadata:
     name: ${NAME}-${GIT_REF}-build
     labels:
-      app: ${NAME}-api
+      app: ${NAME}
       name: ${NAME}-${GIT_REF}-build
   spec:
     output:
