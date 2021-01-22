@@ -43,6 +43,13 @@ objects:
           - ""
         resources:
           - buildconfigs
+        verbs:
+          - get
+          - list
+      - apiGroups:
+          - build.openshift.io
+          - ""
+        resources:
           - builds
         verbs:
           - create
@@ -52,12 +59,21 @@ objects:
           - image.openshift.io
           - ""
         resources:
+          - imagestreams
           - imagestreamimages
+        verbs:
+          - get
+          - list
+      - apiGroups:
+          - image.openshift.io
+          - ""
+        resources:
           - imagestreamtags
         verbs:
           - create
           - get
           - list
+          # - update
       - apiGroups:
           - image.openshift.io
           - ""
