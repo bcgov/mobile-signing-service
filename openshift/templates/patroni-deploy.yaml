@@ -59,20 +59,14 @@ objects:
     spec:
       ports:
         - port: 5432
-          protocol: TCP
           targetPort: 5432
       selector:
         cluster-name: patroni
         role: master
         app.kubernetes.io/name: patroni
-      sessionAffinity: None
-      type: ClusterIP
-    status:
-      loadBalancer: {}
   - apiVersion: apps/v1
     kind: StatefulSet
     metadata:
-      generation: 3
       labels:
         app: patroni-pgsql
         cluster-name: patroni
@@ -80,14 +74,13 @@ objects:
     spec:
       podManagementPolicy: OrderedReady
       replicas: ${{REPLICAS}}
-      revisionHistoryLimit: 10
+      revisionHistoryLimit: 3
       selector:
         matchLabels:
           statefulset: patroni
       serviceName: patroni
       template:
         metadata:
-          creationTimestamp: null
           labels:
             app: patroni-pgsql
             statefulset: patroni
@@ -106,6 +99,10 @@ objects:
                   topologyKey: "kubernetes.io/hostname"
           containers:
             - name: patroni
+              image: image-registry.openshift-image-registry.svc:5000/bcgov/patroni-postgres:${IMAGE_TAG}
+              # Because we are using image reference to a tag, we need to always pull the image otherwise
+              # we end up with outdated/out-of-sync image depending on the node where it is running
+              imagePullPolicy: Always
               envFrom:
                 - secretRef:
                     name: patroni-creds
@@ -129,16 +126,9 @@ objects:
                   fieldRef:
                     apiVersion: v1
                     fieldPath: metadata.name
-              image: image-registry.openshift-image-registry.svc:5000/bcgov/patroni-postgres:${IMAGE_TAG}
-              # Because we are using image reference to a tag, we need to always pull the image otherwise
-              #   we end up with outdated/out-of-sync image depending on the node where it is running
-              imagePullPolicy: IfNotPresent
-              name: postgresql
               ports:
                 - containerPort: 8008
-                  protocol: TCP
                 - containerPort: 5432
-                  protocol: TCP
               resources:
                 requests:
                   cpu: ${CPU_REQUEST}
@@ -146,8 +136,6 @@ objects:
                 limits:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
-              terminationMessagePath: /dev/termination-log
-              terminationMessagePolicy: File
               readinessProbe:
                 initialDelaySeconds: 5
                 timeoutSeconds: 5
@@ -158,12 +146,8 @@ objects:
               volumeMounts:
                 - mountPath: /home/postgres/pgdata
                   name: postgresql
-          dnsPolicy: ClusterFirst
-          schedulerName: default-scheduler
           serviceAccountName: patroni
-          terminationGracePeriodSeconds: 0
-      updateStrategy:
-        type: RollingUpdate
+          terminationGracePeriodSeconds: 10
       volumeClaimTemplates:
         - metadata:
             annotations:
