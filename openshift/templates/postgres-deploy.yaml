@@ -129,7 +129,7 @@ objects:
                   fieldRef:
                     apiVersion: v1
                     fieldPath: metadata.name
-              image: ${IMAGE_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
+              image: image-registry.openshift-image-registry.svc:5000/bcgov/patroni-postgres:${IMAGE_TAG}
               # Because we are using image reference to a tag, we need to always pull the image otherwise
               #   we end up with outdated/out-of-sync image depending on the node where it is running
               imagePullPolicy: IfNotPresent
@@ -167,12 +167,12 @@ objects:
       volumeClaimTemplates:
         - metadata:
             annotations:
-              volume.beta.kubernetes.io/storage-class: ${STORAGE_CLASS}
+              volume.beta.kubernetes.io/storage-class: netapp-file-standard
             labels:
               app: patroni-pgsql
             name: postgresql
           spec:
-            storageClassName: ${STORAGE_CLASS}
+            storageClassName: netapp-file-standard
             accessModes:
               - ReadWriteOnce
             resources:
@@ -180,51 +180,49 @@ objects:
                 storage: ${PVC_SIZE}
 parameters:
   - name: NAMESPACE
-    description:
-    displayName:
+    displayName: Namespace
+    description: |
+      The k8s namespace this deployment is being run
+      agains.
     required: true
   - name: REPLICAS
+    displayName: Replicas
     description: |
-      The number of StatefulSet replicas to use.
-    displayName: REPLICAS
-    value: "3"
+      The number of StatefulSet replicas (pods) that will be run.
+    required: true
   - name: CPU_REQUEST
+    displayName: CPU Request
     description: |
-      Starting amount of CPU the container can use.
-    displayName: CPU REQUEST
-    value: "250m"
+      The minimal amount of CPU required to start and run a pod in
+      the replica set.
+    required: true
   - name: CPU_LIMIT
-    description: Maximum amount of CPU the container can use.
     displayName: CPU Limit
-    value: "1"
+    description: |
+      The burstable maximum amount of CPU this application can utilize
+      if available on the host machine.
+    requred: true
   - name: MEMORY_REQUEST
-    description: Starting amount of memory the container can use.
     displayName: Memory Request
-    value: 512Mi
+    description: |
+      The minimal amount of memory required to start and run a
+      pod in the statefulset set.
+    required: true
   - name: MEMORY_LIMIT
-    description: Maximum amount of memory the container can use.
     displayName: Memory Limit
-    value: 512Mi
-  - name: IMAGE_STREAM_NAMESPACE
     description: |
-      The OpenShift Namespace where the patroni and postgresql
-      ImageStream resides.
-    displayName: ImageStream Namespace
-    value: bcgov
-  - name: IMAGE_NAME
-    description: |
-      The Patroni image stream name
-    value: patroni-postgres
+      The burstable maximum amount of memory a pod in the
+      statefulset can utilize if available on the host
+      machine if available.
   - name: IMAGE_TAG
     description: |
-      The image tag used to specify which image you would like deployed.
-      Don't use `latest`.
-    value: "12.4-latest"
+      The image tag used to specify which image you would like
+      deployed. Don't use `latest`.
+    required: true
   - name: PVC_SIZE
-    description: The size of the persistent volume to create.
     displayName: Persistent Volume Size
-    value: 1Gi
-  - name: STORAGE_CLASS
-    value: netapp-file-standard
-  - name: IMAGE_REGISTRY
-    value: image-registry.openshift-image-registry.svc:5000
+    description: |
+      The size of the persistent volume to create for each pod
+      in the StatefulSet. Note: REPLICAS * PVC_SIZE will be the
+      total storage size consumed.
+    required: true
