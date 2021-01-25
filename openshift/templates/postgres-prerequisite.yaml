@@ -19,8 +19,8 @@ objects:
     kind: Secret
     metadata:
       labels:
-        app: patroni-db
-        cluster-name: signing-service-db
+        app: patroni
+        cluster-name: patroni
       name: patroni-creds
     stringData:
       PATRONI_REPLICATION_USERNAME: ${PATRONI_REPLICATION_USERNAME}
@@ -34,16 +34,16 @@ objects:
     kind: ServiceAccount
     metadata:
       labels:
-        app: patroni-db
-        cluster-name: signing-service-db
-      name: patroni-db
+        app: patroni
+        cluster-name: patroni
+      name: patroni
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: Role
     metadata:
       labels:
-        app: patroni-db
-        cluster-name: signing-service-db
-      name: patroni-db
+        app: patroni
+        cluster-name: patroni
+      name: patroni
     rules:
       - apiGroups:
           - ""
@@ -95,16 +95,16 @@ objects:
     kind: RoleBinding
     metadata:
       labels:
-        app: patroni-db
-        cluster-name: signing-service-db
-      name: patroni-db
+        app: patroni
+        cluster-name: patroni
+      name: patroni
     roleRef:
       apiGroup: rbac.authorization.k8s.io
       kind: Role
-      name: patroni-db
+      name: patroni
     subjects:
       - kind: ServiceAccount
-        name: patroni-db
+        name: patroni
 parameters:
   - name: PATRONI_SUPERUSER_USERNAME
     description: |
