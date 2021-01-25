@@ -1,0 +1,231 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  annotations:
+    description: |-
+      Patroni Postgresql database cluster, with persistent storage.
+    iconClass: icon-postgresql
+    openshift.io/display-name: Patroni Postgresql (Persistent)
+    openshift.io/long-description: |
+      This template deploys a patroni postgresql HA
+      cluster with persistent storage.
+    tags: postgresql
+  name: patroni-pgsql-persistent
+labels:
+  app: patroni-pgsql
+  phase: deploy
+  app.kubernetes.io/instance: patroni-db
+  app.kubernetes.io/component: database
+  app.kubernetes.io/name: patroni
+  app.kubernetes.io/managed-by: template
+objects:
+  - apiVersion: security.devops.gov.bc.ca/v1alpha1
+    kind: NetworkSecurityPolicy
+    metadata:
+      name: db-to-db
+      labels:
+        app: patroni-pgsql
+    spec:
+      description: |
+        allow patroni pods to talk to one another for replication
+        etc.
+      source:
+        - - '$namespace=${NAMESPACE}'
+          - 'statefulset=patroni-db'
+      destination:
+        - - '$namespace=${NAMESPACE}'
+          - 'statefulset=patroni-db'
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: patroni-env
+      labels:
+        app: patroni-pgsql
+    data:
+      PATRONI_SCOPE: patroni-db
+      PATRONI_LOG_LEVEL: WARNING
+      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/pgdata/pgroot/data
+      PATRONI_POSTGRESQL_PGPASS: /tmp/pgpass
+      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+      PATRONI_RESTAPI_LISTEN: 0.0.0.0:8008
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: patroni-pgsql
+        cluster-name: patroni-db
+      name: patroni-db-master
+    spec:
+      ports:
+        - port: 5432
+          protocol: TCP
+          targetPort: 5432
+      selector:
+        cluster-name: patroni-db
+        role: master
+        app.kubernetes.io/name: patroni
+      sessionAffinity: None
+      type: ClusterIP
+    status:
+      loadBalancer: {}
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      generation: 3
+      labels:
+        app: patroni-pgsql
+        cluster-name: patroni-db
+      name: patroni-db
+    spec:
+      podManagementPolicy: OrderedReady
+      replicas: ${{REPLICAS}}
+      revisionHistoryLimit: 10
+      selector:
+        matchLabels:
+          statefulset: patroni-db
+      serviceName: patroni-db
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: patroni-pgsql
+            statefulset: patroni-db
+            cluster-name: patroni-db
+            app.kubernetes.io/name: patroni
+        spec:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: statefulset
+                        operator: In
+                        values:
+                          - patroni-db
+                  topologyKey: "kubernetes.io/hostname"
+          containers:
+            - name: patroni
+              envFrom:
+                - secretRef:
+                    name: patroni-creds
+                - configMapRef:
+                    name: patroni-env
+              env:
+              - name: PATRONI_KUBERNETES_LABELS
+                value: '{"cluster-name": "patroni-db", "app.kubernetes.io/name": "patroni"}'
+              - name: POD_IP
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: status.podIP
+              - name: PATRONI_KUBERNETES_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+              - name: PATRONI_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.name
+              image: ${IMAGE_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
+              # Because we are using image reference to a tag, we need to always pull the image otherwise
+              #   we end up with outdated/out-of-sync image depending on the node where it is running
+              imagePullPolicy: Always
+              name: postgresql
+              ports:
+                - containerPort: 8008
+                  protocol: TCP
+                - containerPort: 5432
+                  protocol: TCP
+              resources:
+                requests:
+                  cpu: ${CPU_REQUEST}
+                  memory: ${MEMORY_REQUEST}
+                limits:
+                  cpu: ${CPU_LIMIT}
+                  memory: ${MEMORY_LIMIT}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              readinessProbe:
+                initialDelaySeconds: 5
+                timeoutSeconds: 5
+                failureThreshold: 4
+                exec:
+                  command:
+                    - /usr/share/scripts/patroni/health_check.sh
+              volumeMounts:
+                - mountPath: /home/postgres/pgdata
+                  name: postgresql
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          serviceAccountName: patroni-db
+          terminationGracePeriodSeconds: 0
+      updateStrategy:
+        type: RollingUpdate
+      volumeClaimTemplates:
+        - metadata:
+            annotations:
+              volume.beta.kubernetes.io/storage-class: ${STORAGE_CLASS}
+            labels:
+              app: patroni-pgsql
+            name: postgresql
+          spec:
+            storageClassName: ${STORAGE_CLASS}
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: ${PVC_SIZE}
+parameters:
+  - name: NAMESPACE
+    description:
+    displayName:
+    required: true
+  - name: REPLICAS
+    description: |
+      The number of StatefulSet replicas to use.
+    displayName: REPLICAS
+    value: "3"
+  - name: CPU_REQUEST
+    description: |
+      Starting amount of CPU the container can use.
+    displayName: CPU REQUEST
+    value: "250m"
+  - name: CPU_LIMIT
+    description: Maximum amount of CPU the container can use.
+    displayName: CPU Limit
+    value: "1"
+  - name: MEMORY_REQUEST
+    description: Starting amount of memory the container can use.
+    displayName: Memory Request
+    value: 512Mi
+  - name: MEMORY_LIMIT
+    description: Maximum amount of memory the container can use.
+    displayName: Memory Limit
+    value: 512Mi
+  - name: IMAGE_STREAM_NAMESPACE
+    description: |
+      The OpenShift Namespace where the patroni and postgresql
+      ImageStream resides.
+    displayName: ImageStream Namespace
+    value: bcgov
+  - name: IMAGE_NAME
+    description: |
+      The Patroni image stream name
+    value: patroni-postgres
+  - name: IMAGE_TAG
+    description: |
+      The image tag used to specify which image you would like deployed.
+      Don't use `latest`.
+    value: "12.4-latest"
+  - name: PVC_SIZE
+    description: The size of the persistent volume to create.
+    displayName: Persistent Volume Size
+    value: 1Gi
+  - name: STORAGE_CLASS
+    value: netapp-file-standard
+  - name: IMAGE_REGISTRY
+    value: image-registry.openshift-image-registry.svc:5000

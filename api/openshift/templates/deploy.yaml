@@ -9,35 +9,6 @@ metadata:
   namespace: devhub-tools
 objects:
 - apiVersion: v1
-  kind: Secret
-  metadata:
-    labels:
-      app: ${MINIO_DEPLOYMENT_NAME}
-    name: ${MINIO_DEPLOYMENT_NAME}
-  stringData:
-    accessKey: ${MINIO_ACCESS_KEY}
-    secretKey: ${MINIO_SECRET_KEY}
-  type: Opaque
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    labels:
-      app: ${POSTGRES_DEPLOYMENT_NAME}
-    name: ${POSTGRESQL_SECRET_NAME}
-  stringData:
-    password: ${POSTGRESQL_PASSWORD}
-    user: ${POSTGRESQL_USER}
-  type: Opaque
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    labels:
-      app: ${API_NAME}
-    name: ${SSO_SECRET_NAME}
-  stringData:
-    secret: ${SSO_SECRET_VALUE}
-  type: Opaque
-- apiVersion: v1
   kind: Service
   metadata:
     annotations:
@@ -211,33 +182,8 @@ objects:
         - env:
           - name: MINIO_HOST
             value: ${MINIO_DEPLOYMENT_NAME}.${NAMESPACE}.svc
-          - name: MINIO_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                key: accessKey
-                name: ${MINIO_DEPLOYMENT_NAME}
-          - name: MINIO_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                key: secretKey
-                name: ${MINIO_DEPLOYMENT_NAME}
-          - name: POSTGRESQL_USER
-            valueFrom:
-              secretKeyRef:
-                key: user
-                name: ${POSTGRESQL_SECRET_NAME}
-          - name: POSTGRESQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: password
-                name: ${POSTGRESQL_SECRET_NAME}
           - name: POSTGRESQL_HOST
             value: ${POSTGRES_DEPLOYMENT_NAME}.${NAMESPACE}.svc
-          - name: SSO_CLIENT_SECRET
-            valueFrom:
-              secretKeyRef:
-                key: secret
-                name: ${SSO_SECRET_NAME}
           - name: PORT
             value: ${PORT}
           - name: NODE_ENV
@@ -288,108 +234,6 @@ objects:
     resources:
       requests:
         storage: ${MINIO_VOLUME_CAPACITY}
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: ${POSTGRES_VOLUME_NAME}
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: ${POSTGRES_VOLUME_CAPACITY}
-    storageClassName: ${POSTGRES_PERSISTENT_VOLUME_CLASS}
-- apiVersion: v1
-  kind: Service
-  metadata:
-    annotations:
-      description: Exposes the database server
-    labels:
-      app: ${POSTGRES_DEPLOYMENT_NAME}
-    name: ${POSTGRES_DEPLOYMENT_NAME}
-  spec:
-    ports:
-    - name: 5432-tcp
-      port: 5432
-      protocol: TCP
-      targetPort: 5432
-    selector:
-      deploymentconfig: ${POSTGRES_DEPLOYMENT_NAME}
-- apiVersion: v1
-  kind: DeploymentConfig
-  metadata:
-    annotations:
-      description: Defines how to deploy the database
-    name: ${POSTGRES_DEPLOYMENT_NAME}
-  spec:
-    replicas: 1
-    selector:
-      app: ${POSTGRES_DEPLOYMENT_NAME}
-      deploymentconfig: ${POSTGRES_DEPLOYMENT_NAME}
-    strategy:
-      type: Rolling
-    template:
-      metadata:
-        labels:
-          app: ${POSTGRES_DEPLOYMENT_NAME}
-          deploymentconfig: ${POSTGRES_DEPLOYMENT_NAME}
-        name: ${POSTGRES_DEPLOYMENT_NAME}
-      spec:
-        containers:
-        - env:
-          - name: POSTGRESQL_USER
-            valueFrom:
-              secretKeyRef:
-                key: user
-                name: ${POSTGRESQL_SECRET_NAME}
-          - name: POSTGRESQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: password
-                name: ${POSTGRESQL_SECRET_NAME}
-          - name: POSTGRESQL_DATABASE
-            value: ${POSTGRESQL_DATABASE}
-          image: ' '
-          livenessProbe:
-            initialDelaySeconds: 30
-            tcpSocket:
-              port: 5432
-            timeoutSeconds: 1
-          name: ${POSTGRES_DEPLOYMENT_NAME}
-          ports:
-          - containerPort: 5432
-            protocol: TCP
-          readinessProbe:
-            exec:
-              command:
-              - /bin/sh
-              - -i
-              - -c
-              - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c
-                'SELECT 1'
-            initialDelaySeconds: 5
-            timeoutSeconds: 1
-          resources:
-            limits:
-              memory: ${POSTGRESQL_MEMORY_LIMIT}
-          volumeMounts:
-          - mountPath: /var/lib/pgsql/data
-            name: ${POSTGRES_VOLUMN_NAME}
-        volumes:
-        - name: ${POSTGRES_VOLUMN_NAME}
-          persistentVolumeClaim:
-            claimName: ${POSTGRES_VOLUME_NAME}
-    triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - ${POSTGRES_DEPLOYMENT_NAME}
-        from:
-          kind: ImageStreamTag
-          name: postgresql:latest
-          namespace: openshift
-      type: ImageChange
-    - type: ConfigChange
 parameters:
 - description: The name assigned to all of the objects defined in this template.  You
     should keep this as default unless your know what your doing.
@@ -407,7 +251,7 @@ parameters:
   displayName: Image Namespace
   name: API_IMAGE_NAMESPACE
   required: true
-  value: devhub-tools
+  value: 22e0ba-tools
 - description: The namespace of the OpenShift project containing the imagestream for
     the application.
   displayName: Environment namespace
@@ -423,76 +267,11 @@ parameters:
   name: API_CPU_LIMIT
   required: true
   value: "1"
-- description: The secret name of sso-credentials.
-  displayName: SSO secret name
-  name: SSO_SECRET_NAME
-  value: sso-credentials
-- description: The secret name of sso-credentials.
-  displayName: SSO secret name
-  name: SSO_SECRET_VALUE
-  required: true
-- description: The name assigned to all of the objects defined in this template.  You
-    should keep this as default unless your know what your doing.
-  displayName: Database Service Name
-  name: POSTGRES_DEPLOYMENT_NAME
-  required: true
-  value: postgresql
-- description: The secret name of database.
-  displayName: PostgreSQL secret name
-  name: POSTGRESQL_SECRET_NAME
-  value: postgresql
-- description: Maximum amount of memory the PostgreSQL container can use.
-  displayName: Memory Limit (PostgreSQL)
-  name: POSTGRESQL_MEMORY_LIMIT
-  required: true
-  value: 512Mi
-- displayName: The PostgreSQL db user name
-  name: POSTGRESQL_USER
-  required: true
-- displayName: The PostgreSQL user password
-  from: '[a-zA-Z0-9]{16}'
-  generate: expression
-  name: POSTGRESQL_PASSWORD
-  required: true
-- displayName: The PostgreSQL database for the health check probe
-  name: POSTGRESQL_DATABASE
-  required: true
-  value: cicd
-- description: The Postgres storage name as postgres-data
-  displayName: The Postgres storage name
-  name: POSTGRES_VOLUME_NAME
-  required: true
-  value: postgres
-- description: The volumn name for postgres image
-  displayName: The volumn name for psql
-  name: POSTGRES_VOLUMN_NAME
-  required: true
-  value: pgdata
-- description: Volume space available for data, e.g. 512Mi, 2Gi
-  displayName: Volume Capacity
-  name: POSTGRES_VOLUME_CAPACITY
-  required: true
-  value: 1Gi
-- description: 'The class of the volume: gluster-file, gluster-block, gluster-file-db'
-  displayName: Persistent Volume Class name
-  name: POSTGRES_PERSISTENT_VOLUME_CLASS
-  required: true
-  value: gluster-file-db
 - description: The name given to the minio instance deployment.
   displayName: Minio deployment name
   name: MINIO_DEPLOYMENT_NAME
   required: true
   value: minio
-- displayName: The Minio access key
-  from: '[a-zA-Z0-9]{12}'
-  generate: expression
-  name: MINIO_ACCESS_KEY
-  required: true
-- displayName: The Minio secret key
-  from: '[a-zA-Z0-9]{16}'
-  generate: expression
-  name: MINIO_SECRET_KEY
-  required: true
 - displayName: Name of the minio storage PV
   name: MINIO_VOLUME_NAME
   required: true
