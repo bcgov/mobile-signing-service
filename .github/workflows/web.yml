@@ -6,6 +6,7 @@ on:
       - "web/package*.json"
       - "web/public/**/*"
       - "web/Caddyfile"
+  workflow_dispatch:
 defaults:
   run:
     working-directory: ./web

@@ -4,6 +4,7 @@ on:
     paths:
       - "api/src/**/*.js"
       - "api/package*.json"
+  workflow_dispatch:
 defaults:
   run:
     working-directory: ./api
