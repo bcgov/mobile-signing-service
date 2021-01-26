@@ -24,7 +24,7 @@ const config = {
   baseURL:
     process.env.NODE_ENV === 'production'
       ? '{{env SSO_BASE_URL}}'
-      : 'https://sso-dev.pathfinder.gov.bc.ca',
+      : 'https://dev.oidc.gov.bc.ca',
   realmName: 'devhub',
   clientId: 'signing-web',
   kcIDPHint: '', // Skip SSO, go directly to IDIR auth.
