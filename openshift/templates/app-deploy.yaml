@@ -5,6 +5,36 @@ labels:
 metadata:
   name: mobile-signing-service
 objects:
+- apiVersion: security.devops.gov.bc.ca/v1alpha1
+  kind: NetworkSecurityPolicy
+  metadata:
+    name: web-to-api
+    labels:
+      app: mobile-signing-service
+  spec:
+    description: |
+      allow web pods to talk to the api pods
+    source:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=web'
+    destination:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=api'
+- apiVersion: security.devops.gov.bc.ca/v1alpha1
+  kind: NetworkSecurityPolicy
+  metadata:
+    name: api-to-db
+    labels:
+      app: mobile-signing-service
+  spec:
+    description: |
+      allow api pods to talk to the database
+    source:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=api'
+    destination:
+      - - '$namespace=${NAMESPACE}'
+        - 'statefulset=patroni'
 - apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -60,6 +90,20 @@ objects:
   data:
     SSO_BASE_URL: ${SSO_BASE_URL}
 - apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: mobile-signing-service-api
+      component: api
+    name: api-env
+  data:
+    PORT: ${API_PORT}
+    NODE_ENV: ${NODE_ENV}
+    AGENT_URL: ${AGENT_URL}
+    API_URL: "https://${HOSTNAME_HTTPS}"
+    MINIO_HOST: "minio.${NAMESPACE}.svc"
+    POSTGRESQL_HOST: "patroni.${NAMESPACE}.svc"
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: web
@@ -79,7 +123,7 @@ objects:
           - web
         from:
           kind: ImageStreamTag
-          name: signing-web:${IMAGE_TAG}
+          name: signing-web:${WEB_IMAGE_TAG}
           namespace: ${SOURCE_IMAGE_NAMESPACE}
       type: ImageChange
     template:
@@ -96,8 +140,6 @@ objects:
         terminationGracePeriodSeconds: 30
         containers:
         - name: web
-          # args:
-          # - /tmp/scripts/run
           envFrom:
             - configMapRef:
                 name: web-env
@@ -107,15 +149,91 @@ objects:
           - containerPort: 2015
           resources:
             requests:
-              cpu: ${CPU_REQUEST}
-              memory: ${MEMORY_REQUEST}
+              cpu: ${WEB_CPU_REQUEST}
+              memory: ${WEB_MEMORY_REQUEST}
             limits:
-              cpu: ${CPU_LIMIT}
-              memory: ${MEMORY_LIMIT}
+              cpu: ${WEB_CPU_LIMIT}
+              memory: ${WEB_MEMORY_LIMIT}
           volumeMounts:
           - name: config-vol
             mountPath: /opt/app-root/etc/Caddyfile
             subPath: Caddyfile
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: api
+    labels:
+      app: mobile-signing-service
+      component: api
+  spec:
+    replicas: ${{REPLICAS}}
+    selector:
+      app: mobile-signing-service
+      component: api
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - api
+        from:
+          kind: ImageStreamTag
+          name: signing-api:${API_IMAGE_TAG}
+          namespace: ${SOURCE_IMAGE_NAMESPACE}
+      type: ImageChange
+    template:
+      metadata:
+        name: api
+        labels:
+          app: mobile-signing-service
+          component: api
+      spec:
+        terminationGracePeriodSeconds: 30
+        containers:
+        - name: api
+          envFrom:
+            - configMapRef:
+                name: api-env
+            - secretRef:
+                name: minio-creds
+            - secretRef:
+                name: patroni-creds
+            - secretRef:
+                name: sso-creds
+          image: ""
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080
+          resources:
+            requests:
+              cpu: ${API_CPU_REQUEST}
+              memory: ${API_MEMORY_REQUEST}
+            limits:
+              cpu: ${API_CPU_LIMIT}
+              memory: ${API_MEMORY_LIMIT}
+          startupProbe:
+            httpGet:
+              path: /api/v1/ehlo
+              port: 8080
+              scheme: HTTP
+            failureThreshold: 12
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/v1/ehlo
+              port: 8080
+              scheme: HTTP
+            failureThreshold: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ehlo
+              port: 8080
+              scheme: HTTP
+            failureThreshold: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
 - apiVersion: v1
   kind: Service
   metadata:
@@ -131,6 +249,21 @@ objects:
     selector:
       app: mobile-signing-service
       component: web
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: api
+    labels:
+      app: mobile-signing-service
+      component: api
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      targetPort: 8080
+    selector:
+      app: mobile-signing-service
+      component: api
 - apiVersion: v1
   kind: Route
   metadata:
@@ -156,6 +289,32 @@ objects:
       name: web
       weight: 100
     wildcardPolicy: None
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: api
+    labels:
+      app: mobile-signing-service
+      component: api
+  spec:
+    host: "${HOSTNAME_HTTPS}"
+    port:
+      targetPort: 8080-tcp
+    path: /api
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      certificate: |-
+        ${TLS_CERT_PEM}
+      key: |-
+        ${TLS_KEY_PEM}
+      caCertificate: |-
+        ${TLS_CACERT_PEM}
+    to:
+      kind: Service
+      name: api
+      weight: 100
+    wildcardPolicy: None
 parameters:
 - name: NAMESPACE
   displayName: Namespace
@@ -168,28 +327,53 @@ parameters:
   description: |
     The number of StatefulSet replicas (pods) that will be run.
   required: true
-- name: CPU_REQUEST
-  displayName: CPU Request
+- name: WEB_CPU_REQUEST
+  displayName: Web CPU Request
   description: |
     The minimal amount of CPU required to start and run a pod in
     the replica set.
   required: true
-- name: CPU_LIMIT
-  displayName: CPU Limit
+- name: WEB_CPU_LIMIT
+  displayName: Web CPU Limit
   description: |
     The burstable maximum amount of CPU this application can utilize
     if available on the host machine.
   requred: true
-- name: MEMORY_REQUEST
-  displayName: Memory Request
+- name: WEB_MEMORY_REQUEST
+  displayName: Web Memory Request
   description: |
     The minimal amount of memory required to start and run a
     pod in the statefulset set.
   required: true
-- name: MEMORY_LIMIT
-  displayName: Memory Limit
+- name: WEB_MEMORY_LIMIT
+  displayName: Web Memory Limit
   description: |
     The burstable maximum amount of memory a pod in the
+    statefulset can utilize if available on the host
+    machine if available.
+  required: true
+- name: API_CPU_REQUEST
+  displayName: API CPU Request
+  description: |
+    The minimal amount of CPU the API requires to start and run a
+    pod in the replica set.
+  required: true
+- name: API_CPU_LIMIT
+  displayName: API CPU Limit
+  description: |
+    The burstable maximum amount of CPU the API can utilize
+    if available on the host machine.
+  requred: true
+- name: API_MEMORY_REQUEST
+  displayName: API Memory Request
+  description: |
+    The minimal amount of memory required to start the API and
+    run a pod in the statefulset set.
+  required: true
+- name: API_MEMORY_LIMIT
+  displayName: API Memory Limit
+  description: |
+    The burstable maximum amount of memory a API pod in the
     statefulset can utilize if available on the host
     machine if available.
   required: true
@@ -198,7 +382,12 @@ parameters:
   description: |
     The URL for the SSO instance.
   required: true
-- name: IMAGE_TAG
+- name: WEB_IMAGE_TAG
+  description: |
+    The image tag used to specify which image you would like
+    deployed. Don't use `latest`.
+  required: true
+- name: API_IMAGE_TAG
   description: |
     The image tag used to specify which image you would like
     deployed. Don't use `latest`.
@@ -231,4 +420,22 @@ parameters:
   description: |
     The host name used for this route. Use the domain only like
     foo.example.com, do not include protocols or slashes.
+  required: true
+- name: API_PORT
+  displayName: API Port
+  description: |
+    The container port the node API application should bind
+    to.
+  required: true
+- name: NODE_ENV
+  displayName: NodeJS Environment
+  description: |
+    The node.js environment setting. As per the docs this can be
+    'production' or 'development'.
+  required: true
+- name: AGENT_URL
+  displayName: Agent URL
+  description: |
+    The URL where the API can send jobs to an 'Agent' for
+    processing.
   required: true
