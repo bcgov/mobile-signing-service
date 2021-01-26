@@ -1,0 +1,234 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: mobile-signing-service
+metadata:
+  name: mobile-signing-service
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: web-caddy-config
+    labels:
+      app: mobile-signing-service-caddy
+      component: web
+  data:
+    Caddyfile: |-
+      # Where caddy should listen
+      :2015
+
+      # Turn on the Web/file server
+      file_server
+      templates {
+        mime  "text/javascript" "application/javascript"
+      }
+
+      # The site root
+      root * /opt/app-root/
+
+      # Because we should
+      encode zstd gzip
+
+      # This rewrite rule may be required to get React apps
+      # to deal with trailing slashes properly.
+      #@filter {
+      #       not path_regexp ^\/0.0.0.0
+      #       file {
+      #               try_files {path} {path}/ /?url={uri}
+      #       }
+      #}
+      #rewrite @try_files {http.matchers.file.relative}
+
+      # This properly deals with react routes.
+      try_files {path} {path}/ /index.html
+
+      # On OCP we should log to stdout so Prometheus can
+      # slurp up the logs for human consumption.
+      log {
+        #errors stdout
+        output stdout
+        format single_field common_log
+        level info
+      }
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: mobile-signing-service-caddy
+      component: web
+    name: web-env
+  data:
+    SSO_BASE_URL: ${SSO_BASE_URL}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: web
+    labels:
+      app: mobile-signing-service
+      component: web
+  spec:
+    replicas: ${{REPLICAS}}
+    selector:
+      app: mobile-signing-service
+      component: web
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - web
+        from:
+          kind: ImageStreamTag
+          name: signing-web:${IMAGE_TAG}
+          namespace: ${SOURCE_IMAGE_NAMESPACE}
+      type: ImageChange
+    template:
+      metadata:
+        name: web
+        labels:
+          app: mobile-signing-service
+          component: web
+      spec:
+        volumes:
+        - name: config-vol
+          configMap:
+            name: web-caddy-config
+        terminationGracePeriodSeconds: 30
+        containers:
+        - name: web
+          # args:
+          # - /tmp/scripts/run
+          envFrom:
+            - configMapRef:
+                name: web-env
+          image: ""
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 2015
+          resources:
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+          volumeMounts:
+          - name: config-vol
+            mountPath: /opt/app-root/etc/Caddyfile
+            subPath: Caddyfile
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: web
+    labels:
+      app: mobile-signing-service
+      component: web
+  spec:
+    ports:
+    - name: 2015-tcp
+      port: 2015
+      targetPort: 2015
+    selector:
+      app: mobile-signing-service
+      component: web
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: web
+    labels:
+      app: mobile-signing-service
+      component: web
+  spec:
+    host: "${HOSTNAME_HTTPS}"
+    port:
+      targetPort: 2015-tcp
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      certificate: |-
+        ${TLS_CERT_PEM}
+      key: |-
+        ${TLS_KEY_PEM}
+      caCertificate: |-
+        ${TLS_CACERT_PEM}
+    to:
+      kind: Service
+      name: web
+      weight: 100
+    wildcardPolicy: None
+parameters:
+- name: NAMESPACE
+  displayName: Namespace
+  description: |
+    The k8s namespace this deployment is being run
+    agains.
+  required: true
+- name: REPLICAS
+  displayName: Replicas
+  description: |
+    The number of StatefulSet replicas (pods) that will be run.
+  required: true
+- name: CPU_REQUEST
+  displayName: CPU Request
+  description: |
+    The minimal amount of CPU required to start and run a pod in
+    the replica set.
+  required: true
+- name: CPU_LIMIT
+  displayName: CPU Limit
+  description: |
+    The burstable maximum amount of CPU this application can utilize
+    if available on the host machine.
+  requred: true
+- name: MEMORY_REQUEST
+  displayName: Memory Request
+  description: |
+    The minimal amount of memory required to start and run a
+    pod in the statefulset set.
+  required: true
+- name: MEMORY_LIMIT
+  displayName: Memory Limit
+  description: |
+    The burstable maximum amount of memory a pod in the
+    statefulset can utilize if available on the host
+    machine if available.
+  required: true
+- name: SSO_BASE_URL
+  displayName: SSO Base URL
+  description: |
+    The URL for the SSO instance.
+  required: true
+- name: IMAGE_TAG
+  description: |
+    The image tag used to specify which image you would like
+    deployed. Don't use `latest`.
+  required: true
+- name: SOURCE_IMAGE_NAMESPACE
+  displayName: Source Image Namespace
+  description: |
+    The openshift namespace where builds and target 
+    images are stored.
+  required: true
+- name: TLS_CERT_PEM
+  description: TLS certificate data in PEM format.
+  displayName: TLS Certificate
+  required: true
+- name: TLS_KEY_PEM
+  description: |
+    TLS certificate private key data in PEM format. This will be in
+    the possesion of the person who created the Certificate Signing
+    Request (CSR).
+  displayName: TLS Private Key
+  required: true
+- name: TLS_CACERT_PEM
+  description: |
+    TLS certificate cuthority certificate data in PEM format. If you
+    got your certificate from an iStore request, use L1KChain.txt.
+  displayName: TLS Certificate Authority Certificate
+  required: true
+- name: HOSTNAME_HTTPS
+  displayName: Route Name
+  description: |
+    The host name used for this route. Use the domain only like
+    foo.example.com, do not include protocols or slashes.
+  required: true
