@@ -6,6 +6,28 @@ metadata:
   name: mobile-signing-service
 objects:
 - apiVersion: security.devops.gov.bc.ca/v1alpha1
+  kind: ExternalNetwork
+  metadata:
+    # This metadata field will be what you see with the command
+    # `oc get externalnetwork` or `kubctl get externalnetwork`.
+    name: all-things-external
+    labels:
+      app: mobile-signing-service
+  spec:
+    # This name will be used internally by Aporeto; it should match
+    # the `name` field in metadata above.
+    description: |
+      specify a custom external network that can be
+      referenced by name.
+    entries:
+      - ${AGENT_HOST_NAME}  # Signing Agent
+      - oidc.gov.bc.ca      # OIDC
+      - dev.oidc.gov.bc.ca  # OIDC
+      - test.oidc.gov.bc.ca # OIDC
+    servicePorts:
+      - "tcp/80"
+      - "tcp/443"
+- apiVersion: security.devops.gov.bc.ca/v1alpha1
   kind: NetworkSecurityPolicy
   metadata:
     name: web-to-api
@@ -35,6 +57,35 @@ objects:
     destination:
       - - '$namespace=${NAMESPACE}'
         - 'statefulset=patroni'
+- apiVersion: security.devops.gov.bc.ca/v1alpha1
+  kind: NetworkSecurityPolicy
+  metadata:
+    name: api-to-mino
+    labels:
+      app: mobile-signing-service
+  spec:
+    description: |
+      allow api pods to talk to the minio pods
+    source:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=api'
+    destination:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=minio'
+- apiVersion: security.devops.gov.bc.ca/v1alpha1
+  kind: NetworkSecurityPolicy
+  metadata:
+    name: api-to-external
+    labels:
+      app: mobile-signing-service
+  spec:
+    description: |
+      allow api pods to talk to external services
+    source:
+      - - '$namespace=${NAMESPACE}'
+        - 'component=api'
+    destination:
+      - - 'ext:name=all-things-external'
 - apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -93,16 +144,39 @@ objects:
   kind: ConfigMap
   metadata:
     labels:
-      app: mobile-signing-service-api
+      app: mobile-signing-service
       component: api
     name: api-env
   data:
     PORT: ${API_PORT}
     NODE_ENV: ${NODE_ENV}
-    AGENT_URL: ${AGENT_URL}
+    AGENT_URL: "http://${AGENT_HOST}"
     API_URL: "https://${HOSTNAME_HTTPS}"
     MINIO_HOST: "minio.${NAMESPACE}.svc"
     POSTGRESQL_HOST: "patroni.${NAMESPACE}.svc"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: mobile-signing-service
+      component: minio
+    name: minio-env
+  data:
+    MINIO_CONFIG_DIR: /tmp
+    MINIO_DATA_DIR: /data
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: mobile-signing-service
+      component: minio
+    name: minio-data
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${MINIO_VOLUME_CAPACITY}
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -158,6 +232,73 @@ objects:
           - name: config-vol
             mountPath: /opt/app-root/etc/Caddyfile
             subPath: Caddyfile
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: minio
+    labels:
+      app: mobile-signing-service
+      component: minio
+  spec:
+    replicas: ${{REPLICAS}}
+    selector:
+      app: mobile-signing-service
+      component: minio
+    template:
+      metadata:
+        name: minio
+        labels:
+          app: mobile-signing-service
+          component: minio
+      spec:
+        volumes:
+        - name: minio-vol
+          persistentVolumeClaim:
+            claimName: minio-data
+        terminationGracePeriodSeconds: 10
+        containers:
+        - name: minio
+          envFrom:
+            - configMapRef:
+                name: minio-env
+            - secretRef:
+                name: minio-creds
+          image: "docker-remote.artifacts.developer.gov.bc.ca/minio/minio:RELEASE.2020-10-28T08-16-50Z-13-gfed3bda69"
+          imagePullPolicy: IfNotPresent
+          args: ["server", "/data"]
+          ports:
+          - containerPort: 9000
+          volumeMounts:
+          - mountPath: /data
+            name: minio-vol
+          resources:
+            requests:
+              cpu: ${MINIO_CPU_REQUEST}
+              memory: ${MINIO_MEMORY_REQUEST}
+            limits:
+              cpu: ${MINIO_CPU_LIMIT}
+              memory: ${MINIO_MEMORY_LIMIT}
+          # startupProbe:
+          #   httpGet:
+          #     path: /minio/login
+          #     port: 9000
+          #     scheme: HTTP
+          #   failureThreshold: 10
+          #   periodSeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     path: /minio/login
+          #     port: 9000
+          #     scheme: HTTP
+          #   failureThreshold: 3
+          # readinessProbe:
+          #   httpGet:
+          #     path: /minio/login
+          #     port: 9000
+          #     scheme: HTTP
+          #   failureThreshold: 3
+        imagePullSecrets:
+          - name: artifactory-creds
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -265,6 +406,21 @@ objects:
       app: mobile-signing-service
       component: api
 - apiVersion: v1
+  kind: Service
+  metadata:
+    name: minio
+    labels:
+      app: mobile-signing-service
+      component: minio
+  spec:
+    ports:
+    - name: 9000-tcp
+      port: 9000
+      targetPort: 9000
+    selector:
+      app: mobile-signing-service
+      component: minio
+- apiVersion: v1
   kind: Route
   metadata:
     name: web
@@ -352,31 +508,6 @@ parameters:
     statefulset can utilize if available on the host
     machine if available.
   required: true
-- name: API_CPU_REQUEST
-  displayName: API CPU Request
-  description: |
-    The minimal amount of CPU the API requires to start and run a
-    pod in the replica set.
-  required: true
-- name: API_CPU_LIMIT
-  displayName: API CPU Limit
-  description: |
-    The burstable maximum amount of CPU the API can utilize
-    if available on the host machine.
-  requred: true
-- name: API_MEMORY_REQUEST
-  displayName: API Memory Request
-  description: |
-    The minimal amount of memory required to start the API and
-    run a pod in the statefulset set.
-  required: true
-- name: API_MEMORY_LIMIT
-  displayName: API Memory Limit
-  description: |
-    The burstable maximum amount of memory a API pod in the
-    statefulset can utilize if available on the host
-    machine if available.
-  required: true
 - name: SSO_BASE_URL
   displayName: SSO Base URL
   description: |
@@ -421,6 +552,31 @@ parameters:
     The host name used for this route. Use the domain only like
     foo.example.com, do not include protocols or slashes.
   required: true
+- name: API_CPU_REQUEST
+  displayName: API CPU Request
+  description: |
+    The minimal amount of CPU the API requires to start and run a
+    pod in the replica set.
+  required: true
+- name: API_CPU_LIMIT
+  displayName: API CPU Limit
+  description: |
+    The burstable maximum amount of CPU the API can utilize
+    if available on the host machine.
+  requred: true
+- name: API_MEMORY_REQUEST
+  displayName: API Memory Request
+  description: |
+    The minimal amount of memory required to start the API and
+    run a pod in the statefulset set.
+  required: true
+- name: API_MEMORY_LIMIT
+  displayName: API Memory Limit
+  description: |
+    The burstable maximum amount of memory a API pod in the
+    statefulset can utilize if available on the host
+    machine if available.
+  required: true
 - name: API_PORT
   displayName: API Port
   description: |
@@ -433,9 +589,39 @@ parameters:
     The node.js environment setting. As per the docs this can be
     'production' or 'development'.
   required: true
-- name: AGENT_URL
-  displayName: Agent URL
+- name: AGENT_HOST_NAME
+  displayName: Agent Host Name
   description: |
-    The URL where the API can send jobs to an 'Agent' for
-    processing.
+    The host name or IP where the API can send jobs to an 'Agent'
+    for processing. Do not include protocols; they are added above.
+  required: true
+- name: MINIO_CPU_REQUEST
+  displayName: MINIO CPU Request
+  description: |
+    The minimal amount of CPU the MINIO requires to start and run a
+    pod in the replica set.
+  required: true
+- name: MINIO_CPU_LIMIT
+  displayName: MINIO CPU Limit
+  description: |
+    The burstable maximum amount of CPU the MINIO can utilize
+    if available on the host machine.
+  requred: true
+- name: MINIO_MEMORY_REQUEST
+  displayName: MINIO Memory Request
+  description: |
+    The minimal amount of memory required to start the MINIO and
+    run a pod in the statefulset set.
+  required: true
+- name: MINIO_MEMORY_LIMIT
+  displayName: MINIO Memory Limit
+  description: |
+    The burstable maximum amount of memory a MINIO pod in the
+    statefulset can utilize if available on the host
+    machine if available.
+  required: true
+- name: MINIO_VOLUME_CAPACITY
+  displayName: Minio Volume Capacity
+  description: |
+    The size for the minio data storage volume.
   required: true
