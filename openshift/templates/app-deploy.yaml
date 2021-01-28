@@ -21,9 +21,11 @@ objects:
       referenced by name.
     entries:
       - ${AGENT_HOST_NAME}  # Signing Agent
-      - oidc.gov.bc.ca      # OIDC
-      - dev.oidc.gov.bc.ca  # OIDC
-      - test.oidc.gov.bc.ca # OIDC
+      - 142.34.208.209      # Pathfinder
+      - 142.34.194.118      # OCP4 Silver
+      # - oidc.gov.bc.ca      # OIDC
+      # - dev.oidc.gov.bc.ca  # OIDC
+      # - test.oidc.gov.bc.ca # OIDC
     servicePorts:
       - "tcp/80"
       - "tcp/443"
@@ -91,7 +93,7 @@ objects:
   metadata:
     name: web-caddy-config
     labels:
-      app: mobile-signing-service-caddy
+      app: mobile-signing-service
       component: web
   data:
     Caddyfile: |-
@@ -135,7 +137,7 @@ objects:
   kind: ConfigMap
   metadata:
     labels:
-      app: mobile-signing-service-caddy
+      app: mobile-signing-service
       component: web
     name: web-env
   data:
@@ -186,6 +188,7 @@ objects:
       component: web
   spec:
     replicas: ${{REPLICAS}}
+    revisionHistoryLimit: 3
     selector:
       app: mobile-signing-service
       component: web
@@ -241,6 +244,7 @@ objects:
       component: minio
   spec:
     replicas: ${{REPLICAS}}
+    revisionHistoryLimit: 3
     selector:
       app: mobile-signing-service
       component: minio
@@ -308,6 +312,7 @@ objects:
       component: api
   spec:
     replicas: ${{REPLICAS}}
+    revisionHistoryLimit: 3
     selector:
       app: mobile-signing-service
       component: api
@@ -357,8 +362,8 @@ objects:
               path: /api/v1/ehlo
               port: 8080
               scheme: HTTP
-            failureThreshold: 12
-            periodSeconds: 5
+            failureThreshold: 120
+            periodSeconds: 3
           livenessProbe:
             httpGet:
               path: /api/v1/ehlo
@@ -375,6 +380,8 @@ objects:
             failureThreshold: 3
             periodSeconds: 10
             timeoutSeconds: 5
+        # nodeSelector:
+        #   kubernetes.io/hostname: mcs-silver-app-47.dmz
 - apiVersion: v1
   kind: Service
   metadata:
