@@ -131,7 +131,7 @@ parameters:
     generate: expression
     from: "[a-z0-9]{8}"
   - name: APP_DATABASE
-    value: registry
+    value: cicd
   - name: APP_DB_PASSWORD
     generate: expression
     from: "[a-z0-9]{32}"

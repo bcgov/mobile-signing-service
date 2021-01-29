@@ -54,7 +54,7 @@ objects:
       labels:
         app: patroni-pgsql
         cluster-name: patroni
-      name: patroni-master
+      name: patroni
     spec:
       ports:
         - port: 5432

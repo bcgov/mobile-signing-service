@@ -20,7 +20,7 @@ objects:
       specify a custom external network that can be
       referenced by name.
     entries:
-      - ${AGENT_HOST_NAME}  # Signing Agent
+      - ${AGENT_HOST}  # Signing Agent
       - 142.34.208.209      # Pathfinder
       - 142.34.194.118      # OCP4 Silver
       # - oidc.gov.bc.ca      # OIDC
@@ -175,7 +175,7 @@ objects:
     name: minio-data
   spec:
     accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
     resources:
       requests:
         storage: ${MINIO_VOLUME_CAPACITY}
@@ -596,7 +596,7 @@ parameters:
     The node.js environment setting. As per the docs this can be
     'production' or 'development'.
   required: true
-- name: AGENT_HOST_NAME
+- name: AGENT_HOST
   displayName: Agent Host Name
   description: |
     The host name or IP where the API can send jobs to an 'Agent'
