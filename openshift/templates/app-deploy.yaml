@@ -478,6 +478,35 @@ objects:
       name: api
       weight: 100
     wildcardPolicy: None
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: minio
+    labels:
+      app: mobile-signing-service
+      component: minio
+  spec:
+    host: "${HOSTNAME_HTTPS}"
+    # Minio's will use the "path" in a path based route to
+    # determine the bucket name. This means, set "path" to
+    # whatever bucket will be used.
+    path: /secode-sign
+    port:
+      targetPort: 9000-tcp
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      certificate: |-
+        ${TLS_CERT_PEM}
+      key: |-
+        ${TLS_KEY_PEM}
+      caCertificate: |-
+        ${TLS_CACERT_PEM}
+    to:
+      kind: Service
+      name: minio
+      weight: 100
+    wildcardPolicy: None
 parameters:
 - name: NAMESPACE
   displayName: Namespace
