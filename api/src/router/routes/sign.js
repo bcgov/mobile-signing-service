@@ -55,7 +55,7 @@ router.post(
       throw errorWithCode('To file attachment found.', 400);
     }
 
-    logger.info(`API received file`);
+    logger.info(`Starting workflow for file ${req.file.path}`);
 
     /* This is the document format from multer:
   {
@@ -71,7 +71,7 @@ router.post(
   */
 
     try {
-      logger.info(`Uploading ${req.file.path} to bucket`);
+      logger.info(`1/5: Uploading ${req.file.path} to bucket`);
 
       const fpath = req.file.path;
       fs.access(fpath, fs.constants.R_OK, err => {
@@ -88,7 +88,7 @@ router.post(
       // readStream.destroy();
 
       if (etag) {
-        logger.info(`Uploaded complete, etag = ${etag}`);
+        logger.info(`1/5: Uploaded complete, etag = ${etag}`);
 
         // Don't let a failed cleanup disrupt the workflow.
         try {
@@ -99,7 +99,7 @@ router.post(
         }
       }
 
-      logger.info(`Recording job in db`);
+      logger.info(`2/5: Recording job in db`);
 
       const job = await Job.create(db, {
         originalFileName: req.file.originalname,
@@ -109,9 +109,9 @@ router.post(
         status: JOB_STATUS.CREATED,
       });
 
-      logger.info(`Recorded job, ID = ${job.id}`);
+      logger.info(`2/5: Recorded job, ID = ${job.id}`);
 
-      logger.info(`Triggering signing on Agent for job ID ${job.id}`);
+      logger.info(`3/5: Triggering signing on Agent for job ID ${job.id}`);
 
       const options = {
         headers: {
@@ -129,9 +129,8 @@ router.post(
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
       }
 
-      logger.info(`Signing job ${job.id} accepted by Agent`);
-
-      logger.info(`Updating job ${job.id} status in db`);
+      logger.info(`3/5: Signing job ${job.id} accepted by Agent`);
+      logger.info(`4/5: Updating job ${job.id} status in db`);
 
       await Job.update(
         db,
@@ -141,11 +140,12 @@ router.post(
         }
       );
 
-      logger.info(`Sending response to client for job ID ${job.id}`);
+      logger.info(`4/5: Status set to ${JOB_STATUS.PROCESSING} for job ${job.id}`);
+      logger.info(`5/5: Sending response to client.`);
 
       res.status(202).json({ id: job.id }); // Accepted
 
-      logger.info('Done');
+      logger.info(`5/5: Sent response 202 to client.`);
     } catch (err) {
       const message = 'Unable to create signing job';
       logger.error(`${message}, err = ${err.message}`);
