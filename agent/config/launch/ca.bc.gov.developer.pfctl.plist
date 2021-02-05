@@ -5,7 +5,7 @@
     <key>Label</key>
     <string>ca.bc.gov.developer.pfctl</string>
     <key>WorkingDirectory</key>
-    <string>/Users/xcode/agent</string>
+    <string>/Users/xcode/mobile-signing-service/agent</string>
     <key>ProgramArguments</key>
     <array>
       <string>./scripts/pfstart.sh</string>
