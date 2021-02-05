@@ -113,6 +113,14 @@ router.post(
 
       logger.info(`3/5: Triggering signing on Agent for job ID ${job.id}`);
 
+      const body = {
+        ...job,
+        ...{
+          ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`)
+        }
+      };
+      logger.info(`Message body = ${JSON.stringify(body)}`);
+
       const options = {
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +128,7 @@ router.post(
         },
         method: 'POST',
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-        body: { ...job, ...{ ref: url.resolve(config.get('apiUrl'), `/api/v1/job/${job.id}`) } },
+        body,
         json: true,
       };
       const status = await request(options);
