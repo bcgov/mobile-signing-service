@@ -40,6 +40,10 @@ if (!(gs.indexOf(mkey) > -1)) {
 }
 
 if (!(gs.indexOf(skey) > -1)) {
+  logger.log(`SSO host = ${config.get('sso:tokenUrl')}`);
+  logger.log(`SSO client = ${config.get('sso:clientId')}`);
+  logger.log(`SSO secret = ${config.get('sso:clientSecret').slice(0, 3)}`);
+
   global[skey] = new JWTServiceManager({
     uri: config.get('sso:tokenUrl'),
     grantType: config.get('sso:grantType'),
