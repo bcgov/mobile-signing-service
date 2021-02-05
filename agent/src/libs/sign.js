@@ -103,12 +103,14 @@ const fetchFileFromStorage = async (archiveFilePath, workspace) => {
 
     logger.info(`Writing file to ${apath}`)
     await writeFile(outFilePath, buffer, 'utf8');
+
+    return outFilePath;
   } catch (error) {
     const message = 'Failed fetch file from storage';
-    logger.error(`message, err = ${error.message}`);
-  }
+    logger.error(`${message}, err = ${error.message}`);
 
-  return outFilePath;
+    throw error;
+  }
 };
 
 /**
