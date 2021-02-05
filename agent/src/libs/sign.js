@@ -93,10 +93,20 @@ const fetchFileFromStorage = async (archiveFilePath, workspace) => {
   const outFileName = shortid.generate();
   const apath = path.join(workspace, shortid.generate());
   const outFilePath = path.join(apath, outFileName);
-  const buffer = await getObject(shared.minio, bucket, archiveFilePath);
 
-  await exec(`mkdir -p ${apath}`);
-  await writeFile(outFilePath, buffer, 'utf8');
+  try {
+    logger.info(`Fetching file ${bucket}/${archiveFilePath}`);
+    const buffer = await getObject(shared.minio, bucket, archiveFilePath);
+
+    logger.info(`Creating working director ${apath}`)
+    await exec(`mkdir -p ${apath}`);
+
+    logger.info(`Writing file to ${apath}`)
+    await writeFile(outFilePath, buffer, 'utf8');
+  } catch (error) {
+    const message = 'Failed fetch file from storage';
+    logger.error(`message, err = ${error.message}`);
+  }
 
   return outFilePath;
 };
