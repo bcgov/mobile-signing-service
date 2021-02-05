@@ -37,7 +37,7 @@ describe('Test deployment routes', () => {
     expect(response.statusCode).toBe(400); // Bad request
   });
 
-  test('test deployment request must have a project', async () => {
+  test.skip('Test deployment request must have a project', async () => {
     const response = await request(app)
       .post('/api/v1/deploy/21')
       .query({
@@ -48,7 +48,7 @@ describe('Test deployment routes', () => {
     expect(response.statusCode).toBe(404); // Required parameters missing
   });
 
-  test('Test public deployment request is accepted', async () => {
+  test.skip('Test public deployment request is accepted', async () => {
     const response = await request(app)
       .post('/api/v1/deploy/21')
       .query({
@@ -59,7 +59,7 @@ describe('Test deployment routes', () => {
     expect(response.statusCode).toBe(202); // OK
   });
 
-  test('test enterprise deployment request is accepted', async () => {
+  test.skip('Test enterprise deployment request is accepted', async () => {
     const response = await request(app)
       .post('/api/v1/deploy/21')
       .query({
