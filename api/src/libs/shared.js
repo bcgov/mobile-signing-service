@@ -19,8 +19,7 @@
 //
 
 'use strict';
-
-import { JWTServiceManager } from '@bcgov/common-nodejs-utils';
+import { JWTServiceManager, logger } from '@bcgov/common-nodejs-utils';
 import * as minio from 'minio';
 import config from '../config';
 
