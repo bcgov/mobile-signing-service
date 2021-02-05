@@ -3,7 +3,7 @@
   "exp": 1544213405,
   "nbf": 0,
   "iat": 1544213105,
-  "iss": "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/devhub",
+  "iss": "https://dev.oidc.gov.bc.ca/auth/realms/devhub",
   "aud": "signing-agent",
   "sub": "cf660e9d-7796-46fb-9659-cb8b67d17a21",
   "typ": "Bearer",
@@ -13,7 +13,9 @@
   "acr": "1",
   "allowed-origins": [],
   "realm_access": {
-    "roles": ["uma_authorization"]
+    "roles": [
+      "uma_authorization"
+    ]
   },
   "resource_access": {
     "account": {
