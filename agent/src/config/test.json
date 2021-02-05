@@ -11,12 +11,12 @@
 	"session": {
 		"maxAge": 604800000,
 		"expires": 604800000
-  },
-  "sso": {
+	},
+	"sso": {
 		"clientId": "secode-sign-api",
 		"callback": "/v1/auth/callback",
-		"authUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/auth",
-		"tokenUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/token",
-		"certsUrl": "https://dev-sso.pathfinder.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/certs"
-  }
+		"authUrl": "https://dev-oidc.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/auth",
+		"tokenUrl": "https://dev-oidc.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/token",
+		"certsUrl": "https://dev-oidc.gov.bc.ca/auth/realms/mobile/protocol/openid-connect/certs"
+	}
 }
