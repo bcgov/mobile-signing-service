@@ -5,6 +5,13 @@ labels:
 metadata:
   name: mobile-signing-service
 objects:
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: deny-by-default
+    spec:
+      podSelector: {}
+      ingress: []
   - apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:

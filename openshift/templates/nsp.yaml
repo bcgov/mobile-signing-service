@@ -16,9 +16,9 @@ objects:
       description: |
         allow all pods to communicate
       source:
-        - - "$namespace=${NAMESPACE}"
+        - - "$namespace=*"
       destination:
-        - - "$namespace=${NAMESPACE}"
+        - - "$namespace=*"
   - apiVersion: security.devops.gov.bc.ca/v1alpha1
     kind: NetworkSecurityPolicy
     metadata:
