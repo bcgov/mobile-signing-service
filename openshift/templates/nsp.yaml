@@ -73,12 +73,12 @@ objects:
       # Allow the patroni pods to replicate
       podSelector:
         matchLabels:
-          cluster-name: patroni
+          statefulset: patroni
       ingress:
         - from:
             - podSelector:
                 matchLabels:
-                  cluster-name: patroni
+                  statefulset: patroni
           ports:
             - protocol: TCP
               port: 5432
