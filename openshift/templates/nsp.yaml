@@ -1,4 +1,3 @@
----
 apiVersion: template.openshift.io/v1
 kind: Template
 labels:
@@ -10,21 +9,17 @@ objects:
     kind: NetworkSecurityPolicy
     metadata:
       name: any-to-any
-      labels:
-        app: mobile-signing-service
     spec:
       description: |
         allow all pods to communicate
       source:
-        - - "$namespace=*"
+        - - "$namespace=${NAMESPACE}"
       destination:
         - - "$namespace=*"
   - apiVersion: security.devops.gov.bc.ca/v1alpha1
     kind: NetworkSecurityPolicy
     metadata:
       name: any-to-external
-      labels:
-        app: mobile-signing-service
     spec:
       description: |
         Allow all pods to talk to external systems
@@ -32,9 +27,82 @@ objects:
         - - "$namespace=${NAMESPACE}"
       destination:
         - - "ext:network=any"
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: deny-by-default
+    spec:
+      podSelector: {}
+      ingress: []
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: allow-from-openshift-ingress
+    spec:
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  network.openshift.io/policy-group: ingress
+      podSelector: {}
+      policyTypes:
+        - Ingress
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: allow-api-to-patroni
+    spec:
+      # Allow the API to talk to the patroni
+      # database cluster on the given port.
+      podSelector:
+        matchLabels:
+          cluster-name: patroni
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  component: api
+          ports:
+            - protocol: TCP
+              port: 5432
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: allow-patroni-replication
+    spec:
+      # Allow the patroni pods to replicate
+      podSelector:
+        matchLabels:
+          cluster-name: patroni
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  cluster-name: patroni
+          ports:
+            - protocol: TCP
+              port: 5432
+            - protocol: TCP
+              port: 8008
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: allow-api-to-minio
+    spec:
+      podSelector:
+        matchLabels:
+          component: minio
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  component: api
+          ports:
+            - protocol: TCP
+              port: 9000
 parameters:
   - name: NAMESPACE
     displayName: Namespace
     description: |
-      The k8s namespace this NSP is being deployed to
+      The namespace this policy is being deployed to;
     required: true

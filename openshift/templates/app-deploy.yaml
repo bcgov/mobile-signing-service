@@ -30,6 +30,8 @@ objects:
     metadata:
       name: allow-api-to-patroni
     spec:
+      # Allow the API to talk to the patroni
+      # database cluster on the given port.
       podSelector:
         matchLabels:
           cluster-name: patroni
@@ -41,6 +43,25 @@ objects:
           ports:
             - protocol: TCP
               port: 5432
+  - kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: allow-patroni-replication
+    spec:
+      # Allow the patroni pods to replicate
+      podSelector:
+        matchLabels:
+          cluster-name: patroni
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  cluster-name: patroni
+          ports:
+            - protocol: TCP
+              port: 5432
+            - protocol: TCP
+              port: 8008
   - kind: NetworkPolicy
     apiVersion: networking.k8s.io/v1
     metadata:
