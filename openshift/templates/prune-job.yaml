@@ -1,0 +1,39 @@
+apiVersion: batch/v1beta1
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: minio-data-prune
+spec:
+  # schedule: "*/1 * * * *" # debug
+  schedule: "14 4 * * 6" # prod
+  concurrencyPolicy: "Replace"
+  startingDeadlineSeconds: 200
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: mobile-signing-service
+            component: pruner
+        spec:
+          volumes:
+            - name: minio-vol
+              persistentVolumeClaim:
+                claimName: minio-data
+          containers:
+            - name: minio-data-prune
+              image: "docker-remote.artifacts.developer.gov.bc.ca/busybox:latest"
+              command:
+                - /bin/sh
+              args:
+                - -c
+                - find /data/secode-sign -type f -mtime +7 -exec rm -f {} \;
+              volumeMounts:
+                - mountPath: /data
+                  name: minio-vol
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: artifactory-creds
