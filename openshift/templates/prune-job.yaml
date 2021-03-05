@@ -6,8 +6,8 @@ metadata:
 spec:
   # schedule: "*/1 * * * *" # debug
   schedule: "14 4 * * 6" # prod
-  concurrencyPolicy: "Replace"
-  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 90
   suspend: false
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
