@@ -7,7 +7,7 @@ spec:
   # schedule: "*/1 * * * *" # debug
   schedule: "14 4 * * 6" # prod
   concurrencyPolicy: "Replace"
-  startingDeadlineSeconds: 200
+  startingDeadlineSeconds: 60
   suspend: false
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
