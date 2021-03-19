@@ -8,15 +8,17 @@
     <string>/Users/xcode/agent</string>
     <key>ProgramArguments</key>
     <array>
-      <string>./scripts/pfstart.sh</string>
+      <string>/Users/xcode/agent/scripts/pfstart.sh</string>
     </array>
     <key>RunAtLoad</key>
     <true />
     <key>LaunchOnlyOnce</key>
     <true/>
     <key>StandardErrorPath</key>
-    <string>/tmp/pfctl.err</string>
+    <string>/var/log/pfctl.log</string>
     <key>StandardOutPath</key>
-    <string>/tmp/pfctl.out</string>
+    <string>/var/log/pfctl.log</string>
+    <key>Debug</key>
+      <false/>
   </dict>
 </plist>
