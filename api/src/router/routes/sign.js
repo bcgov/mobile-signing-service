@@ -156,6 +156,7 @@ router.post(
       logger.info(`5/5: Sent response 202 to client.`);
     } catch (err) {
       const message = 'Unable to create signing job';
+      logger.error(`${error} = ${err}`);
       logger.error(`${message}, err = ${err.message}`);
 
       if (err.code) {
