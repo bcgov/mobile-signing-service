@@ -305,6 +305,7 @@ export const signxcarchive = async (archiveFilePath, workspace = '/tmp/') => {
         )}`.replace(/ /g, '_');
         return exec(`
           xcodebuild \
+          -allowProvisioningUpdates \
           -exportArchive \
           -archivePath "${element}" \
           -exportPath "${exppath}"  \
