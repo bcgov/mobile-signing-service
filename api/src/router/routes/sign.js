@@ -130,6 +130,7 @@ router.post(
         uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
         body,
         json: true,
+        followAllRedirects: true,
       };
       console.log(JSON.stringify(options));
       const status = await request(options);
