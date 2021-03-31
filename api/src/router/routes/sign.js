@@ -147,8 +147,8 @@ router.post(
       logger.info(`host = ${config.get('agent:hostUrl')}`);
       logger.info(`path = ${config.get('agent:signPath')}`);
 
-      const status = await axi.post(config.get('agent:signPath'), body);
-      logger.info(`status = ${JSON.stringify(status)}`);
+      const response = await axi.post(config.get('agent:signPath'), body);
+      logger.info(`status = ${response.status}`);
 
       if (status !== 'OK') {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
