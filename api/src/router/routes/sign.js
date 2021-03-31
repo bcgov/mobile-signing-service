@@ -134,6 +134,7 @@ router.post(
       };
       console.log(JSON.stringify(options));
       const status = await request(options);
+      logger.info(`Status = ${status}`);
 
       if (status !== 'OK') {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
