@@ -23,11 +23,11 @@
 'use strict';
 
 import { asyncMiddleware, errorWithCode, logger, putObject } from '@bcgov/common-nodejs-utils';
+import axios from 'axios';
 import crypto from 'crypto';
 import { Router } from 'express';
 import fs from 'fs';
 import multer from 'multer';
-import request from 'request-promise-native';
 import url from 'url';
 import config from '../../config';
 import { JOB_STATUS } from '../../constants';
@@ -71,6 +71,14 @@ router.post(
   */
 
     try {
+      const axi = axios.create({
+        baseURL: config.get('agent:hostUrl'),
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${await shared.sso.accessToken}`,
+        },
+      });
+
       logger.info(`1/5: Uploading ${req.file.path} to bucket`);
 
       const fpath = req.file.path;
@@ -121,20 +129,26 @@ router.post(
       };
       logger.info(`Message body = ${JSON.stringify(body)}`);
 
-      const options = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${await shared.sso.accessToken}`,
-        },
-        method: 'POST',
-        uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-        body,
-        json: true,
-        followAllRedirects: true,
-      };
-      console.log(JSON.stringify(options));
-      const status = await request(options);
-      logger.info(`Status = ${status}`);
+      // const options = {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     Authorization: `Bearer ${await shared.sso.accessToken}`,
+      //   },
+      //   method: 'POST',
+      //   uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
+      //   body,
+      //   json: true,
+      //   followAllRedirects: true,
+      // };
+      // console.log(JSON.stringify(options));
+      // const status = await request(options);
+      // logger.info(`Status = ${status}`);
+
+      logger.info(`host = ${config.get('agent:hostUrl')}`);
+      logger.info(`path = ${config.get('agent:signPath')}`);
+
+      const status = await axi.post(config.get('agent:signPath'), body);
+      logger.info(`status = ${status}`);
 
       if (status !== 'OK') {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
