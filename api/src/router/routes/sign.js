@@ -129,29 +129,14 @@ router.post(
       };
       logger.info(`Message body = ${JSON.stringify(body)}`);
 
-      // const options = {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${await shared.sso.accessToken}`,
-      //   },
-      //   method: 'POST',
-      //   uri: url.resolve(config.get('agent:hostUrl'), config.get('agent:signPath')),
-      //   body,
-      //   json: true,
-      //   followAllRedirects: true,
-      // };
-      // console.log(JSON.stringify(options));
-      // const status = await request(options);
-      // logger.info(`Status = ${status}`);
-
-      logger.info(`host = ${config.get('agent:hostUrl')}`);
-      logger.info(`path = ${config.get('agent:signPath')}`);
+      // logger.info(`host = ${config.get('agent:hostUrl')}`);
+      // logger.info(`path = ${config.get('agent:signPath')}`);
 
       const response = await axi.post(config.get('agent:signPath'), body);
       logger.info(`status = ${response.status}`);
-      logger.info(`data = ${response.data}`);
+      // logger.info(`data = ${response.data}`);
 
-      if (status !== 'OK') {
+      if (response.status !== 200) {
         throw errorWithCode(`Unable to send job ${job.id} to agent`, 500);
       }
 
