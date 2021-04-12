@@ -133,7 +133,7 @@ router.post(
       // logger.info(`path = ${config.get('agent:signPath')}`);
 
       const response = await axi.post(config.get('agent:signPath'), body);
-      logger.info(`status = ${response.status}`);
+      // logger.info(`status = ${response.status}`);
       // logger.info(`data = ${response.data}`);
 
       if (response.status !== 200) {
