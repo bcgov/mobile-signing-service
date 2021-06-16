@@ -5,7 +5,7 @@ metadata:
   name: minio-data-prune
 spec:
   # schedule: "*/1 * * * *" # debug
-  schedule: "14 4 * * 6" # prod
+  schedule: "14 4 * * *" # prod: run daily, prune file older than 7 days
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 90
   suspend: false
