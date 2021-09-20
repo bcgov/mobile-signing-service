@@ -29,7 +29,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "test:lint": "eslint src/ --fix"
+    "test:lint": "eslint src/",
+    "test:lint-fix": "eslint src/ --fix"
   },
   "devDependencies": {
     "enzyme": "^3.10.0",
