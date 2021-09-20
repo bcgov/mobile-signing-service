@@ -26,7 +26,7 @@ import {
   jobCreating,
   jobCreationFailed,
   jobFailed,
-  jobProcessing
+  jobProcessing,
 } from '../actions';
 import implicitAuthManager from '../auth';
 import { API } from '../constants';
@@ -56,7 +56,7 @@ export const createSigningJob = (files, platform) => dispatch => {
   dispatch(jobCreating());
   apiRequestFailed(); // clear any errors
 
-  console.log("Sending file to API")
+  console.log('Sending file to API');
 
   return axi
     .post(API.CREATE_JOB(platform), form, {
@@ -67,12 +67,12 @@ export const createSigningJob = (files, platform) => dispatch => {
       },
     })
     .then(res => {
-      console.log("File sent to API")
+      console.log('File sent to API');
       dispatch(jobCreated({ jobId: res.data.id }));
       checkJobStatus(res.data.id, dispatch);
     })
     .catch(err => {
-      console.log("Failed to send file to API")
+      console.log('Failed to send file to API');
       dispatch(jobCreationFailed());
 
       const code = typeof err.response.status !== 'undefined' ? err.response.status : 0;
@@ -103,11 +103,11 @@ const checkJobStatus = (jobId, dispatch) => {
         res.data.status === 'Processing' &&
         statusCheckCount < maxStatusCheckCount
       ) {
-        console.log(`Job processing, check count = ${statusCheckCount}`)
+        console.log(`Job processing, check count = ${statusCheckCount}`);
         dispatch(jobProcessing());
 
         setTimeout(() => {
-          console.log(`Job processing (sleep ${apiPollTimeout})`)
+          console.log(`Job processing (sleep ${apiPollTimeout})`);
           checkJobStatus(jobId, dispatch);
         }, apiPollTimeout);
       } else if (res.status === 200 && res.data.status === 'Completed') {
