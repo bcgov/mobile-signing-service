@@ -76,6 +76,24 @@ export class App extends Component {
       <div>
         <Header authentication={this.props.authentication} />
         <div className="container">
+          <p>Note for Android Developers:</p>
+          <p>
+            We are updating the Android App signing process according to{' '}
+            <a href="https://support.google.com/googleplay/android-developer/answer/9842756?hl=en">
+              Google
+            </a>
+            . All new applications will be in .aab format and using Google signing service in stead
+            of our MSS.
+          </p>
+          <p>
+            If your app is on Google Play already, please connect with us at{' '}
+            <a href="https://chat.developer.gov.bc.ca/channel/devops-mobile-development">
+              RocketChat
+            </a>{' '}
+            to start the update. Thank you!
+          </p>
+        </div>
+        <div className="container">
           {/* <form> */}
           <ul className="flex-outer">
             <li>
