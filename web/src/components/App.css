@@ -112,9 +112,14 @@
 
 a {
   color: #003366;
-  /* text-transform: uppercase; */
+  text-transform: uppercase;
   /* letter-spacing: 0.05em; */
-  text-decoration: none;
+  text-decoration: underline;
+}
+
+.container a:hover {
+  color: #4b5e7e;
+  text-decoration: underline;
 }
 
 button {
