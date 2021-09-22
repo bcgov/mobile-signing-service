@@ -22,9 +22,7 @@ import { ImplicitAuthManager } from '@bcgov/common-web-utils';
 
 const config = {
   baseURL:
-    process.env.NODE_ENV === 'production'
-      ? '{{env "SSO_BASE_URL"}}'
-      : 'https://dev.oidc.gov.bc.ca',
+    process.env.NODE_ENV === 'production' ? '{{env "SSO_BASE_URL"}}' : 'https://dev.oidc.gov.bc.ca',
   realmName: 'devhub',
   clientId: 'signing-web',
   kcIDPHint: '', // Skip SSO, go directly to IDIR auth.
