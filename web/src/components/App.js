@@ -76,21 +76,16 @@ export class App extends Component {
       <div>
         <Header authentication={this.props.authentication} />
         <div className="container">
-          <p>Note for Android Developers:</p>
+          <p>Note for All Mobile App Teams:</p>
           <p>
-            We are updating the Android App signing process according to{' '}
-            <a href="https://support.google.com/googleplay/android-developer/answer/9842756?hl=en">
-              Google
-            </a>
-            . All new applications will be in .aab format and using Google signing service in stead
-            of our MSS.
+            We are in the process of retiring this Mobile Signing Service. If you are a new team, please schedule an onboarding meeting with Shelly (shelly.han@gov.bc.ca).
           </p>
           <p>
-            If your app is on Google Play already, please connect with us at{' '}
+            If your app is on Google Play or App Store already, please connect with us at{' '}
             <a href="https://chat.developer.gov.bc.ca/channel/devops-mobile-development">
               RocketChat
             </a>{' '}
-            to start the update. Thank you!
+            to start the update. MSS will be available in the meantime. Thank you!
           </p>
         </div>
         <div className="container">
